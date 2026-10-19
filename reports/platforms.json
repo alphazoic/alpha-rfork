@@ -18,7 +18,17 @@
       "format": "PE32+ executable for MS Windows 6.01 (console), x86-64, 8 sections",
       "build": "passed",
       "nativeRuntime": "pending",
-      "liveMegaIntegrity": "pending"
+      "liveMegaIntegrity": "pending",
+      "nativeCIArtifact": {
+        "artifactID": 12196401056,
+        "file": "rfork-windows-amd64.exe",
+        "sha256": "979483bf107b5bf321d7760c267e67d1ae8c6c486dd67d098d914fc760c27f9f",
+        "nativeRuntime": "passed",
+        "liveMegaIntegrity": "passed",
+        "jobURL": "https://github.com/mega-fork/rfork/actions/runs/39270418973/job/118125858416",
+        "report": "native-live-windows.json",
+        "matchesRecordedCrossBuild": false
+      }
     },
     {
       "target": "darwin/amd64",
@@ -26,9 +36,23 @@
       "sha256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365",
       "format": "Mach-O 64-bit x86_64 executable, flags:<|DYLDLINK|PIE>",
       "build": "passed",
-      "nativeRuntime": "pending",
-      "liveMegaIntegrity": "pending"
+      "nativeRuntime": "passed",
+      "liveMegaIntegrity": "passed",
+      "nativeCIArtifact": {
+        "artifactID": 12194254662,
+        "file": "rfork-darwin-amd64",
+        "sha256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365",
+        "nativeRuntime": "passed",
+        "liveMegaIntegrity": "passed",
+        "jobURL": "https://github.com/mega-fork/rfork/actions/runs/39269252510/job/118116918184",
+        "report": "native-live-darwin.json",
+        "matchesRecordedCrossBuild": true
+      }
     }
   ],
-  "hostedCI": "configured, not run"
+  "hostedCI": {
+    "nativeUnitRaceBuildAndCLI": "passed",
+    "runURL": "https://github.com/mega-fork/rfork/actions/runs/39263615737",
+    "liveMegaNative": "Windows and Intel macOS passed; see per-target nativeCIArtifact records"
+  }
 }

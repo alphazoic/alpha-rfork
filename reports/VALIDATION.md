@@ -115,9 +115,41 @@ the fast-client reference on this account and route.
 This is an experimental standalone fork. M3's bundled binaries and fallback
 selection are unchanged. Linux, Windows and Intel macOS amd64 binaries were
 built successfully with CGO disabled; [platforms.json](platforms.json) records
-their formats and fingerprints. Windows and Intel macOS require native execution
-and live MEGA integrity validation before shipping; CI configuration is present,
-but no hosted CI run has been performed in this local task.
+their formats and fingerprints. Native unit/race/build/CLI checks passed on
+[all three hosted platforms](https://github.com/mega-fork/rfork/actions/runs/39263615737).
+Linux CI needed its upstream integration-test executable on PATH and the NFS
+mount helper installed; the passing run includes both prerequisites.
+
+On 2026-10-19, native live MEGA validation also passed on
+[Windows amd64](https://github.com/mega-fork/rfork/actions/runs/39270418973/job/118125858416)
+and [Intel macOS](https://github.com/mega-fork/rfork/actions/runs/39269252510/job/118116918184).
+Each platform uploaded a generated 512 MiB payload with 1, 4 and 8 workers,
+then downloaded every upload using pristine stock rclone 1.75.2 and compared
+SHA-256. Nine empty/AES/chunk-boundary files and two versions of one replacement
+file also passed independent download hashes: **14 matching comparisons per OS**.
+Replacement left exactly one destination object; ordinary share-link generation
+passed. A 512 MiB upload throttled to 1 MiB/s was cancelled by a 12-second hard
+context deadline, exited with status 10 after active transfer progress, and left
+no completed destination. Each unique remote folder was permanently removed and
+its absence verified by a fresh stock-client process. No cloud credentials or
+share-link keys are included in the reports.
+
+The first Windows live attempt stopped before MEGA login because the Python
+harness used lowercase `nul`, which rclone rejects as a reserved config filename.
+The corrected harness uses rclone's portable `notfound` in-memory config sentinel;
+the Windows rerun passed. The macOS job in the original run passed independently.
+These changes affect CI tools, not the Go uploader implementation. Raw evidence:
+[native-live-windows.json](native-live-windows.json) and
+[native-live-darwin.json](native-live-darwin.json).
+
+The tested macOS artifact exactly matches the recorded local cross-build.
+The tested Windows artifact has SHA-256
+`979483bf107b5bf321d7760c267e67d1ae8c6c486dd67d098d914fc760c27f9f`,
+which differs from the earlier local Windows cross-build. Use the native-tested
+Windows artifact as the shipping candidate; the older cross-build has not itself
+been executed. Existing release archives have not been repackaged. Only amd64
+was validated; Apple Silicon and Windows ARM64 were not tested. Hosted-runner
+transfer timings do not establish throughput on the user's internet connection.
 
 One account and one VPN route do not establish performance for all MEGA
 servers or networks. The implementation does not add restart/resume support.
