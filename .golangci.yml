@@ -161,5 +161,6 @@ issues:
   max-same-issues: 0
 
 run:
+  relative-path-mode: cfg
   # Timeout for total work, e.g. 30s, 5m, 5m30s. Default is 0 (disabled).
   timeout: 10m

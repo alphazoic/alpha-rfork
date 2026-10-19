@@ -285,3 +285,6 @@ require (
 	golang.org/x/mobile v0.0.0-20260709172247-6129f5bee9d5
 	golang.org/x/term v0.46.0
 )
+
+// rfork: per-upload cancellation and commit handling; see deps/go-mega/RFORK.md.
+replace github.com/t3rm1n4l/go-mega => ./deps/go-mega

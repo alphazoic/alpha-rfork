@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+RFORK_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+RFORK_OS="${1:-$(go env GOOS)}"
+RFORK_ARCH="${2:-amd64}"
+RFORK_VERSION="$(cat "$RFORK_ROOT/RFORK_VERSION")"
+RFORK_SUFFIX=""
+if [[ "$RFORK_OS" == windows ]]; then RFORK_SUFFIX=.exe; fi
+RFORK_OUTPUT="$RFORK_ROOT/build/rfork-$RFORK_OS-$RFORK_ARCH$RFORK_SUFFIX"
+mkdir -p "$RFORK_ROOT/build"
+export GOOS="$RFORK_OS" GOARCH="$RFORK_ARCH" CGO_ENABLED=0
+"$RFORK_ROOT/bin/rfork-go" build -mod=readonly -trimpath -buildvcs=false \
+  -ldflags "-s -w -X github.com/rclone/rclone/fs.Version=$RFORK_VERSION -X github.com/rclone/rclone/fs.ProgramName=rfork" \
+  -o "$RFORK_OUTPUT" .
+printf '%s\n' "$RFORK_OUTPUT"

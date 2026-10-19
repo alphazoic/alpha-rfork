@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 const numReplications = 262144
 const tokenSlotSize = 48
-const doneCtxCheckWhenNthIteration = 1000
 
 // Base64ToBytes decodes a base64url-encoded string to a byte slice
 func Base64ToBytes(s string) ([]byte, error) {
@@ -76,15 +76,11 @@ func gencash(ctx context.Context, token string, easiness int) string {
 	prefix := make([]byte, 4)
 
 	// Try different prefixes until we find one that satisfies the threshold
-	iterations := 0
 	for {
-		// Check context every doneCtxCheckWhenNthIteration iterations
-		if iterations++; iterations%doneCtxCheckWhenNthIteration == 0 {
-			select {
-			case <-ctx.Done():
-				return ""
-			default:
-			}
+		select {
+		case <-ctx.Done():
+			return ""
+		default:
 		}
 
 		// Increment prefix
@@ -111,13 +107,15 @@ func gencash(ctx context.Context, token string, easiness int) string {
 	}
 }
 
-func solveHashCashChallenge(token string, easiness int, timeout time.Duration, workers int) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+func solveHashCashChallengeContext(parent context.Context, token string, easiness int, timeout time.Duration, workers int) (string, error) {
+	ctx, cancel := context.WithTimeout(parent, timeout)
+	var group sync.WaitGroup
+	defer func() { cancel(); group.Wait() }()
 
 	resultChan := make(chan string, workers)
 
 	workerFunc := func() {
+		defer group.Done()
 		for {
 			select {
 			case <-ctx.Done():
@@ -137,6 +135,7 @@ func solveHashCashChallenge(token string, easiness int, timeout time.Duration, w
 	}
 
 	for i := 0; i < workers; i++ {
+		group.Add(1)
 		go workerFunc()
 	}
 

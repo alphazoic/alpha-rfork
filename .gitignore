@@ -20,3 +20,7 @@ __pycache__
 .DS_Store
 resource_windows_*.syso
 .devcontainer
+# rfork local builds, downloaded modules and diagnostic secrets
+/.cache/
+/build/
+/dist/

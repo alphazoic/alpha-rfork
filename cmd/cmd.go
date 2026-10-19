@@ -68,7 +68,7 @@ func ShowVersion() {
 
 	arch := buildinfo.GetArch()
 
-	fmt.Printf("rclone %s\n", fs.Version)
+	fmt.Printf("%s %s\n", fs.ProgramName, fs.Version)
 	fmt.Printf("- os/version: %s\n", osVersion)
 	fmt.Printf("- os/kernel: %s\n", osKernel)
 	fmt.Printf("- os/type: %s\n", runtime.GOOS)

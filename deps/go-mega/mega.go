@@ -2,6 +2,7 @@ package mega
 
 import (
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -421,11 +422,43 @@ func backOffSleep(pt *time.Duration) {
 	}
 }
 
+// backOffContext waits without retaining a sleeper after cancellation.
+func backOffContext(ctx context.Context, delay *time.Duration) error {
+	timer := time.NewTimer(*delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+	}
+	*delay *= 2
+	if *delay > maxSleepTime {
+		*delay = maxSleepTime
+	}
+	return nil
+}
+
 // API request method
 func (m *Mega) api_request(r []byte) (buf []byte, err error) {
+	return m.apiRequestContext(context.Background(), r, m.retries)
+}
+
+// apiRequestContext serializes API requests and bounds retries by the caller.
+// Commit callers pass zero retries because a lost reply does not prove failure.
+func (m *Mega) apiRequestContext(ctx context.Context, r []byte, retries int) (buf []byte, err error) {
 	var resp *http.Response
+	var req *http.Request
 	// serialize the API requests
-	m.apiMu.Lock()
+	for !m.apiMu.TryLock() {
+		wait := 10 * time.Millisecond
+		if err := backOffContext(ctx, &wait); err != nil {
+			return nil, err
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		m.apiMu.Unlock()
+		return nil, err
+	}
 	defer func() {
 		m.sn++
 		m.apiMu.Unlock()
@@ -438,14 +471,19 @@ func (m *Mega) api_request(r []byte) (buf []byte, err error) {
 	}
 
 	sleepTime := minSleepTime // initial backoff time
-	for i := 0; i < m.retries+1; i++ {
+	for i := 0; i < retries+1; i++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		if i != 0 {
 			m.debugf("Retry API request %d/%d: %v", i, m.retries, err)
-			backOffSleep(&sleepTime)
+			if err := backOffContext(ctx, &sleepTime); err != nil {
+				return nil, err
+			}
 		}
 
 		// Create request
-		req, err := http.NewRequest("POST", url, bytes.NewBuffer(r))
+		req, err = http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(r))
 		if err != nil {
 			continue
 		}
@@ -459,6 +497,7 @@ func (m *Mega) api_request(r []byte) (buf []byte, err error) {
 
 		// Handle 402 Payment Required status with hashcash challenge
 		if resp.StatusCode == 402 {
+			err = errors.New("MEGA API hashcash challenge rejected")
 			sleepTime = minSleepTime // reset exp backoff time
 			hashCashHeader := resp.Header.Get("X-Hashcash")
 			if hashCashHeader == "" {
@@ -477,7 +516,8 @@ func (m *Mega) api_request(r []byte) (buf []byte, err error) {
 			_ = resp.Body.Close()
 
 			// Generate hashcash response
-			cashValue, err := solveHashCashChallenge(token, easiness, HASHCASH_CHALLENGE_TIMEOUT, halfCPUCores())
+			var cashValue string
+			cashValue, err = solveHashCashChallengeContext(ctx, token, easiness, HASHCASH_CHALLENGE_TIMEOUT, halfCPUCores())
 			if err != nil {
 				m.debugf("Failed to solve hashcash challenge: %v", err)
 				continue
@@ -488,7 +528,7 @@ func (m *Mega) api_request(r []byte) (buf []byte, err error) {
 			}
 
 			// Create a new request with the hashcash header
-			req, err = http.NewRequest("POST", url, bytes.NewBuffer(r))
+			req, err = http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(r))
 			if err != nil {
 				continue
 			}
@@ -501,13 +541,14 @@ func (m *Mega) api_request(r []byte) (buf []byte, err error) {
 
 			// If still getting 402, give up this attempt and retry
 			if resp.StatusCode == 402 {
+				err = errors.New("MEGA API hashcash challenge rejected")
 				_ = resp.Body.Close()
 				continue
 			}
 		}
 
 		if resp.StatusCode != 200 {
-			// err must be not-nil on a continue
+			err = fmt.Errorf("MEGA API HTTP status %d", resp.StatusCode)
 			_ = resp.Body.Close()
 			continue
 		}
@@ -544,11 +585,15 @@ func (m *Mega) api_request(r []byte) (buf []byte, err error) {
 			return buf, err
 		}
 
-		if err == nil {
-			return buf, nil
-		}
+		return buf, nil
 	}
 
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+	if err == nil {
+		err = EBADRESP
+	}
 	return nil, err
 }
 
@@ -1385,6 +1430,7 @@ type Upload struct {
 	chunks            []chunkSize
 	chunk_macs        [][]byte
 	completion_handle []byte
+	finishStarted     bool
 }
 
 // Create a new Upload of name into parent of fileSize
@@ -1393,6 +1439,15 @@ type Upload struct {
 // 0..chunks-1 Call ChunkLocation then UploadChunk.  Finally call
 // Finish() to receive the error status and the *Node.
 func (m *Mega) NewUpload(parent *Node, name string, fileSize int64) (*Upload, error) {
+	return m.NewUploadContext(context.Background(), parent, name, fileSize, m.https)
+}
+
+// NewUploadContext creates an upload with a per-file context and transport choice.
+// The HTTPS setting does not mutate the client shared by other uploads.
+func (m *Mega) NewUploadContext(ctx context.Context, parent *Node, name string, fileSize int64, useHTTPS bool) (*Upload, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if parent == nil {
 		return nil, EARGS
 	}
@@ -1403,7 +1458,7 @@ func (m *Mega) NewUpload(parent *Node, name string, fileSize int64) (*Upload, er
 
 	msg[0].Cmd = "u"
 	msg[0].S = fileSize
-	if m.config.https {
+	if useHTTPS {
 		msg[0].SSL = 2
 	}
 
@@ -1411,7 +1466,7 @@ func (m *Mega) NewUpload(parent *Node, name string, fileSize int64) (*Upload, er
 	if err != nil {
 		return nil, err
 	}
-	result, err := m.api_request(request)
+	result, err := m.apiRequestContext(ctx, request, m.retries)
 	if err != nil {
 		return nil, err
 	}
@@ -1455,7 +1510,7 @@ func (m *Mega) NewUpload(parent *Node, name string, fileSize int64) (*Upload, er
 	}
 
 	uploadUrl := res[0].P
-	if m.config.https && strings.HasPrefix(uploadUrl, "http://") {
+	if useHTTPS && strings.HasPrefix(uploadUrl, "http://") {
 		uploadUrl = "https://" + strings.TrimPrefix(uploadUrl, "http://")
 	}
 
@@ -1491,7 +1546,22 @@ func (u *Upload) ChunkLocation(id int) (position int64, size int, err error) {
 }
 
 // UploadChunk uploads the chunk of id
-func (u *Upload) UploadChunk(id int, chunk []byte) (err error) {
+func (u *Upload) UploadChunk(id int, chunk []byte) error {
+	return u.UploadChunkContext(context.Background(), id, chunk)
+}
+
+// UploadChunkContext encrypts a native chunk once and retries its ciphertext.
+// The caller must provide an owned plaintext buffer and a unique chunk ID.
+func (u *Upload) UploadChunkContext(ctx context.Context, id int, chunk []byte) (err error) {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	u.mutex.Lock()
+	finishing := u.finishStarted
+	u.mutex.Unlock()
+	if finishing {
+		return errors.New("upload finalization already started")
+	}
 	chk_start, chk_size, err := u.ChunkLocation(id)
 	if err != nil {
 		return err
@@ -1528,8 +1598,11 @@ func (u *Upload) UploadChunk(id int, chunk []byte) (err error) {
 
 	sleepTime := minSleepTime // initial backoff time
 	for retry := 0; retry < u.m.retries+1; retry++ {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		reader := bytes.NewBuffer(chunk)
-		req, err = http.NewRequest("POST", chk_url, reader)
+		req, err = http.NewRequestWithContext(ctx, "POST", chk_url, reader)
 		if err != nil {
 			return err
 		}
@@ -1542,7 +1615,11 @@ func (u *Upload) UploadChunk(id int, chunk []byte) (err error) {
 			_ = rsp.Body.Close()
 		}
 		u.m.debugf("%s: Retry upload chunk %d/%d: %v", u.name, retry, u.m.retries, err)
-		backOffSleep(&sleepTime)
+		if retry < u.m.retries {
+			if err := backOffContext(ctx, &sleepTime); err != nil {
+				return err
+			}
+		}
 	}
 	if err != nil {
 		return err
@@ -1562,6 +1639,15 @@ func (u *Upload) UploadChunk(id int, chunk []byte) (err error) {
 		return err
 	}
 
+	if len(bytes.TrimSpace(chunk_resp)) > 0 && bytes.TrimSpace(chunk_resp)[0] == '-' {
+		var code ErrorMsg
+		// Completion handles are opaque URL-safe base64 and can start with '-'.
+		if json.Unmarshal(chunk_resp, &code) == nil && code < 0 {
+			if err := parseError(code); err != nil {
+				return err
+			}
+		}
+	}
 	if !bytes.Equal(chunk_resp, nil) {
 		u.mutex.Lock()
 		u.completion_handle = chunk_resp
@@ -1580,9 +1666,39 @@ func (u *Upload) UploadChunk(id int, chunk []byte) (err error) {
 }
 
 // Finish completes the upload and returns the created node
-func (u *Upload) Finish() (node *Node, err error) {
+func (u *Upload) Finish() (*Node, error) {
+	return u.FinishContext(context.Background())
+}
+
+// FinishContext commits an upload exactly once after every chunk has succeeded.
+// A failed API response can leave an unknown remote outcome and is not replayed.
+func (u *Upload) FinishContext(ctx context.Context) (node *Node, err error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	u.mutex.Lock()
+	if u.finishStarted {
+		u.mutex.Unlock()
+		return nil, errors.New("upload finalization already started")
+	}
+	for _, mac := range u.chunk_macs {
+		if len(mac) != aes.BlockSize {
+			u.mutex.Unlock()
+			return nil, errors.New("upload has incomplete chunks")
+		}
+	}
+	if len(u.completion_handle) == 0 {
+		u.mutex.Unlock()
+		return nil, errors.New("upload has no completion handle")
+	}
+	u.finishStarted = true
+	u.mutex.Unlock()
 	mac_data := make([]byte, 16)
-	for _, v := range u.chunk_macs {
+	for id, v := range u.chunk_macs {
+		// The empty POST obtains a handle, but authenticates no file data.
+		if u.chunks[id].size == 0 {
+			continue
+		}
 		u.mac_enc.CryptBlocks(mac_data, v)
 	}
 
@@ -1630,7 +1746,7 @@ func (u *Upload) Finish() (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
-	result, err := u.m.api_request(request)
+	result, err := u.m.apiRequestContext(ctx, request, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -1640,6 +1756,9 @@ func (u *Upload) Finish() (node *Node, err error) {
 		return nil, err
 	}
 
+	if len(cres) != 1 || len(cres[0].F) != 1 {
+		return nil, EBADRESP
+	}
 	u.m.FS.mutex.Lock()
 	defer u.m.FS.mutex.Unlock()
 	return u.m.addFSNode(cres[0].F[0])

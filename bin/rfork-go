@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+RFORK_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export GOPATH="$RFORK_ROOT/.cache/go"
+export GOMODCACHE="$RFORK_ROOT/.cache/go-mod"
+export GOCACHE="$RFORK_ROOT/.cache/go-build"
+export GOENV=off
+export GOWORK=off
+export GOTOOLCHAIN=go1.26.9
+export GOFLAGS="${GOFLAGS:--p=2}"
+cd -- "${RFORK_WORKDIR:-$RFORK_ROOT}"
+exec go "$@"

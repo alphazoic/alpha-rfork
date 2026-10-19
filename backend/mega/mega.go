@@ -8,7 +8,6 @@ Open questions
 * Can mega support setting modification times?
 
 Improvements:
-* Uploads could be done in parallel
 * Downloads would be more efficient done in one go
 * Uploads would be more efficient with bigger chunks
 * Looks like mega can support server-side copy, but it isn't implemented in go-mega
@@ -39,6 +38,7 @@ import (
 	"github.com/rclone/rclone/lib/pacer"
 	"github.com/rclone/rclone/lib/readers"
 	mega "github.com/t3rm1n4l/go-mega"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -108,15 +108,23 @@ permanently delete objects instead.`,
 			Default:  false,
 			Advanced: true,
 		}, {
+			Name: "upload_concurrency",
+			Help: `Number of native MEGA chunks uploaded concurrently per file.
+
+This is independent of --transfers, which controls simultaneous files.
+Values from 1 to 32 are accepted. Each file buffers at most concurrency+1
+native chunks (up to 1 MiB each), in addition to rclone's read buffer.
+Use 1 for serial uploads.`,
+			Default:  4,
+			Advanced: true,
+		}, {
 			Name: "use_https",
 			Help: `Use HTTPS for transfers.
 
-MEGA uses plain text HTTP connections by default.
-Some ISPs throttle HTTP connections, this causes transfers to become very slow.
-Enabling this will force MEGA to use HTTPS for all transfers.
-HTTPS is normally not necessary since all data is already encrypted anyway.
-Enabling it will increase CPU usage and add network overhead.`,
-			Default:  false,
+rfork uses HTTPS by default. Set false to diagnose HTTP transport behavior.
+MEGA file contents are already encrypted, but some ISPs throttle HTTP.
+HTTPS adds TLS processing and network overhead.`,
+			Default:  true,
 			Advanced: true,
 		}, {
 			Name:     config.ConfigEncoding,
@@ -131,15 +139,16 @@ Enabling it will increase CPU usage and add network overhead.`,
 
 // Options defines the configuration for this backend
 type Options struct {
-	User       string               `config:"user"`
-	Pass       string               `config:"pass"`
-	TwoFA      string               `config:"2fa"`
-	SessionID  string               `config:"session_id"`
-	MasterKey  string               `config:"master_key"`
-	Debug      bool                 `config:"debug"`
-	HardDelete bool                 `config:"hard_delete"`
-	UseHTTPS   bool                 `config:"use_https"`
-	Enc        encoder.MultiEncoder `config:"encoding"`
+	User              string               `config:"user"`
+	Pass              string               `config:"pass"`
+	TwoFA             string               `config:"2fa"`
+	SessionID         string               `config:"session_id"`
+	MasterKey         string               `config:"master_key"`
+	Debug             bool                 `config:"debug"`
+	HardDelete        bool                 `config:"hard_delete"`
+	UseHTTPS          bool                 `config:"use_https"`
+	UploadConcurrency int                  `config:"upload_concurrency"`
+	Enc               encoder.MultiEncoder `config:"encoding"`
 }
 
 // Fs represents a remote mega
@@ -222,6 +231,9 @@ func NewFs(ctx context.Context, name, root string, m configmap.Mapper) (fs.Fs, e
 	err := configstruct.Set(m, opt)
 	if err != nil {
 		return nil, err
+	}
+	if opt.UploadConcurrency < 1 || opt.UploadConcurrency > 32 {
+		return nil, errors.New("mega upload concurrency must be between 1 and 32")
 	}
 	if opt.Pass != "" {
 		var err error
@@ -1169,6 +1181,127 @@ func (o *Object) Open(ctx context.Context, options ...fs.OpenOption) (in io.Read
 	return readers.NewLimitedReadCloser(oo, limit), nil
 }
 
+// uploadSession retains one server-side upload until all chunks have succeeded.
+type uploadSession interface {
+	Chunks() int
+	ChunkLocation(int) (int64, int, error)
+	UploadChunkContext(context.Context, int, []byte) error
+	FinishContext(context.Context) (*mega.Node, error)
+}
+
+type pacedUpload struct {
+	*mega.Upload
+	pacer        *fs.Pacer
+	beforeFinish func()
+}
+
+func (u pacedUpload) UploadChunkContext(ctx context.Context, id int, chunk []byte) error {
+	return u.pacer.Call(func() (bool, error) {
+		if err := ctx.Err(); err != nil {
+			return false, err
+		}
+		return false, u.Upload.UploadChunkContext(ctx, id, chunk)
+	})
+}
+
+func (u pacedUpload) FinishContext(ctx context.Context) (node *mega.Node, err error) {
+	err = u.pacer.Call(func() (bool, error) {
+		if err := ctx.Err(); err != nil {
+			return false, err
+		}
+		if u.beforeFinish != nil {
+			u.beforeFinish()
+		}
+		node, err = u.Upload.FinishContext(ctx)
+		return false, err
+	})
+	return node, err
+}
+
+// uploadAndFinish joins all workers before committing or returning an error.
+// The input is read serially; only owned chunk buffers cross goroutines.
+func uploadAndFinish(ctx context.Context, in io.Reader, u uploadSession, concurrency int) (*mega.Node, error) {
+	if concurrency < 1 || concurrency > 32 {
+		return nil, errors.New("mega upload concurrency must be between 1 and 32")
+	}
+	parent := ctx
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	group, workerCtx := errgroup.WithContext(ctx)
+	type chunkJob struct {
+		id   int
+		data []byte
+	}
+	jobs := make(chan chunkJob)
+	for range concurrency {
+		group.Go(func() error {
+			for {
+				select {
+				case <-workerCtx.Done():
+					return workerCtx.Err()
+				case job, ok := <-jobs:
+					if !ok {
+						return nil
+					}
+					if err := workerCtx.Err(); err != nil {
+						return err
+					}
+					if err := u.UploadChunkContext(workerCtx, job.id, job.data); err != nil {
+						return err
+					}
+				}
+			}
+		})
+	}
+	readErr := func() error {
+		for id := range u.Chunks() {
+			if err := workerCtx.Err(); err != nil {
+				return err
+			}
+			_, size, err := u.ChunkLocation(id)
+			if err != nil {
+				return fmt.Errorf("chunk %d location: %w", id, err)
+			}
+			if size < 0 || size > 1024*1024 {
+				return fmt.Errorf("invalid native chunk size %d", size)
+			}
+			chunk := make([]byte, size)
+			if _, err := io.ReadFull(in, chunk); err != nil {
+				return fmt.Errorf("chunk %d source: %w", id, err)
+			}
+			select {
+			case jobs <- chunkJob{id, chunk}:
+			case <-workerCtx.Done():
+				return workerCtx.Err()
+			}
+		}
+		return nil
+	}()
+	close(jobs)
+	if readErr != nil {
+		cancel()
+	}
+	workerErr := group.Wait()
+	if workerErr != nil && !errors.Is(workerErr, context.Canceled) {
+		return nil, workerErr
+	}
+	if readErr != nil {
+		return nil, readErr
+	}
+	if workerErr != nil {
+		return nil, workerErr
+	}
+	if err := parent.Err(); err != nil {
+		return nil, err
+	}
+	node, err := u.FinishContext(parent)
+	if err != nil {
+		// A commit may have reached MEGA even if its response never arrived.
+		return nil, fserrors.NoRetryError(fmt.Errorf("MEGA finalization failed; remote outcome may be uncertain, inspect before retrying: %w", err))
+	}
+	return node, nil
+}
+
 // Update the object with the contents of the io.Reader, modTime and size
 //
 // If existing is set then it updates the object rather than creating a new one.
@@ -1190,45 +1323,19 @@ func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, op
 
 	var u *mega.Upload
 	err = o.fs.pacer.Call(func() (bool, error) {
-		u, err = o.fs.srv.NewUpload(dirNode, o.fs.opt.Enc.FromStandardName(leaf), size)
+		u, err = o.fs.srv.NewUploadContext(ctx, dirNode, o.fs.opt.Enc.FromStandardName(leaf), size, o.fs.opt.UseHTTPS)
 		return shouldRetry(ctx, err)
 	})
 	if err != nil {
 		return fmt.Errorf("upload file failed to create session: %w", err)
 	}
 
-	// Upload the chunks
-	// FIXME do this in parallel
-	for id := range u.Chunks() {
-		_, chunkSize, err := u.ChunkLocation(id)
-		if err != nil {
-			return fmt.Errorf("upload failed to read chunk location: %w", err)
-		}
-		chunk := make([]byte, chunkSize)
-		_, err = io.ReadFull(in, chunk)
-		if err != nil {
-			return fmt.Errorf("upload failed to read data: %w", err)
-		}
-
-		err = o.fs.pacer.Call(func() (bool, error) {
-			err = u.UploadChunk(id, chunk)
-			return shouldRetry(ctx, err)
-		})
-		if err != nil {
-			return fmt.Errorf("upload file failed to upload chunk: %w", err)
-		}
-	}
-
-	waitEvent := o.fs.srv.WaitEventsStart()
-
-	// Finish the upload
-	var info *mega.Node
-	err = o.fs.pacer.Call(func() (bool, error) {
-		info, err = u.Finish()
-		return shouldRetry(ctx, err)
-	})
+	var waitEvent <-chan struct{}
+	info, err := uploadAndFinish(ctx, in, pacedUpload{Upload: u, pacer: o.fs.pacer,
+		beforeFinish: func() { waitEvent = o.fs.srv.WaitEventsStart() },
+	}, o.fs.opt.UploadConcurrency)
 	if err != nil {
-		return fmt.Errorf("failed to finish upload: %w", err)
+		return err
 	}
 
 	// If the upload succeeded and the original object existed, then delete it

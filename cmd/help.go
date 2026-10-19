@@ -24,7 +24,7 @@ import (
 
 // Root is the main rclone command
 var Root = &cobra.Command{
-	Use:   "rclone",
+	Use:   fs.ProgramName,
 	Short: "Show help for rclone commands, flags and backends.",
 	Long: `Rclone syncs files to and from cloud storage providers as well as
 mounting them, listing them in lots of different ways.
