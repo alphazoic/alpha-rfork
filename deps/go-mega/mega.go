@@ -1431,6 +1431,7 @@ type Upload struct {
 	chunk_macs        [][]byte
 	completion_handle []byte
 	finishStarted     bool
+	stats             *uploadStats // configured before workers start
 }
 
 // Create a new Upload of name into parent of fileSize
@@ -1569,6 +1570,7 @@ func (u *Upload) UploadChunkContext(ctx context.Context, id int, chunk []byte) (
 	if len(chunk) != chk_size {
 		return errors.New("upload chunk is wrong size")
 	}
+	encryptionStarted := u.stats.start()
 	ctr_iv, err := bytes_to_a32(u.kiv)
 	if err != nil {
 		return err
@@ -1594,6 +1596,7 @@ func (u *Upload) UploadChunkContext(ctx context.Context, id int, chunk []byte) (
 	var rsp *http.Response
 	var req *http.Request
 	ctr_aes.XORKeyStream(chunk, chunk)
+	u.stats.record(uploadEncryption, encryptionStarted)
 	chk_url := fmt.Sprintf("%s/%d", u.uploadUrl, chk_start)
 
 	sleepTime := minSleepTime // initial backoff time
@@ -1606,19 +1609,28 @@ func (u *Upload) UploadChunkContext(ctx context.Context, id int, chunk []byte) (
 		if err != nil {
 			return err
 		}
+		u.stats.beginRequest(req, retry)
+		requestStarted := u.stats.start()
 		rsp, err = u.m.client.Do(req)
+		u.stats.record(uploadRequest, requestStarted)
 		if err == nil {
 			if rsp.StatusCode == 200 {
 				break
 			}
 			err = errors.New("Http Status: " + rsp.Status)
+			responseStarted := u.stats.start()
 			_ = rsp.Body.Close()
+			u.stats.record(uploadResponse, responseStarted)
 		}
+		u.stats.endRequest()
 		u.m.debugf("%s: Retry upload chunk %d/%d: %v", u.name, retry, u.m.retries, err)
 		if retry < u.m.retries {
+			backoffStarted := u.stats.start()
 			if err := backOffContext(ctx, &sleepTime); err != nil {
+				u.stats.record(uploadBackoff, backoffStarted)
 				return err
 			}
+			u.stats.record(uploadBackoff, backoffStarted)
 		}
 	}
 	if err != nil {
@@ -1628,6 +1640,9 @@ func (u *Upload) UploadChunkContext(ctx context.Context, id int, chunk []byte) (
 		return errors.New("retries exceeded")
 	}
 
+	responseStarted := u.stats.start()
+	defer u.stats.endRequest()
+	defer func() { u.stats.record(uploadResponse, responseStarted) }()
 	chunk_resp, err := io.ReadAll(rsp.Body)
 	if err != nil {
 		_ = rsp.Body.Close()
@@ -1661,6 +1676,7 @@ func (u *Upload) UploadChunkContext(ctx context.Context, id int, chunk []byte) (
 		copy(u.chunk_macs[id], block)
 	}
 	u.mutex.Unlock()
+	u.stats.acknowledge(1, len(chunk))
 
 	return nil
 }

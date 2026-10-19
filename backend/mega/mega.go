@@ -118,6 +118,17 @@ read buffer add overhead. Use 1 for serial uploads.`,
 			Default:  8,
 			Advanced: true,
 		}, {
+			Name: "upload_diagnostics",
+			Help: `Emit a bounded aggregate diagnostic report for each upload attempt.
+
+Reports contain settings, timing and byte counters, without file names, upload
+URLs or keys. With --use-json-log the report is in the megaUpload field.
+Worker timing totals overlap and are not elapsed wall time. HTTP payload reads
+include retries and are not TCP/TLS byte counts. Acknowledged chunks alone do
+not establish a successful file commit. Collection is disabled by default.`,
+			Default:  false,
+			Advanced: true,
+		}, {
 			Name: "use_https",
 			Help: `Use HTTPS for transfers.
 
@@ -148,6 +159,7 @@ type Options struct {
 	HardDelete        bool                 `config:"hard_delete"`
 	UseHTTPS          bool                 `config:"use_https"`
 	UploadConcurrency int                  `config:"upload_concurrency"`
+	UploadDiagnostics bool                 `config:"upload_diagnostics"`
 	Enc               encoder.MultiEncoder `config:"encoding"`
 }
 
@@ -1193,6 +1205,7 @@ type pacedUpload struct {
 	*mega.Upload
 	pacer        *fs.Pacer
 	beforeFinish func()
+	afterFinish  func()
 }
 
 func (u pacedUpload) UploadChunkContext(ctx context.Context, id int, chunk []byte) error {
@@ -1213,9 +1226,47 @@ func (u pacedUpload) FinishContext(ctx context.Context) (node *mega.Node, err er
 			u.beforeFinish()
 		}
 		node, err = u.Upload.FinishContext(ctx)
+		if u.afterFinish != nil {
+			u.afterFinish()
+		}
 		return false, err
 	})
 	return node, err
+}
+
+type uploadReport struct {
+	SchemaVersion  int                    `json:"schemaVersion"`
+	Workers        int                    `json:"workers"`
+	HTTPS          bool                   `json:"https"`
+	SourceBytes    int64                  `json:"sourceBytes"`
+	SourceRead     mega.UploadTiming      `json:"sourceRead"`
+	SetupSeconds   float64                `json:"setupSeconds"`
+	DataSeconds    float64                `json:"dataSeconds"`
+	CommitSeconds  float64                `json:"commitSeconds"`
+	ElapsedSeconds float64                `json:"elapsedSeconds"`
+	Committed      bool                   `json:"committed"`
+	Successful     bool                   `json:"successful"`
+	Chunks         mega.UploadDiagnostics `json:"chunks"`
+}
+
+type uploadDiagnosticReader struct {
+	io.Reader
+	report *uploadReport
+}
+
+func (r uploadDiagnosticReader) Read(b []byte) (int, error) {
+	started := time.Now()
+	n, err := r.Reader.Read(b)
+	seconds := time.Since(started).Seconds()
+	r.report.SourceBytes += int64(n)
+	timing := &r.report.SourceRead
+	if timing.Count == 0 || seconds < timing.MinSeconds {
+		timing.MinSeconds = seconds
+	}
+	timing.Count++
+	timing.Seconds += seconds
+	timing.MaxSeconds = max(timing.MaxSeconds, seconds)
+	return n, err
 }
 
 // uploadAndFinish joins all workers before committing or returning an error.
@@ -1308,6 +1359,22 @@ func uploadAndFinish(ctx context.Context, in io.Reader, u uploadSession, concurr
 //
 // The new object may have been created if an error is returned
 func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, options ...fs.OpenOption) (err error) {
+	var u *mega.Upload
+	var report *uploadReport
+	var started, dataStarted, commitStarted time.Time
+	if o.fs.opt.UploadDiagnostics {
+		started = time.Now()
+		report = &uploadReport{SchemaVersion: 1, Workers: o.fs.opt.UploadConcurrency, HTTPS: o.fs.opt.UseHTTPS}
+		in = uploadDiagnosticReader{Reader: in, report: report}
+		defer func() {
+			if u != nil {
+				report.Chunks = u.Diagnostics()
+			}
+			report.ElapsedSeconds = time.Since(started).Seconds()
+			report.Successful = err == nil
+			fs.LogPrintf(fs.LogLevelNotice, nil, "MEGA upload diagnostics: %s", fs.LogValue("megaUpload", report))
+		}()
+	}
 	size := src.Size()
 	if size < 0 {
 		return errors.New("mega backend can't upload a file of unknown length")
@@ -1321,7 +1388,6 @@ func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, op
 		return fmt.Errorf("update make parent dir failed: %w", err)
 	}
 
-	var u *mega.Upload
 	err = o.fs.pacer.Call(func() (bool, error) {
 		u, err = o.fs.srv.NewUploadContext(ctx, dirNode, o.fs.opt.Enc.FromStandardName(leaf), size, o.fs.opt.UseHTTPS)
 		return shouldRetry(ctx, err)
@@ -1329,13 +1395,35 @@ func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, op
 	if err != nil {
 		return fmt.Errorf("upload file failed to create session: %w", err)
 	}
+	if report != nil {
+		u.EnableDiagnostics()
+		report.SetupSeconds = time.Since(started).Seconds()
+		dataStarted = time.Now()
+	}
 
 	var waitEvent <-chan struct{}
 	info, err := uploadAndFinish(ctx, in, pacedUpload{Upload: u, pacer: o.fs.pacer,
-		beforeFinish: func() { waitEvent = o.fs.srv.WaitEventsStart() },
+		beforeFinish: func() {
+			if report != nil {
+				report.DataSeconds = time.Since(dataStarted).Seconds()
+				commitStarted = time.Now()
+			}
+			waitEvent = o.fs.srv.WaitEventsStart()
+		},
+		afterFinish: func() {
+			if report != nil {
+				report.CommitSeconds = time.Since(commitStarted).Seconds()
+			}
+		},
 	}, o.fs.opt.UploadConcurrency)
+	if report != nil && commitStarted.IsZero() {
+		report.DataSeconds = time.Since(dataStarted).Seconds()
+	}
 	if err != nil {
 		return err
+	}
+	if report != nil {
+		report.Committed = true
 	}
 
 	// If the upload succeeded and the original object existed, then delete it

@@ -90,6 +90,7 @@ func TestUploadNativeParallelCryptoAndCommit(t *testing.T) {
 	u.m.SetAPIUrl(server.URL)
 	u.chunks = getChunkSizes(size)
 	u.chunk_macs = make([][]byte, len(u.chunks))
+	u.EnableDiagnostics()
 	u.name = "fixture.bin"
 	u.parenthash = "root"
 	var group sync.WaitGroup
@@ -156,6 +157,10 @@ func TestUploadNativeParallelCryptoAndCommit(t *testing.T) {
 	}
 	if _, err = u.FinishContext(context.Background()); err == nil || commits.Load() != 1 {
 		t.Fatal("commit replayed")
+	}
+	s := u.Diagnostics()
+	if s.Attempts != int64(u.Chunks()) || s.AcknowledgedBytes != size || s.PayloadBytesRead != size || s.ActiveRequests != 0 || s.PeakRequests > 4 {
+		t.Fatalf("parallel diagnostics mismatch: %+v", s)
 	}
 }
 

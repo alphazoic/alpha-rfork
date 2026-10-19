@@ -32,6 +32,15 @@ is read sequentially, so the worker pool works with rclone's accounting and
 bandwidth limiting. Progress can include buffered data; completion requires a
 successful final commit.
 
+`--mega-upload-diagnostics` enables an aggregate report per upload attempt. With
+`--use-json-log`, the structured report is in `megaUpload`; it contains numeric
+settings, source/HTTP-body/acknowledged byte counts, peak requests and stage
+timings, without names, URLs or keys. Worker durations overlap, HTTP-body reads
+include retries (not TCP/TLS overhead), and acknowledged bytes do not imply a
+confirmed file commit. Collection is off by default. Process CPU and peak RSS
+remain external measurements, not per-file counters. Timing begins in the
+object update, so process startup/login are outside its elapsed measurement.
+
 Workers stop and join on chunk errors or cancellation. A finalization failure
 is returned as a non-retryable error with an uncertain remote outcome: inspect
 the destination before starting another upload. A server can commit a file

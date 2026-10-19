@@ -3,6 +3,7 @@ package mega
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"strconv"
@@ -25,6 +26,20 @@ type fixtureUpload struct {
 	seen      map[int][]byte
 	upload    func(context.Context, int, []byte) error
 	finishErr error
+}
+
+func TestUploadDiagnosticReaderCountsShortSource(t *testing.T) {
+	report := &uploadReport{SchemaVersion: 1}
+	r := uploadDiagnosticReader{Reader: bytes.NewReader([]byte{1, 2, 3}), report: report}
+	if n, err := io.ReadFull(r, make([]byte, 7)); n != 3 || !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Fatalf("read: %d %v", n, err)
+	}
+	if report.SourceBytes != 3 || report.SourceRead.Count < 1 || report.SourceRead.Seconds < 0 || report.Committed {
+		t.Fatalf("incorrect source diagnostics: %+v", report)
+	}
+	if _, err := json.Marshal(report); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func (u *fixtureUpload) Chunks() int { return u.chunks }

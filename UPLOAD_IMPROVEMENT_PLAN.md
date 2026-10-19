@@ -1,6 +1,8 @@
 # rfork upload improvement plan
 
-Status: planning only. No upload implementation or M3 changes are included.
+Status: implementation started. Diagnostics are implemented and pass focused
+Linux race tests and lint; see [reports/UPLOAD_IMPROVEMENTS.md](reports/UPLOAD_IMPROVEMENTS.md).
+Later stages remain pending. M3 changes are outside this work.
 
 ## Objective and saved baseline
 

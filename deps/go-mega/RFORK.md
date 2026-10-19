@@ -13,6 +13,11 @@ API request after a lost response. Chunk retries reuse the same ciphertext.
 Negative MEGA chunk responses are errors. Non-200 API responses cannot become
 nil-error successes.
 
+`EnableDiagnostics` enables bounded per-upload numeric aggregates before workers
+start; `Diagnostics` returns a concurrency-safe snapshot. No names, URLs, keys or
+completion handles are included. HTTP body reads include retry payloads and are
+distinct from acknowledged chunks and final file creation.
+
 Empty files retain a zero aggregate MAC: their empty POST obtains the upload
 handle but contributes no data chunk to the authentication fold. This fixes
 upstream empty uploads rejected by independent clients with a MAC mismatch.

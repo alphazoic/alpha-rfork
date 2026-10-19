@@ -1,5 +1,10 @@
 # rfork changelog
 
+## Unreleased
+
+- Add opt-in bounded upload diagnostics with separate source, attempted payload,
+  acknowledged data and final-commit status; omit private upload identifiers.
+
 ## v1.75.2-rfork.0.1.0-alpha.1
 
 - Base the independent fork on the verified rclone 1.75.2 release.
