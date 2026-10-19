@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 RFORK_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-RFORK_OS="${1:-$(go env GOOS)}"
+RFORK_OS="${1:-$("$RFORK_ROOT/bin/rfork-go" env GOOS)}"
 RFORK_ARCH="${2:-amd64}"
 RFORK_VERSION="$(cat "$RFORK_ROOT/RFORK_VERSION")"
 RFORK_SUFFIX=""

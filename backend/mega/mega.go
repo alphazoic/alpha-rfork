@@ -112,10 +112,10 @@ permanently delete objects instead.`,
 			Help: `Number of native MEGA chunks uploaded concurrently per file.
 
 This is independent of --transfers, which controls simultaneous files.
-Values from 1 to 32 are accepted. Each file buffers at most concurrency+1
-native chunks (up to 1 MiB each), in addition to rclone's read buffer.
-Use 1 for serial uploads.`,
-			Default:  4,
+Values from 1 to 32 are accepted. The worker pool holds at most concurrency+1
+native chunk buffers (up to 1 MiB each). Encryption, transport and rclone's
+read buffer add overhead. Use 1 for serial uploads.`,
+			Default:  8,
 			Advanced: true,
 		}, {
 			Name: "use_https",
