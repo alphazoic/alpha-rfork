@@ -1,0 +1,34 @@
+{
+  "toolchain": "go1.26.9",
+  "CGO_ENABLED": "0",
+  "targets": [
+    {
+      "target": "linux/amd64",
+      "file": "rfork-linux-amd64",
+      "sha256": "8c83896b7f8a2a0c23c3208eda6ec837998452fb384eb00f4cf551c4da48ef24",
+      "format": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, Go BuildID=4Bim8IQXtmBCyQDB8qTp/pMobUoaWIO1gp07xTwTP/wLZnhZKthB7zOGFh1uWn/k6MXvRYz-Q61hbVpJSwG, BuildID[sha1]=9ac90e9c3c8cfc2c694583d6052e6e6b8e05fba4, stripped",
+      "build": "passed",
+      "nativeRuntime": "passed",
+      "liveMegaIntegrity": "passed"
+    },
+    {
+      "target": "windows/amd64",
+      "file": "rfork-windows-amd64.exe",
+      "sha256": "57013c5ffbfbe5a1ff590006ebf3085589c2638cba4a67febe56c4cab81f6dad",
+      "format": "PE32+ executable for MS Windows 6.01 (console), x86-64, 8 sections",
+      "build": "passed",
+      "nativeRuntime": "pending",
+      "liveMegaIntegrity": "pending"
+    },
+    {
+      "target": "darwin/amd64",
+      "file": "rfork-darwin-amd64",
+      "sha256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365",
+      "format": "Mach-O 64-bit x86_64 executable, flags:<|DYLDLINK|PIE>",
+      "build": "passed",
+      "nativeRuntime": "pending",
+      "liveMegaIntegrity": "pending"
+    }
+  ],
+  "hostedCI": "configured, not run"
+}

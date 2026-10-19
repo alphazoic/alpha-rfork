@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-19T07:34:26.449Z",
+  "platform": "linux",
+  "checks": [
+    {
+      "operation": "version",
+      "passed": true,
+      "output": "rfork v1.75.2-rfork.0.1.0-alpha.1\n- os/version: debian 13.7 (64 bit)\n- os/kernel: 6.12.111+deb13-amd64 (x86_64)\n- os/type: linux\n- os/arch: amd64\n- go/version: go1.26.9\n- go/linking: static\n- go/tags: none"
+    },
+    {
+      "operation": "help",
+      "passed": true
+    },
+    {
+      "operation": "obscure-stdin",
+      "passed": true
+    },
+    {
+      "operation": "copyto-local-and-json-statistics",
+      "passed": true
+    },
+    {
+      "operation": "failed-copy-exit-status",
+      "passed": true
+    }
+  ]
+}

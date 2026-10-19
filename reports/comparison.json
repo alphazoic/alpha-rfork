@@ -1,0 +1,13 @@
+{
+  "rforkMBps": 8.556563992429524,
+  "fastReferenceMBps": 9.982909909072314,
+  "projected10GiB": {
+    "rforkSeconds": 1254.875,
+    "wait5ThenFastSeconds": 1375.5800000000002,
+    "wait10ThenFastSeconds": 1675.5800000000002
+  },
+  "breakEvenGiB": {
+    "300": 16.732201121057486,
+    "600": 33.46440224211497
+  }
+}

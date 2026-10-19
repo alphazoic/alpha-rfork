@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+RFORK_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+python3 "$RFORK_ROOT/bin/verify-upstream.py"
+CGO_ENABLED=0 RFORK_WORKDIR="$RFORK_ROOT/build/upstream-source" \
+  "$RFORK_ROOT/bin/rfork-go" build -mod=readonly -trimpath -buildvcs=false \
+  -ldflags '-s -w -X github.com/rclone/rclone/fs.Version=v1.75.2-stock' \
+  -o "$RFORK_ROOT/build/rclone-v1.75.2-stock" .

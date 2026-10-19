@@ -1,3 +1,12 @@
+# rfork
+
+Experimental fork of rclone 1.75.2 with concurrent native MEGA chunk uploads.
+See [RFORK_README.md](RFORK_README.md) for builds and usage, and
+[validation results](reports/VALIDATION.md) for integrity/performance evidence
+and target limitations. The upstream documentation follows below.
+
+---
+
 <!-- markdownlint-disable-next-line first-line-heading no-inline-html -->
 [<img src="https://rclone.org/img/logo_on_light__horizontal_color.svg" width="50%" alt="rclone logo">](https://rclone.org/#gh-light-mode-only)
 <!-- markdownlint-disable-next-line no-inline-html -->

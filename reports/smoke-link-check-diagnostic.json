@@ -1,0 +1,1072 @@
+{
+  "phase": "smoke",
+  "startedAt": "2026-10-19T07:26:03.298Z",
+  "remoteFolder": "rfork-test-smoke-059be281-0dc6-47e9-a8a8-c18984b0f4c4",
+  "runs": [
+    {
+      "name": "boundary-0.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-0.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 3.974,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 4566
+      },
+      "resource": {
+        "peakRssKiB": 76392,
+        "cpuSecondsSampled": 0.1,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.76,
+          "bytes": 0,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.76,
+          "bytes": 0,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.964,
+          "bytes": 0,
+          "errors": 0,
+          "speed": 0
+        }
+      ]
+    },
+    {
+      "name": "boundary-1.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-1.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 3.927,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 2.546473134708429e-7,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 4569
+      },
+      "resource": {
+        "peakRssKiB": 77256,
+        "cpuSecondsSampled": 0.09,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.709,
+          "bytes": 1,
+          "errors": 0,
+          "speed": 0.9999086023542934
+        },
+        {
+          "seconds": 3.709,
+          "bytes": 1,
+          "errors": 0,
+          "speed": 0.9999086023542934
+        },
+        {
+          "seconds": 3.921,
+          "bytes": 1,
+          "errors": 0,
+          "speed": 0.4999543011771467
+        }
+      ]
+    },
+    {
+      "name": "boundary-15.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-15.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 4.686,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.000003201024327784891,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 5036
+      },
+      "resource": {
+        "peakRssKiB": 75296,
+        "cpuSecondsSampled": 0.09,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.56,
+          "bytes": 15,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.56,
+          "bytes": 15,
+          "errors": 0,
+          "speed": 7.4998148145725985
+        },
+        {
+          "seconds": 4.56,
+          "bytes": 15,
+          "errors": 0,
+          "speed": 7.4998148145725985
+        },
+        {
+          "seconds": 4.683,
+          "bytes": 15,
+          "errors": 0,
+          "speed": 4.999876543048399
+        }
+      ]
+    },
+    {
+      "name": "boundary-16.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-16.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 4.296,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.0000037243947858472992,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 5569
+      },
+      "resource": {
+        "peakRssKiB": 74984,
+        "cpuSecondsSampled": 0.21,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 3.074,
+          "bytes": 16,
+          "errors": 0,
+          "speed": 15.997943064470487
+        },
+        {
+          "seconds": 4.068,
+          "bytes": 16,
+          "errors": 0,
+          "speed": 15.997943064470487
+        },
+        {
+          "seconds": 4.282,
+          "bytes": 16,
+          "errors": 0,
+          "speed": 7.9989715322352435
+        }
+      ]
+    },
+    {
+      "name": "boundary-17.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-17.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 3.75,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.000004533333333333333,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 5038
+      },
+      "resource": {
+        "peakRssKiB": 68636,
+        "cpuSecondsSampled": 0.17,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.522,
+          "bytes": 17,
+          "errors": 0,
+          "speed": 16.998414489886873
+        },
+        {
+          "seconds": 3.524,
+          "bytes": 17,
+          "errors": 0,
+          "speed": 16.998414489886873
+        },
+        {
+          "seconds": 3.742,
+          "bytes": 17,
+          "errors": 0,
+          "speed": 8.499207244943436
+        }
+      ]
+    },
+    {
+      "name": "boundary-131071.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-131071.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 4.55,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.02880681318681319,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 136430
+      },
+      "resource": {
+        "peakRssKiB": 75200,
+        "cpuSecondsSampled": 0.21,
+        "peakBulkConnections": 1,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.847,
+          "bytes": 131071,
+          "errors": 0,
+          "speed": 131067.95804376176
+        },
+        {
+          "seconds": 3.846,
+          "bytes": 131071,
+          "errors": 0,
+          "speed": 65533.97902188088
+        },
+        {
+          "seconds": 4.538,
+          "bytes": 131071,
+          "errors": 0,
+          "speed": 65533.97902188088
+        }
+      ]
+    },
+    {
+      "name": "boundary-131072.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-131072.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 4.397,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.02980941551057539,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 136694
+      },
+      "resource": {
+        "peakRssKiB": 75264,
+        "cpuSecondsSampled": 0.15,
+        "peakBulkConnections": 1,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.589,
+          "bytes": 131072,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.589,
+          "bytes": 131072,
+          "errors": 0,
+          "speed": 131063.18285543658
+        },
+        {
+          "seconds": 4.386,
+          "bytes": 131072,
+          "errors": 0,
+          "speed": 65531.59142771829
+        }
+      ]
+    },
+    {
+      "name": "boundary-131073.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-131073.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 3.773,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.034739729658097004,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 137854
+      },
+      "resource": {
+        "peakRssKiB": 74512,
+        "cpuSecondsSampled": 0.09,
+        "peakBulkConnections": 1,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.508,
+          "bytes": 131073,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.508,
+          "bytes": 131073,
+          "errors": 0,
+          "speed": 131068.85520959171
+        },
+        {
+          "seconds": 3.77,
+          "bytes": 131073,
+          "errors": 0,
+          "speed": 65534.427604795856
+        }
+      ]
+    },
+    {
+      "name": "boundary-8388639.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "boundary-8388639.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 9.709,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.8640064888248018,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 8413385
+      },
+      "resource": {
+        "peakRssKiB": 89608,
+        "cpuSecondsSampled": 0.17,
+        "peakBulkConnections": 4,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.553,
+          "bytes": 1966080,
+          "errors": 0,
+          "speed": 1966034.1973013054
+        },
+        {
+          "seconds": 3.554,
+          "bytes": 1966080,
+          "errors": 0,
+          "speed": 1966034.1973013054
+        },
+        {
+          "seconds": 4.553,
+          "bytes": 1966080,
+          "errors": 0,
+          "speed": 655344.7324337685
+        },
+        {
+          "seconds": 5.554,
+          "bytes": 3670016,
+          "errors": 0,
+          "speed": 917493.8754176465
+        },
+        {
+          "seconds": 6.553,
+          "bytes": 5767168,
+          "errors": 0,
+          "speed": 1153424.7302613165
+        },
+        {
+          "seconds": 7.553,
+          "bytes": 8388639,
+          "errors": 0,
+          "speed": 1398100.0155819461
+        },
+        {
+          "seconds": 8.553,
+          "bytes": 8388639,
+          "errors": 0,
+          "speed": 1198371.4419273825
+        },
+        {
+          "seconds": 9.553,
+          "bytes": 8388639,
+          "errors": 0,
+          "speed": 1048575.0116864596
+        },
+        {
+          "seconds": 9.706,
+          "bytes": 8388639,
+          "errors": 0,
+          "speed": 1048575.0116864596
+        }
+      ]
+    },
+    {
+      "name": "workers-1.bin",
+      "concurrency": 1,
+      "binary": "rfork-linux-amd64",
+      "label": "workers-1.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 28.559,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.2937296473966175,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 8409614
+      },
+      "resource": {
+        "peakRssKiB": 91484,
+        "cpuSecondsSampled": 0.13,
+        "peakBulkConnections": 1,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 22.196,
+          "bytes": 393216,
+          "errors": 0,
+          "speed": 393202.49074202555
+        },
+        {
+          "seconds": 23.195,
+          "bytes": 786432,
+          "errors": 0,
+          "speed": 393209.9502132196
+        },
+        {
+          "seconds": 24.195,
+          "bytes": 1966080,
+          "errors": 0,
+          "speed": 655354.2582927166
+        },
+        {
+          "seconds": 25.195,
+          "bytes": 3670016,
+          "errors": 0,
+          "speed": 917499.6575109006
+        },
+        {
+          "seconds": 26.195,
+          "bytes": 6815744,
+          "errors": 0,
+          "speed": 1363145.1485897112
+        },
+        {
+          "seconds": 27.195,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 1398101.0871242078
+        },
+        {
+          "seconds": 28.196,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 1198372.360392178
+        },
+        {
+          "seconds": 28.556,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 1198372.360392178
+        }
+      ]
+    },
+    {
+      "name": "workers-2.bin",
+      "concurrency": 2,
+      "binary": "rfork-linux-amd64",
+      "label": "workers-2.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 34.29,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.2446376494604841,
+      "sustainedMBps": 0,
+      "sentByPort": {
+        "80": 140,
+        "443": 8441563
+      },
+      "resource": {
+        "peakRssKiB": 89088,
+        "cpuSecondsSampled": 0.15,
+        "peakBulkConnections": 2,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 22.234,
+          "bytes": 786432,
+          "errors": 0,
+          "speed": 786341.3206915805
+        },
+        {
+          "seconds": 23.234,
+          "bytes": 786432,
+          "errors": 0,
+          "speed": 393170.66034579027
+        },
+        {
+          "seconds": 24.234,
+          "bytes": 1966080,
+          "errors": 0,
+          "speed": 393170.66034579027
+        },
+        {
+          "seconds": 25.234,
+          "bytes": 2752512,
+          "errors": 0,
+          "speed": 688105.4820527714
+        },
+        {
+          "seconds": 26.234,
+          "bytes": 4718592,
+          "errors": 0,
+          "speed": 688105.4820527714
+        },
+        {
+          "seconds": 27.234,
+          "bytes": 7864320,
+          "errors": 0,
+          "speed": 943699.9420950694
+        },
+        {
+          "seconds": 28.235,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 1198358.663965888
+        },
+        {
+          "seconds": 29.234,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 1198358.663965888
+        },
+        {
+          "seconds": 30.234,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 1048563.830970152
+        },
+        {
+          "seconds": 31.234,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 932056.7386401352
+        },
+        {
+          "seconds": 32.234,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 838851.0647761216
+        },
+        {
+          "seconds": 33.234,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 699042.5539801012
+        },
+        {
+          "seconds": 34.234,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 699042.5539801012
+        },
+        {
+          "seconds": 34.287,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 645270.0498277857
+        }
+      ]
+    },
+    {
+      "name": "workers-8.bin",
+      "concurrency": 8,
+      "binary": "rfork-linux-amd64",
+      "label": "workers-8.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 6.647,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 1.2620166992628252,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 8491016
+      },
+      "resource": {
+        "peakRssKiB": 93448,
+        "cpuSecondsSampled": 0.18,
+        "peakBulkConnections": 8,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.327,
+          "bytes": 5767168,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.327,
+          "bytes": 5767168,
+          "errors": 0,
+          "speed": 5766995.030518049
+        },
+        {
+          "seconds": 4.327,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 2796144.6685012192
+        },
+        {
+          "seconds": 5.326,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 2796144.6685012192
+        },
+        {
+          "seconds": 6.327,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 1677686.8011007316
+        },
+        {
+          "seconds": 6.645,
+          "bytes": 8388625,
+          "errors": 0,
+          "speed": 1677686.8011007316
+        }
+      ]
+    },
+    {
+      "name": "overwrite.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "overwrite-first",
+      "code": 0,
+      "signal": null,
+      "seconds": 4.763,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.22015389460424103,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 1061287
+      },
+      "resource": {
+        "peakRssKiB": 77104,
+        "cpuSecondsSampled": 0.11,
+        "peakBulkConnections": 4,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.768,
+          "bytes": 1048593,
+          "errors": 0,
+          "speed": 1048541.4736234446
+        },
+        {
+          "seconds": 3.769,
+          "bytes": 1048593,
+          "errors": 0,
+          "speed": 524270.7368117223
+        },
+        {
+          "seconds": 4.761,
+          "bytes": 1048593,
+          "errors": 0,
+          "speed": 524270.7368117223
+        }
+      ]
+    },
+    {
+      "name": "overwrite.bin",
+      "concurrency": 4,
+      "binary": "rfork-linux-amd64",
+      "label": "overwrite-replacement",
+      "code": 0,
+      "signal": null,
+      "seconds": 24.615,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.04260032500507821,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 1068722
+      },
+      "resource": {
+        "peakRssKiB": 75836,
+        "cpuSecondsSampled": 0.12,
+        "peakBulkConnections": 4,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 22.267,
+          "bytes": 1048607,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 23.267,
+          "bytes": 1048607,
+          "errors": 0,
+          "speed": 1048560.156623563
+        },
+        {
+          "seconds": 24.267,
+          "bytes": 1048607,
+          "errors": 0,
+          "speed": 524280.0783117815
+        },
+        {
+          "seconds": 24.613,
+          "bytes": 1048607,
+          "errors": 0,
+          "speed": 349520.05220785434
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "kind": "sha256",
+      "name": "boundary-0.bin",
+      "independentClient": true,
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true,
+      "seconds": 1.405
+    },
+    {
+      "kind": "sha256",
+      "name": "boundary-1.bin",
+      "independentClient": true,
+      "expected": "ef6cbd2161eaea7943ce8693b9824d23d1793ffb1c0fca05b600d3899b44c977",
+      "actual": "ef6cbd2161eaea7943ce8693b9824d23d1793ffb1c0fca05b600d3899b44c977",
+      "matches": true,
+      "seconds": 2.538
+    },
+    {
+      "kind": "verificationClientTransient",
+      "name": "boundary-15.bin",
+      "attempt": 1,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 19.774,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 517
+      },
+      "resource": {
+        "peakRssKiB": 5604,
+        "cpuSecondsSampled": 0.01,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Can't read filesystem info from mega.nz: API call 'f' failed: HTTP POST failed: CURL error: SSL connect error\n"
+    },
+    {
+      "kind": "verificationClientTransient",
+      "name": "boundary-15.bin",
+      "attempt": 2,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 19.768,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 517
+      },
+      "resource": {
+        "peakRssKiB": 5604,
+        "cpuSecondsSampled": 0.01,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Can't read filesystem info from mega.nz: API call 'f' failed: HTTP POST failed: CURL error: SSL connect error\n"
+    },
+    {
+      "kind": "sha256",
+      "name": "boundary-15.bin",
+      "independentClient": true,
+      "expected": "162843f2020338c7c542a14131027433166f1ee9a7960c1740879fc01c6cc5fd",
+      "actual": "162843f2020338c7c542a14131027433166f1ee9a7960c1740879fc01c6cc5fd",
+      "matches": true,
+      "seconds": 2.201
+    },
+    {
+      "kind": "sha256",
+      "name": "boundary-16.bin",
+      "independentClient": true,
+      "expected": "ab2cce8d57ba0c4e9735d99438452bbd25c498b3b55b9a5fc90e0722a62b9923",
+      "actual": "ab2cce8d57ba0c4e9735d99438452bbd25c498b3b55b9a5fc90e0722a62b9923",
+      "matches": true,
+      "seconds": 2.123
+    },
+    {
+      "kind": "sha256",
+      "name": "boundary-17.bin",
+      "independentClient": true,
+      "expected": "1ff5762e37baf534f22ca5b8c444a9637884399dd0c910f6440d4f69863f85f4",
+      "actual": "1ff5762e37baf534f22ca5b8c444a9637884399dd0c910f6440d4f69863f85f4",
+      "matches": true,
+      "seconds": 1.919
+    },
+    {
+      "kind": "sha256",
+      "name": "boundary-131071.bin",
+      "independentClient": true,
+      "expected": "8a875c8e88687a21ba95484ff60c75e0216b4bb6a84b5f4f66a51cdb61a756d9",
+      "actual": "8a875c8e88687a21ba95484ff60c75e0216b4bb6a84b5f4f66a51cdb61a756d9",
+      "matches": true,
+      "seconds": 2.497
+    },
+    {
+      "kind": "verificationClientTransient",
+      "name": "boundary-131072.bin",
+      "attempt": 1,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 19.683,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 517
+      },
+      "resource": {
+        "peakRssKiB": 5596,
+        "cpuSecondsSampled": 0.02,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Can't read filesystem info from mega.nz: API call 'f' failed: HTTP POST failed: CURL error: SSL connect error\n"
+    },
+    {
+      "kind": "sha256",
+      "name": "boundary-131072.bin",
+      "independentClient": true,
+      "expected": "cac1b6b9256804cf97113ade9a113bf3dbbe0e7299eeaa6a5464e847c8c5bc78",
+      "actual": "cac1b6b9256804cf97113ade9a113bf3dbbe0e7299eeaa6a5464e847c8c5bc78",
+      "matches": true,
+      "seconds": 2.96
+    },
+    {
+      "kind": "sha256",
+      "name": "boundary-131073.bin",
+      "independentClient": true,
+      "expected": "429210c376839d29bfc80dd0f00042eb01d1093f2aeafaff8a8fdcaab851ccd7",
+      "actual": "429210c376839d29bfc80dd0f00042eb01d1093f2aeafaff8a8fdcaab851ccd7",
+      "matches": true,
+      "seconds": 2.406
+    },
+    {
+      "kind": "sha256",
+      "name": "boundary-8388639.bin",
+      "independentClient": true,
+      "expected": "fbe8d51dee741379ec47aaa0dd8561c825b17b99cc7a0079a47b3a6ce4539ad2",
+      "actual": "fbe8d51dee741379ec47aaa0dd8561c825b17b99cc7a0079a47b3a6ce4539ad2",
+      "matches": true,
+      "seconds": 3.748
+    },
+    {
+      "kind": "sha256",
+      "name": "workers-1.bin",
+      "independentClient": true,
+      "expected": "664ff6cdcbcbb26dcf20aac36b11bbf2debc6aedd78a1bef0c9f81ad37d26622",
+      "actual": "664ff6cdcbcbb26dcf20aac36b11bbf2debc6aedd78a1bef0c9f81ad37d26622",
+      "matches": true,
+      "seconds": 3.866
+    },
+    {
+      "kind": "sha256",
+      "name": "workers-2.bin",
+      "independentClient": true,
+      "expected": "dc99ed8a4f58aab77d859c2751ecf1a29b0d649a46eace7fbe5cb598585a6af7",
+      "actual": "dc99ed8a4f58aab77d859c2751ecf1a29b0d649a46eace7fbe5cb598585a6af7",
+      "matches": true,
+      "seconds": 4.059
+    },
+    {
+      "kind": "sha256",
+      "name": "workers-8.bin",
+      "independentClient": true,
+      "expected": "3e147120e15a9a0fcd4a92a751dcdb1a1fa426aa72902428684828319c060650",
+      "actual": "3e147120e15a9a0fcd4a92a751dcdb1a1fa426aa72902428684828319c060650",
+      "matches": true,
+      "seconds": 3.642
+    },
+    {
+      "kind": "sha256",
+      "name": "overwrite.bin",
+      "independentClient": true,
+      "expected": "01c4cfcadd53185b4f0764626a898dddaf3d9f5c1a455bcd6f3889a023a20d0a",
+      "actual": "01c4cfcadd53185b4f0764626a898dddaf3d9f5c1a455bcd6f3889a023a20d0a",
+      "matches": true,
+      "seconds": 3.05
+    },
+    {
+      "kind": "link",
+      "valid": false
+    }
+  ],
+  "cleanup": {
+    "remotePurgeSucceeded": true,
+    "remoteAbsenceVerified": true,
+    "localPayloadsRemoved": true
+  },
+  "route": {
+    "interface": "proton0",
+    "gateway": null
+  },
+  "forkSHA256": "49f857fc6e1d4f5da54e70093fc971a5e02badefa7a619ca53d673777f02858c",
+  "stockSHA256": "d66b87f30c2b263d22135d19379b7d3019513f87f37fa893ffd8270186ffdb40",
+  "version": "rfork v1.75.2-rfork.0.1.0-alpha.1\n- os/version: debian 13.7 (64 bit)\n- os/kernel: 6.12.111+deb13-amd64 (x86_64)\n- os/type: linux\n- os/arch: amd64\n- go/version: go1.26.9\n- go/linking: static\n- go/tags: none",
+  "quotaBefore": {
+    "total": 21474836480,
+    "used": 1627359280,
+    "free": 19847477200
+  },
+  "verifiedAvailableBytes": 19847477200,
+  "error": "Invalid file link",
+  "success": false,
+  "finishedAt": "2026-10-19T07:31:06.901Z"
+}

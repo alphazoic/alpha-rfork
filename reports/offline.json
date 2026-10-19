@@ -1,0 +1,18 @@
+{
+  "unitSuite": {
+    "passedPackages": 180,
+    "failedPackages": 0,
+    "config": "/notfound",
+    "command": "RCLONE_CONFIG=/notfound bin/rfork-go test -timeout 20m ./..."
+  },
+  "raceChecks": {
+    "backendUploadWorkerTests": "passed",
+    "localGoMegaDependencyTests": "passed"
+  },
+  "lint": {
+    "parentTouchedPackages": "0 issues",
+    "dependencyChangedLines": "0 issues",
+    "version": "2.15.0"
+  },
+  "sourceDiffWhitespace": "passed"
+}

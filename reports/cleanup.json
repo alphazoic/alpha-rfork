@@ -1,0 +1,28 @@
+{
+  "phase": "cleanup",
+  "startedAt": "2026-10-19T07:09:29.893Z",
+  "remoteFolder": "rfork-test-probe-05bdb72f-01c2-4afb-92f2-8f663d1edcc1",
+  "runs": [],
+  "checks": [],
+  "cleanup": {
+    "remotePurgeSucceeded": true,
+    "remoteAbsenceVerified": true,
+    "localPayloadsRemoved": true
+  },
+  "route": {
+    "interface": "proton0",
+    "gateway": null
+  },
+  "forkSHA256": "fe431b3f031e94d9abf616e9f9d93281b789b30d3f1678641a42cdcc5c45b463",
+  "stockSHA256": "d66b87f30c2b263d22135d19379b7d3019513f87f37fa893ffd8270186ffdb40",
+  "version": "rfork v1.75.2-rfork.0.1.0-alpha.1\n- os/version: debian 13.7 (64 bit)\n- os/kernel: 6.12.111+deb13-amd64 (x86_64)\n- os/type: linux\n- os/arch: amd64\n- go/version: go1.26.9\n- go/linking: static\n- go/tags: none",
+  "success": true,
+  "quotaBefore": {
+    "total": 21474836480,
+    "used": 23606277438,
+    "free": 9223372036854776000
+  },
+  "verifiedAvailableBytes": -2131440958,
+  "error": "Need at least 8 GiB actual free space for isolated benchmark",
+  "finishedAt": "2026-10-19T07:09:36.185Z"
+}

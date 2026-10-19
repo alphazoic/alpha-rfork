@@ -1,0 +1,515 @@
+{
+  "phase": "probe",
+  "startedAt": "2026-10-19T07:14:53.353Z",
+  "remoteFolder": "rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360",
+  "runs": [
+    {
+      "name": "stock-0.bin",
+      "label": "stock-0.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 3.95,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 126,
+        "443": 4498
+      },
+      "resource": {
+        "peakRssKiB": 75656,
+        "cpuSecondsSampled": 0.09,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 3.064,
+          "bytes": 0,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.942,
+          "bytes": 0,
+          "errors": 0,
+          "speed": 0
+        }
+      ]
+    },
+    {
+      "name": "rfork-0.bin",
+      "label": "rfork-0.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 3.883,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 4568
+      },
+      "resource": {
+        "peakRssKiB": 73756,
+        "cpuSecondsSampled": 0.11,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.688,
+          "bytes": 0,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.688,
+          "bytes": 0,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.88,
+          "bytes": 0,
+          "errors": 0,
+          "speed": 0
+        }
+      ]
+    },
+    {
+      "name": "stock-1.bin",
+      "label": "stock-1.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 3.53,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 2.8328611898017e-7,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 126,
+        "443": 4936
+      },
+      "resource": {
+        "peakRssKiB": 75800,
+        "cpuSecondsSampled": 0.1,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.538,
+          "bytes": 1,
+          "errors": 0,
+          "speed": 0.9999710758366314
+        },
+        {
+          "seconds": 3.526,
+          "bytes": 1,
+          "errors": 0,
+          "speed": 0.9999710758366314
+        }
+      ]
+    },
+    {
+      "name": "rfork-1.bin",
+      "label": "rfork-1.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 3.979,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 2.513194269917065e-7,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 4567
+      },
+      "resource": {
+        "peakRssKiB": 73932,
+        "cpuSecondsSampled": 0.09,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.712,
+          "bytes": 1,
+          "errors": 0,
+          "speed": 0
+        },
+        {
+          "seconds": 3.713,
+          "bytes": 1,
+          "errors": 0,
+          "speed": 0.49998501844890714
+        },
+        {
+          "seconds": 3.975,
+          "bytes": 1,
+          "errors": 0,
+          "speed": 0.49998501844890714
+        }
+      ]
+    },
+    {
+      "name": "stock-1048576.bin",
+      "label": "stock-1048576.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 5.051,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.20759770342506434,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 126,
+        "443": 792665
+      },
+      "resource": {
+        "peakRssKiB": 79144,
+        "cpuSecondsSampled": 0.12,
+        "peakBulkConnections": 1,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.708,
+          "bytes": 131072,
+          "errors": 0,
+          "speed": 131069.40652965299
+        },
+        {
+          "seconds": 3.706,
+          "bytes": 786432,
+          "errors": 0,
+          "speed": 393214.761919557
+        },
+        {
+          "seconds": 4.706,
+          "bytes": 1048576,
+          "errors": 0,
+          "speed": 393214.761919557
+        },
+        {
+          "seconds": 5.051,
+          "bytes": 1048576,
+          "errors": 0,
+          "speed": 349524.41803107184
+        }
+      ]
+    },
+    {
+      "name": "rfork-1048576.bin",
+      "label": "rfork-1048576.bin",
+      "code": 0,
+      "signal": null,
+      "seconds": 4.393,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": 0.23869246528568178,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "80": 140,
+        "443": 1061533
+      },
+      "resource": {
+        "peakRssKiB": 77684,
+        "cpuSecondsSampled": 0.14,
+        "peakBulkConnections": 4,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.538,
+          "bytes": 1048576,
+          "errors": 0,
+          "speed": 1048542.5703657715
+        },
+        {
+          "seconds": 3.538,
+          "bytes": 1048576,
+          "errors": 0,
+          "speed": 524271.28518288577
+        },
+        {
+          "seconds": 4.39,
+          "bytes": 1048576,
+          "errors": 0,
+          "speed": 524271.28518288577
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "kind": "downloadError",
+      "name": "stock-0.bin",
+      "independentClient": true,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 0.02,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {},
+      "resource": {
+        "peakRssKiB": 0,
+        "cpuSecondsSampled": 0,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Download failed for '/Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/stock-0.bin': Remote file not found: /Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/stock-0.bin\n"
+    },
+    {
+      "kind": "sha256",
+      "name": "stock-0.bin",
+      "independentClient": false,
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true,
+      "seconds": 1.848
+    },
+    {
+      "kind": "downloadError",
+      "name": "rfork-0.bin",
+      "independentClient": true,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 0.023,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {},
+      "resource": {
+        "peakRssKiB": 0,
+        "cpuSecondsSampled": 0,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Download failed for '/Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/rfork-0.bin': Remote file not found: /Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/rfork-0.bin\n"
+    },
+    {
+      "kind": "sha256",
+      "name": "rfork-0.bin",
+      "independentClient": false,
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true,
+      "seconds": 1.642
+    },
+    {
+      "kind": "downloadError",
+      "name": "stock-1.bin",
+      "independentClient": true,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 0.022,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {},
+      "resource": {
+        "peakRssKiB": 0,
+        "cpuSecondsSampled": 0,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Download failed for '/Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/stock-1.bin': Remote file not found: /Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/stock-1.bin\n"
+    },
+    {
+      "kind": "sha256",
+      "name": "stock-1.bin",
+      "independentClient": false,
+      "expected": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+      "actual": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+      "matches": true,
+      "seconds": 3.616
+    },
+    {
+      "kind": "downloadError",
+      "name": "rfork-1.bin",
+      "independentClient": true,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 0.023,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {},
+      "resource": {
+        "peakRssKiB": 0,
+        "cpuSecondsSampled": 0,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Download failed for '/Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/rfork-1.bin': Remote file not found: /Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/rfork-1.bin\n"
+    },
+    {
+      "kind": "sha256",
+      "name": "rfork-1.bin",
+      "independentClient": false,
+      "expected": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+      "actual": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+      "matches": true,
+      "seconds": 3.076
+    },
+    {
+      "kind": "downloadError",
+      "name": "stock-1048576.bin",
+      "independentClient": true,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 0.02,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {},
+      "resource": {
+        "peakRssKiB": 0,
+        "cpuSecondsSampled": 0,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Download failed for '/Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/stock-1048576.bin': Remote file not found: /Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/stock-1048576.bin\n"
+    },
+    {
+      "kind": "sha256",
+      "name": "stock-1048576.bin",
+      "independentClient": false,
+      "expected": "2936ba5aab82375a24c8f5de92a5929388d8f6932e2653cf15e3588f2fedc2f1",
+      "actual": "2936ba5aab82375a24c8f5de92a5929388d8f6932e2653cf15e3588f2fedc2f1",
+      "matches": true,
+      "seconds": 4.398
+    },
+    {
+      "kind": "downloadError",
+      "name": "rfork-1048576.bin",
+      "independentClient": true,
+      "label": "",
+      "code": 1,
+      "signal": null,
+      "seconds": 0.023,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {},
+      "resource": {
+        "peakRssKiB": 0,
+        "cpuSecondsSampled": 0,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [],
+      "error": "ERROR: Download failed for '/Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/rfork-1048576.bin': Remote file not found: /Root/rfork-test-probe-a003bb19-3a97-4e5f-b77b-c931b9da9360/rfork-1048576.bin\n"
+    },
+    {
+      "kind": "sha256",
+      "name": "rfork-1048576.bin",
+      "independentClient": false,
+      "expected": "2936ba5aab82375a24c8f5de92a5929388d8f6932e2653cf15e3588f2fedc2f1",
+      "actual": "2936ba5aab82375a24c8f5de92a5929388d8f6932e2653cf15e3588f2fedc2f1",
+      "matches": true,
+      "seconds": 4.498
+    }
+  ],
+  "cleanup": {
+    "remotePurgeSucceeded": true,
+    "remoteAbsenceVerified": true,
+    "localPayloadsRemoved": true
+  },
+  "route": {
+    "interface": "proton0",
+    "gateway": null
+  },
+  "forkSHA256": "fe431b3f031e94d9abf616e9f9d93281b789b30d3f1678641a42cdcc5c45b463",
+  "stockSHA256": "d66b87f30c2b263d22135d19379b7d3019513f87f37fa893ffd8270186ffdb40",
+  "version": "rfork v1.75.2-rfork.0.1.0-alpha.1\n- os/version: debian 13.7 (64 bit)\n- os/kernel: 6.12.111+deb13-amd64 (x86_64)\n- os/type: linux\n- os/arch: amd64\n- go/version: go1.26.9\n- go/linking: static\n- go/tags: none",
+  "quotaBefore": {
+    "total": 21474836480,
+    "used": 1627359280,
+    "free": 19847477200
+  },
+  "verifiedAvailableBytes": 19847477200,
+  "success": true,
+  "finishedAt": "2026-10-19T07:15:47.753Z"
+}

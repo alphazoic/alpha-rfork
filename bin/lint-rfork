@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+RFORK_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export GOPATH="$RFORK_ROOT/.cache/go"
+export GOMODCACHE="$RFORK_ROOT/.cache/go-mod"
+export GOCACHE="$RFORK_ROOT/.cache/go-build"
+export GOLANGCI_LINT_CACHE="$RFORK_ROOT/.cache/lint"
+export GOTOOLCHAIN=go1.26.9 GOENV=off GOWORK=off
+export GOMEMLIMIT=2GiB GOGC=50
+cd -- "$RFORK_ROOT"
+"$RFORK_ROOT/build/tools/golangci-lint" run --concurrency=2 --timeout=8m ./backend/mega ./cmd ./fs
+cd -- "$RFORK_ROOT/deps/go-mega"
+# The full baseline hash also works in clones whose tags were not pushed.
+"$RFORK_ROOT/build/tools/golangci-lint" run --config="$RFORK_ROOT/.golangci-dependency.yml" --new-from-rev=c4200eef5cb4d3d0ec930fd7e6394059db80fa69 --concurrency=2 --timeout=3m ./...

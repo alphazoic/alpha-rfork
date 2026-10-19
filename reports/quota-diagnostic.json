@@ -1,0 +1,232 @@
+{
+  "phase": "probe",
+  "startedAt": "2026-10-19T07:07:32.134Z",
+  "remoteFolder": "rfork-test-probe-05bdb72f-01c2-4afb-92f2-8f663d1edcc1",
+  "runs": [
+    {
+      "name": "stock-0.bin",
+      "label": "stock-0.bin",
+      "code": 1,
+      "signal": null,
+      "seconds": 21.932,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 3386
+      },
+      "resource": {
+        "peakRssKiB": 73128,
+        "cpuSecondsSampled": 0.1,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 21.928,
+          "bytes": 0,
+          "errors": 1,
+          "speed": 0
+        }
+      ],
+      "error": "{\"time\":\"2026-10-19T14:08:02.283830851+07:00\",\"level\":\"error\",\"msg\":\"Failed to copy: upload file failed to create session: Request over quota\",\"object\":\"probe-0.bin\",\"objectType\":\"*local.Object\",\"source\":\"operations/copy.go:349\"}\n{\"time\":\"2026-10-19T14:08:02.291058221+07:00\",\"level\":\"error\",\"msg\":\"Attempt 1/1 failed with 1 errors and: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:283\"}\n{\"time\":\"2026-10-19T14:08:02.292807949+07:00\",\"level\":\"notice\",\"msg\":\"\\nTransferred:   \\t          0 B / 0 B, -, 0 B/s, ETA -\\nErrors:                 1 (retrying may help)\\nElapsed time:         0.2s\\n\\n\",\"stats\":{\"bytes\":0,\"checks\":0,\"deletedDirs\":0,\"deletes\":0,\"elapsedTime\":0.256345704,\"errors\":1,\"eta\":null,\"fatalError\":false,\"lastError\":\"upload file failed to create session: Request over quota\",\"listed\":0,\"renames\":0,\"retryError\":true,\"serverSideCopies\":0,\"serverSideCopyBytes\":0,\"serverSideMoveBytes\":0,\"serverSideMoves\":0,\"speed\":0,\"totalBytes\":0,\"totalChecks\":0,\"totalTransfers\":0,\"transferTime\":0.254573175,\"transfers\":0},\"source\":\"accounting/stats.go:549\"}\n{\"time\":\"2026-10-19T14:08:02.292887531+07:00\",\"level\":\"notice\",\"msg\":\"Failed to copyto: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:334\"}\n"
+    },
+    {
+      "name": "rfork-0.bin",
+      "label": "rfork-0.bin",
+      "code": 1,
+      "signal": null,
+      "seconds": 2.044,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 1874
+      },
+      "resource": {
+        "peakRssKiB": 73488,
+        "cpuSecondsSampled": 0.08,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.044,
+          "bytes": 0,
+          "errors": 1,
+          "speed": 0
+        }
+      ],
+      "error": "{\"time\":\"2026-10-19T14:08:04.312427369+07:00\",\"level\":\"error\",\"msg\":\"Failed to copy: upload file failed to create session: Request over quota\",\"object\":\"probe-0.bin\",\"objectType\":\"*local.Object\",\"source\":\"operations/copy.go:349\"}\n{\"time\":\"2026-10-19T14:08:04.312596176+07:00\",\"level\":\"error\",\"msg\":\"Attempt 1/1 failed with 1 errors and: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:283\"}\n{\"time\":\"2026-10-19T14:08:04.312659908+07:00\",\"level\":\"notice\",\"msg\":\"\\nTransferred:   \\t          0 B / 0 B, -, 0 B/s, ETA -\\nErrors:                 1 (retrying may help)\\nElapsed time:         0.2s\\n\\n\",\"stats\":{\"bytes\":0,\"checks\":0,\"deletedDirs\":0,\"deletes\":0,\"elapsedTime\":0.239038811,\"errors\":1,\"eta\":null,\"fatalError\":false,\"lastError\":\"upload file failed to create session: Request over quota\",\"listed\":0,\"renames\":0,\"retryError\":true,\"serverSideCopies\":0,\"serverSideCopyBytes\":0,\"serverSideMoveBytes\":0,\"serverSideMoves\":0,\"speed\":0,\"totalBytes\":0,\"totalChecks\":0,\"totalTransfers\":0,\"transferTime\":0.238969379,\"transfers\":0},\"source\":\"accounting/stats.go:549\"}\n{\"time\":\"2026-10-19T14:08:04.312730046+07:00\",\"level\":\"notice\",\"msg\":\"Failed to copyto: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:334\"}\n"
+    },
+    {
+      "name": "stock-1.bin",
+      "label": "stock-1.bin",
+      "code": 1,
+      "signal": null,
+      "seconds": 2.041,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 1860
+      },
+      "resource": {
+        "peakRssKiB": 74824,
+        "cpuSecondsSampled": 0.09,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 2.041,
+          "bytes": 0,
+          "errors": 1,
+          "speed": 0
+        }
+      ],
+      "error": "{\"time\":\"2026-10-19T14:08:06.367686604+07:00\",\"level\":\"error\",\"msg\":\"Failed to copy: upload file failed to create session: Request over quota\",\"object\":\"probe-1.bin\",\"objectType\":\"*local.Object\",\"source\":\"operations/copy.go:349\"}\n{\"time\":\"2026-10-19T14:08:06.367771047+07:00\",\"level\":\"error\",\"msg\":\"Attempt 1/1 failed with 1 errors and: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:283\"}\n{\"time\":\"2026-10-19T14:08:06.367818954+07:00\",\"level\":\"notice\",\"msg\":\"\\nTransferred:   \\t          0 B / 0 B, -, 0 B/s, ETA -\\nErrors:                 1 (retrying may help)\\nElapsed time:         0.2s\\n\\n\",\"stats\":{\"bytes\":0,\"checks\":0,\"deletedDirs\":0,\"deletes\":0,\"elapsedTime\":0.237901661,\"errors\":1,\"eta\":null,\"fatalError\":false,\"lastError\":\"upload file failed to create session: Request over quota\",\"listed\":0,\"renames\":0,\"retryError\":true,\"serverSideCopies\":0,\"serverSideCopyBytes\":0,\"serverSideMoveBytes\":0,\"serverSideMoves\":0,\"speed\":0,\"totalBytes\":0,\"totalChecks\":0,\"totalTransfers\":0,\"transferTime\":0.237841863,\"transfers\":0},\"source\":\"accounting/stats.go:549\"}\n{\"time\":\"2026-10-19T14:08:06.367861205+07:00\",\"level\":\"notice\",\"msg\":\"Failed to copyto: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:334\"}\n"
+    },
+    {
+      "name": "rfork-1.bin",
+      "label": "rfork-1.bin",
+      "code": 1,
+      "signal": null,
+      "seconds": 1.954,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 1874
+      },
+      "resource": {
+        "peakRssKiB": 73468,
+        "cpuSecondsSampled": 0.07,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 1.95,
+          "bytes": 0,
+          "errors": 1,
+          "speed": 0
+        }
+      ],
+      "error": "{\"time\":\"2026-10-19T14:08:08.338242439+07:00\",\"level\":\"error\",\"msg\":\"Failed to copy: upload file failed to create session: Request over quota\",\"object\":\"probe-1.bin\",\"objectType\":\"*local.Object\",\"source\":\"operations/copy.go:349\"}\n{\"time\":\"2026-10-19T14:08:08.338341231+07:00\",\"level\":\"error\",\"msg\":\"Attempt 1/1 failed with 1 errors and: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:283\"}\n{\"time\":\"2026-10-19T14:08:08.338384099+07:00\",\"level\":\"notice\",\"msg\":\"\\nTransferred:   \\t          0 B / 0 B, -, 0 B/s, ETA -\\nErrors:                 1 (retrying may help)\\nElapsed time:         0.2s\\n\\n\",\"stats\":{\"bytes\":0,\"checks\":0,\"deletedDirs\":0,\"deletes\":0,\"elapsedTime\":0.241779789,\"errors\":1,\"eta\":null,\"fatalError\":false,\"lastError\":\"upload file failed to create session: Request over quota\",\"listed\":0,\"renames\":0,\"retryError\":true,\"serverSideCopies\":0,\"serverSideCopyBytes\":0,\"serverSideMoveBytes\":0,\"serverSideMoves\":0,\"speed\":0,\"totalBytes\":0,\"totalChecks\":0,\"totalTransfers\":0,\"transferTime\":0.241729074,\"transfers\":0},\"source\":\"accounting/stats.go:549\"}\n{\"time\":\"2026-10-19T14:08:08.338425878+07:00\",\"level\":\"notice\",\"msg\":\"Failed to copyto: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:334\"}\n"
+    },
+    {
+      "name": "stock-1048576.bin",
+      "label": "stock-1048576.bin",
+      "code": 1,
+      "signal": null,
+      "seconds": 21.606,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 3890
+      },
+      "resource": {
+        "peakRssKiB": 72812,
+        "cpuSecondsSampled": 0.09,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 21.603,
+          "bytes": 0,
+          "errors": 1,
+          "speed": 0
+        }
+      ],
+      "error": "{\"time\":\"2026-10-19T14:08:29.946248526+07:00\",\"level\":\"error\",\"msg\":\"Failed to copy: upload file failed to create session: Request over quota\",\"object\":\"probe-1048576.bin\",\"objectType\":\"*local.Object\",\"source\":\"operations/copy.go:349\"}\n{\"time\":\"2026-10-19T14:08:29.946479277+07:00\",\"level\":\"error\",\"msg\":\"Attempt 1/1 failed with 1 errors and: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:283\"}\n{\"time\":\"2026-10-19T14:08:29.946564937+07:00\",\"level\":\"notice\",\"msg\":\"\\nTransferred:   \\t          0 B / 0 B, -, 0 B/s, ETA -\\nErrors:                 1 (retrying may help)\\nElapsed time:         0.3s\\n\\n\",\"stats\":{\"bytes\":0,\"checks\":0,\"deletedDirs\":0,\"deletes\":0,\"elapsedTime\":0.356176534,\"errors\":1,\"eta\":null,\"fatalError\":false,\"lastError\":\"upload file failed to create session: Request over quota\",\"listed\":0,\"renames\":0,\"retryError\":true,\"serverSideCopies\":0,\"serverSideCopyBytes\":0,\"serverSideMoveBytes\":0,\"serverSideMoves\":0,\"speed\":0,\"totalBytes\":0,\"totalChecks\":0,\"totalTransfers\":0,\"transferTime\":0.356070208,\"transfers\":0},\"source\":\"accounting/stats.go:549\"}\n{\"time\":\"2026-10-19T14:08:29.946633944+07:00\",\"level\":\"notice\",\"msg\":\"Failed to copyto: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:334\"}\n"
+    },
+    {
+      "name": "rfork-1048576.bin",
+      "label": "rfork-1048576.bin",
+      "code": 1,
+      "signal": null,
+      "seconds": 1.94,
+      "timedOut": false,
+      "routeChanged": false,
+      "route": {
+        "interface": "proton0",
+        "gateway": null
+      },
+      "cancelExitSeconds": null,
+      "MBps": null,
+      "sustainedMBps": null,
+      "sentByPort": {
+        "443": 1874
+      },
+      "resource": {
+        "peakRssKiB": 73632,
+        "cpuSecondsSampled": 0.09,
+        "peakBulkConnections": 0,
+        "clockTicks": 100
+      },
+      "samples": [
+        {
+          "seconds": 1.937,
+          "bytes": 0,
+          "errors": 1,
+          "speed": 0
+        }
+      ],
+      "error": "{\"time\":\"2026-10-19T14:08:31.886500098+07:00\",\"level\":\"error\",\"msg\":\"Failed to copy: upload file failed to create session: Request over quota\",\"object\":\"probe-1048576.bin\",\"objectType\":\"*local.Object\",\"source\":\"operations/copy.go:349\"}\n{\"time\":\"2026-10-19T14:08:31.886704023+07:00\",\"level\":\"error\",\"msg\":\"Attempt 1/1 failed with 1 errors and: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:283\"}\n{\"time\":\"2026-10-19T14:08:31.886823859+07:00\",\"level\":\"notice\",\"msg\":\"\\nTransferred:   \\t          0 B / 0 B, -, 0 B/s, ETA -\\nErrors:                 1 (retrying may help)\\nElapsed time:         0.2s\\n\\n\",\"stats\":{\"bytes\":0,\"checks\":0,\"deletedDirs\":0,\"deletes\":0,\"elapsedTime\":0.237093612,\"errors\":1,\"eta\":null,\"fatalError\":false,\"lastError\":\"upload file failed to create session: Request over quota\",\"listed\":0,\"renames\":0,\"retryError\":true,\"serverSideCopies\":0,\"serverSideCopyBytes\":0,\"serverSideMoveBytes\":0,\"serverSideMoves\":0,\"speed\":0,\"totalBytes\":0,\"totalChecks\":0,\"totalTransfers\":0,\"transferTime\":0.236938948,\"transfers\":0},\"source\":\"accounting/stats.go:549\"}\n{\"time\":\"2026-10-19T14:08:31.88691251+07:00\",\"level\":\"notice\",\"msg\":\"Failed to copyto: upload file failed to create session: Request over quota\",\"source\":\"cmd/cmd.go:334\"}\n"
+    }
+  ],
+  "checks": [],
+  "cleanup": {
+    "remotePurgeSucceeded": true,
+    "localPayloadsRemoved": true,
+    "remoteAbsenceVerified": true
+  },
+  "route": {
+    "interface": "proton0",
+    "gateway": null
+  },
+  "forkSHA256": "fe431b3f031e94d9abf616e9f9d93281b789b30d3f1678641a42cdcc5c45b463",
+  "stockSHA256": "d66b87f30c2b263d22135d19379b7d3019513f87f37fa893ffd8270186ffdb40",
+  "version": "rfork v1.75.2-rfork.0.1.0-alpha.1\n- os/version: debian 13.7 (64 bit)\n- os/kernel: 6.12.111+deb13-amd64 (x86_64)\n- os/type: linux\n- os/arch: amd64\n- go/version: go1.26.9\n- go/linking: static\n- go/tags: none",
+  "quotaBefore": {
+    "total": 21474836480,
+    "used": 23606277438,
+    "free": 9223372036854776000
+  },
+  "success": true,
+  "finishedAt": "2026-10-19T07:08:40.202Z",
+  "assessment": "Stock and rfork both rejected this over-quota account. The upstream Free counter overflowed; benchmark preflight now uses total minus used. This diagnostic is excluded from performance results."
+}
