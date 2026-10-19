@@ -1,5 +1,9 @@
 # rfork creation and validation plan
 
+This is the historical creation plan. The next upload development work is planned
+in [UPLOAD_IMPROVEMENT_PLAN.md](UPLOAD_IMPROVEMENT_PLAN.md); its saved baseline and
+scope take precedence over historical status statements below.
+
 Status: implementation, Linux correctness/race checks and controlled performance
 gates complete. Standalone alpha builds are complete; release packaging uses
 bin/package-rfork.py. Windows/macOS native runtime validation and M3 integration
