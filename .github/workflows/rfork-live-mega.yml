@@ -1,0 +1,59 @@
+name: rfork live MEGA
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rfork-live-mega-account
+  cancel-in-progress: false
+jobs:
+  live:
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - os: windows-latest
+            target: windows
+          - os: macos-15-intel
+            target: darwin
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.9'
+          cache: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Build native rfork and pristine stock verifier
+        run: |
+          bin/build-rfork '${{ matrix.target }}' amd64
+          bin/build-stock
+          if [[ '${{ matrix.target }}' == windows ]]; then
+            mv build/rclone-v1.75.2-stock build/rclone-v1.75.2-stock.exe
+          fi
+      - name: Live uploads, integrity, replacement and cancellation
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: python bin/live-mega.py run --target '${{ matrix.target }}'
+      - name: Retry cleanup if the test step was interrupted
+        if: always()
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: python bin/live-mega.py cleanup --target '${{ matrix.target }}'
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: rfork-live-mega-${{ matrix.target }}-amd64
+          path: |
+            build/live-mega-${{ matrix.target }}.json
+            build/rfork-${{ matrix.target }}-amd64*
+          if-no-files-found: warn

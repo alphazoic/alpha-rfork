@@ -33,7 +33,7 @@ with tarfile.open(archive) as source:
                     raise SystemExit('Invalid archive path')
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(content)
-local = {str(p.relative_to(reference)): hashlib.sha256(p.read_bytes()).hexdigest()
+local = {p.relative_to(reference).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
          for p in reference.rglob('*') if p.is_file()}
 result = {'version': 'v1.75.2', 'sourceURL': url,
           'archiveSHA256': hashlib.sha256(archive.read_bytes()).hexdigest(),

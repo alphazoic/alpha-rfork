@@ -97,6 +97,22 @@ promotion to a shipping bundle.
 
 ## Repeating live checks
 
+For native Windows and Intel macOS checks, add repository Actions secrets
+`RFORK_MEGA_EMAIL` and `RFORK_MEGA_PASSWORD` for a dedicated testing account.
+Manually run **rfork live MEGA** from the Actions tab. The two platforms run
+sequentially. Each builds rfork and a pristine stock 1.75.2 download verifier,
+uploads a generated 512 MiB payload with 1/4/8 workers, and compares downloaded
+SHA-256 hashes. Additional checks cover empty files, AES/chunk boundaries,
+replacement, share-link creation and cancellation of an active upload using a
+hard context deadline. This is integrity validation, not a home-connection
+speed benchmark. Allow roughly 3.1 GiB of total download quota for both platforms
+and at least 1 GiB of free storage. Reports and the native binaries are saved as
+Actions artifacts; credentials, raw backend logs and share-link keys are excluded.
+Each job permanently deletes only its unique `rfork-ci-*` folder, verifies its
+absence with stock rclone, and retries cleanup in a separate always-run step.
+Runner loss can prevent cleanup; review the report's folder and cleanup fields.
+The workflow is manual-only and does not expose secrets to pull-request jobs.
+
 Use a private rclone configuration with a named MEGA remote and a separate
 megatools configuration for the **same account**. Provide at least 8 GiB of
 actual free account space. Configurations remain caller-owned: the runner
