@@ -54,3 +54,20 @@ permanent HTTP errors, temporary/permanent provider errors, retry ciphertext
 identity, body-error replay opt-in, exhausted budgets, Retry-After parsing and
 cancellation, bounded responses and URL exclusion. Backend worker race tests also
 passed. Live MEGA behavior and native Windows/macOS runtime checks remain pending.
+
+## Separate data pacing stage — 2026-10-20
+
+Implemented `--mega-upload-pacing`: arbitrary nonnegative durations, compatibility
+default 10ms, and 0 for unpaced data starts. The limiter is per backend, shared
+across its files, and independent of metadata/API pacing. A request hook covers
+every attempt, including retries, and releases admission after response close or
+failure. Foreground API operations and data requests share the configured
+`--max-connections` bound. Data pacing/admission waits cancel without reserving
+future request slots. Per-account client caching does not store these settings.
+
+Focused backend and dependency race suites passed. Added tests cover spacing,
+zero pacing, cancellation, cancelled-slot reuse, retry hooks, hook release,
+connection admission across uploads/API calls and invalid option rejection before
+login. Parent/dependency lint and whitespace checks are also required before this
+stage's commit. No worker-count or configurable-setting performance sweep was run.
+The development version is 0.2.0-dev; the saved alpha tag/bundles are preserved.

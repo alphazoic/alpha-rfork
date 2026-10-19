@@ -150,3 +150,27 @@ func TestUploadTransportErrorDoesNotExposeURL(t *testing.T) {
 		t.Fatalf("transport error exposed private upload URL: %v", err)
 	}
 }
+
+func TestUploadRequestHookAppliesToRetriesAndCancellation(t *testing.T) {
+	calls := 0
+	u, _ := contextUpload(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.Copy(io.Discard, r.Body)
+		calls++
+		w.WriteHeader(http.StatusServiceUnavailable)
+	})
+	hooks := 0
+	released := 0
+	u.SetUploadRequestHook(func(context.Context) (func(), error) { hooks++; return func() { released++ }, nil })
+	u.EnableDiagnostics()
+	if err := u.UploadChunkContext(context.Background(), 0, make([]byte, 31)); err == nil || calls != 3 || hooks != 3 || released != 3 {
+		t.Fatalf("hook did not cover attempts: error=%v calls=%d hooks=%d", err, calls, hooks)
+	}
+	if s := u.Diagnostics(); s.Pacing.Count != 3 {
+		t.Fatalf("pacing accounting: %+v", s)
+	}
+	u, _ = contextUpload(t, func(_ http.ResponseWriter, _ *http.Request) { t.Error("request after cancelled hook") })
+	u.SetUploadRequestHook(func(context.Context) (func(), error) { return nil, context.Canceled })
+	if err := u.UploadChunkContext(context.Background(), 0, make([]byte, 31)); !errors.Is(err, context.Canceled) {
+		t.Fatalf("hook cancellation: %v", err)
+	}
+}

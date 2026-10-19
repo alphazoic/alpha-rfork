@@ -54,6 +54,16 @@ terminal completion-handle replay. The behavior is covered by local fixtures,
 which cannot establish server replay semantics. It never enables final-commit
 replay. Retry counts are per file and do not mutate a shared account client.
 
+`--mega-upload-pacing` controls the interval between data-request starts. It
+accepts nonnegative durations such as `10ms`, `2ms` or `0` and defaults to `10ms`
+for compatibility. Zero removes this data delay while retaining the worker bound,
+bandwidth/global HTTP limits and `--max-connections` admission shared with
+foreground API calls. All files using the same backend share the interval;
+separate remotes sharing an account retain independent settings. Every retry is
+paced. Metadata/API pacing remains separate. Data pacing and connection admission
+waits are cancellable. The diagnostic `pacing` aggregate includes time waiting
+for both connection admission and the configured data interval.
+
 Workers stop and join on chunk errors or cancellation. A finalization failure
 is returned as a non-retryable error with an uncertain remote outcome: inspect
 the destination before starting another upload. A server can commit a file

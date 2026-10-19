@@ -147,6 +147,17 @@ not establish a successful file commit. Collection is disabled by default.`,
 			Default:  false,
 			Advanced: true,
 		}, {
+			Name: "upload_pacing",
+			Help: `Minimum interval between upload-data request starts on this backend.
+
+Accepts a nonnegative duration, for example 10ms or 0. Zero disables data pacing;
+worker counts, --max-connections, bandwidth limits and global HTTP limits still
+apply. The interval is shared by simultaneous files using this backend, not by
+separately configured remotes sharing an account. Retries are paced too. API and
+metadata pacing remain separate. Pacing and connection waits are cancellable.`,
+			Default:  fs.Duration(minSleep),
+			Advanced: true,
+		}, {
 			Name: "use_https",
 			Help: `Use HTTPS for transfers.
 
@@ -180,20 +191,103 @@ type Options struct {
 	UploadDiagnostics     bool                 `config:"upload_diagnostics"`
 	UploadRetries         int                  `config:"upload_retries"`
 	UploadRetryBodyErrors bool                 `config:"upload_retry_body_errors"`
+	UploadPacing          fs.Duration          `config:"upload_pacing"`
 	Enc                   encoder.MultiEncoder `config:"encoding"`
 }
 
 // Fs represents a remote mega
 type Fs struct {
-	name       string       // name of this remote
-	root       string       // the path we are working on
-	opt        Options      // parsed config options
-	features   *fs.Features // optional features
-	srv        *mega.Mega   // the connection to the server
-	pacer      *fs.Pacer    // pacer for API calls
-	rootNodeMu sync.Mutex   // mutex for _rootNode
-	_rootNode  *mega.Node   // root node - call findRoot to use this
-	mkdirMu    sync.Mutex   // used to serialize calls to mkdir / rmdir
+	name         string        // name of this remote
+	root         string        // the path we are working on
+	opt          Options       // parsed config options
+	features     *fs.Features  // optional features
+	srv          *mega.Mega    // the connection to the server
+	pacer        *fs.Pacer     // pacer for API calls
+	dataPacer    *uploadPacer  // shared by this backend's uploads
+	requestSlots chan struct{} // foreground admission shared with API calls
+	rootNodeMu   sync.Mutex    // mutex for _rootNode
+	_rootNode    *mega.Node    // root node - call findRoot to use this
+	mkdirMu      sync.Mutex    // used to serialize calls to mkdir / rmdir
+}
+
+type uploadPacer struct {
+	interval time.Duration
+	gate     chan struct{}
+	next     time.Time // guarded by gate
+}
+
+func newUploadPacer(interval time.Duration) *uploadPacer {
+	return &uploadPacer{interval: interval, gate: make(chan struct{}, 1)}
+}
+
+func (p *uploadPacer) wait(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if p.interval == 0 {
+		return nil
+	}
+	select {
+	case p.gate <- struct{}{}:
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+	defer func() { <-p.gate }()
+	if delay := time.Until(p.next); delay > 0 {
+		timer := time.NewTimer(delay)
+		defer timer.Stop()
+		select {
+		case <-timer.C:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	p.next = time.Now().Add(p.interval)
+	return nil
+}
+
+func (f *Fs) acquireRequest(ctx context.Context) (func(), error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if f.requestSlots == nil {
+		return func() {}, nil
+	}
+	select {
+	case f.requestSlots <- struct{}{}:
+		return func() { <-f.requestSlots }, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+}
+
+func (f *Fs) startDataRequest(ctx context.Context) (func(), error) {
+	release, err := f.acquireRequest(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := f.dataPacer.wait(ctx); err != nil {
+		release()
+		return nil, err
+	}
+	return release, nil
+}
+
+func (f *Fs) call(ctx context.Context, fn pacer.Paced) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	return f.pacer.Call(func() (bool, error) {
+		release, err := f.acquireRequest(ctx)
+		if err != nil {
+			return false, err
+		}
+		defer release()
+		return fn()
+	})
 }
 
 // Object describes a mega object
@@ -270,6 +364,9 @@ func NewFs(ctx context.Context, name, root string, m configmap.Mapper) (fs.Fs, e
 	if opt.UploadRetries < -1 {
 		return nil, errors.New("mega upload retries must be -1 or nonnegative")
 	}
+	if opt.UploadPacing < 0 {
+		return nil, errors.New("mega upload pacing must be nonnegative")
+	}
 	if opt.Pass != "" {
 		var err error
 		opt.Pass, err = obscure.Reveal(opt.Pass)
@@ -282,10 +379,14 @@ func NewFs(ctx context.Context, name, root string, m configmap.Mapper) (fs.Fs, e
 	// Create Fs
 	root = parsePath(root)
 	f := &Fs{
-		name:  name,
-		root:  root,
-		opt:   *opt,
-		pacer: fs.NewPacer(ctx, pacer.NewDefault(pacer.MinSleep(minSleep), pacer.MaxSleep(maxSleep), pacer.DecayConstant(decayConstant))),
+		name:      name,
+		root:      root,
+		opt:       *opt,
+		pacer:     fs.NewPacer(ctx, pacer.NewDefault(pacer.MinSleep(minSleep), pacer.MaxSleep(maxSleep), pacer.DecayConstant(decayConstant))),
+		dataPacer: newUploadPacer(time.Duration(opt.UploadPacing)),
+	}
+	if ci.MaxConnections > 0 {
+		f.requestSlots = make(chan struct{}, ci.MaxConnections)
 	}
 	f.features = (&fs.Features{
 		DuplicateFiles:          true,
@@ -460,7 +561,7 @@ func (f *Fs) mkdir(ctx context.Context, rootNode *mega.Node, dir string) (node *
 	// node is directory to create them from
 	for _, name := range parts[len(parts)-i:] {
 		// create directory called name in node
-		err = f.pacer.Call(func() (bool, error) {
+		err = f.call(ctx, func() (bool, error) {
 			node, err = f.srv.CreateDir(name, node)
 			return shouldRetry(ctx, err)
 		})
@@ -535,7 +636,7 @@ func (f *Fs) CleanUp(ctx context.Context) (err error) {
 	// similar to f.deleteNode(trash) but with HardDelete as true
 	for _, item := range items {
 		fs.Debugf(f, "Deleting trash %q", f.opt.Enc.ToStandardName(item.GetName()))
-		deleteErr := f.pacer.Call(func() (bool, error) {
+		deleteErr := f.call(ctx, func() (bool, error) {
 			err := f.srv.Delete(item, true)
 			return shouldRetry(ctx, err)
 		})
@@ -714,7 +815,7 @@ func (f *Fs) Mkdir(ctx context.Context, dir string) error {
 
 // deleteNode removes a file or directory, observing useTrash
 func (f *Fs) deleteNode(ctx context.Context, node *mega.Node) (err error) {
-	err = f.pacer.Call(func() (bool, error) {
+	err = f.call(ctx, func() (bool, error) {
 		err = f.srv.Delete(node, f.opt.HardDelete)
 		return shouldRetry(ctx, err)
 	})
@@ -825,7 +926,7 @@ func (f *Fs) move(ctx context.Context, dstRemote string, srcFs *Fs, srcRemote st
 	// move the object into its new directory if required
 	if srcDirNode != dstDirNode && srcDirNode.GetHash() != dstDirNode.GetHash() {
 		//log.Printf("move src %p %q dst %p %q", srcDirNode, srcDirNode.GetName(), dstDirNode, dstDirNode.GetName())
-		err = f.pacer.Call(func() (bool, error) {
+		err = f.call(ctx, func() (bool, error) {
 			err = f.srv.Move(info, dstDirNode)
 			return shouldRetry(ctx, err)
 		})
@@ -837,7 +938,7 @@ func (f *Fs) move(ctx context.Context, dstRemote string, srcFs *Fs, srcRemote st
 	// rename the object if required
 	if srcLeaf != dstLeaf {
 		//log.Printf("rename %q to %q", srcLeaf, dstLeaf)
-		err = f.pacer.Call(func() (bool, error) {
+		err = f.call(ctx, func() (bool, error) {
 			err = f.srv.Rename(info, f.opt.Enc.FromStandardName(dstLeaf))
 			return shouldRetry(ctx, err)
 		})
@@ -988,7 +1089,7 @@ func (f *Fs) MergeDirs(ctx context.Context, dirs []fs.Directory) error {
 		// move them into place
 		for _, info := range infos {
 			fs.Infof(srcDir, "merging %q", f.opt.Enc.ToStandardName(info.GetName()))
-			err = f.pacer.Call(func() (bool, error) {
+			err = f.call(ctx, func() (bool, error) {
 				err = f.srv.Move(info, dstDirNode)
 				return shouldRetry(ctx, err)
 			})
@@ -1010,7 +1111,7 @@ func (f *Fs) MergeDirs(ctx context.Context, dirs []fs.Directory) error {
 func (f *Fs) About(ctx context.Context) (*fs.Usage, error) {
 	var q mega.QuotaResp
 	var err error
-	err = f.pacer.Call(func() (bool, error) {
+	err = f.call(ctx, func() (bool, error) {
 		q, err = f.srv.GetQuota()
 		return shouldRetry(ctx, err)
 	})
@@ -1117,7 +1218,7 @@ func (oo *openObject) getChunk(ctx context.Context) (err error) {
 		return io.EOF
 	}
 	var chunk []byte
-	err = oo.o.fs.pacer.Call(func() (bool, error) {
+	err = oo.o.fs.call(ctx, func() (bool, error) {
 		chunk, err = oo.d.DownloadChunk(oo.id)
 		return shouldRetry(ctx, err)
 	})
@@ -1170,7 +1271,7 @@ func (oo *openObject) Close() (err error) {
 	if oo.closed {
 		return nil
 	}
-	err = oo.o.fs.pacer.Call(func() (bool, error) {
+	err = oo.o.fs.call(oo.ctx, func() (bool, error) {
 		err = oo.d.Finish()
 		return shouldRetry(oo.ctx, err)
 	})
@@ -1198,7 +1299,7 @@ func (o *Object) Open(ctx context.Context, options ...fs.OpenOption) (in io.Read
 	}
 
 	var d *mega.Download
-	err = o.fs.pacer.Call(func() (bool, error) {
+	err = o.fs.call(ctx, func() (bool, error) {
 		d, err = o.fs.srv.NewDownload(o.info)
 		return shouldRetry(ctx, err)
 	})
@@ -1226,22 +1327,13 @@ type uploadSession interface {
 
 type pacedUpload struct {
 	*mega.Upload
-	pacer        *fs.Pacer
+	fs           *Fs
 	beforeFinish func()
 	afterFinish  func()
 }
 
-func (u pacedUpload) UploadChunkContext(ctx context.Context, id int, chunk []byte) error {
-	return u.pacer.Call(func() (bool, error) {
-		if err := ctx.Err(); err != nil {
-			return false, err
-		}
-		return false, u.Upload.UploadChunkContext(ctx, id, chunk)
-	})
-}
-
 func (u pacedUpload) FinishContext(ctx context.Context) (node *mega.Node, err error) {
-	err = u.pacer.Call(func() (bool, error) {
+	err = u.fs.call(ctx, func() (bool, error) {
 		if err := ctx.Err(); err != nil {
 			return false, err
 		}
@@ -1262,6 +1354,7 @@ type uploadReport struct {
 	Workers         int                    `json:"workers"`
 	RetryLimit      int                    `json:"retryLimit"`
 	RetryBodyErrors bool                   `json:"retryBodyErrors"`
+	PacingSeconds   float64                `json:"pacingSeconds"`
 	HTTPS           bool                   `json:"https"`
 	SourceBytes     int64                  `json:"sourceBytes"`
 	SourceRead      mega.UploadTiming      `json:"sourceRead"`
@@ -1413,7 +1506,7 @@ func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, op
 		return fmt.Errorf("update make parent dir failed: %w", err)
 	}
 
-	err = o.fs.pacer.Call(func() (bool, error) {
+	err = o.fs.call(ctx, func() (bool, error) {
 		u, err = o.fs.srv.NewUploadContext(ctx, dirNode, o.fs.opt.Enc.FromStandardName(leaf), size, o.fs.opt.UseHTTPS)
 		return shouldRetry(ctx, err)
 	})
@@ -1432,13 +1525,15 @@ func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, op
 	if err := u.SetUploadRetryOptions(retries, o.fs.opt.UploadRetryBodyErrors); err != nil {
 		return err
 	}
+	u.SetUploadRequestHook(o.fs.startDataRequest)
 	if report != nil {
 		report.RetryLimit = retries
 		report.RetryBodyErrors = o.fs.opt.UploadRetryBodyErrors
+		report.PacingSeconds = time.Duration(o.fs.opt.UploadPacing).Seconds()
 	}
 
 	var waitEvent <-chan struct{}
-	info, err := uploadAndFinish(ctx, in, pacedUpload{Upload: u, pacer: o.fs.pacer,
+	info, err := uploadAndFinish(ctx, in, pacedUpload{Upload: u, fs: o.fs,
 		beforeFinish: func() {
 			if report != nil {
 				report.DataSeconds = time.Since(dataStarted).Seconds()

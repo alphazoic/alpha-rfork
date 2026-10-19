@@ -12,7 +12,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rclone/rclone/fs"
+	"github.com/rclone/rclone/fs/config/configmap"
 	"github.com/rclone/rclone/fs/fserrors"
+	"github.com/rclone/rclone/lib/pacer"
 	megaclient "github.com/t3rm1n4l/go-mega"
 )
 
@@ -235,6 +238,128 @@ func TestUploadInvalidConcurrency(t *testing.T) {
 		_, err := uploadAndFinish(context.Background(), bytes.NewReader(nil), u, workers)
 		if err == nil || u.finished.Load() != 0 {
 			t.Fatalf("workers=%d error=%v", workers, err)
+		}
+	}
+}
+
+func TestUploadDataPacingSpacingAndCancellation(t *testing.T) {
+	p := newUploadPacer(15 * time.Millisecond)
+	if err := p.wait(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	start := time.Now()
+	if err := p.wait(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if time.Since(start) < 14*time.Millisecond {
+		t.Fatal("request started before configured interval")
+	}
+	p = newUploadPacer(time.Hour)
+	if err := p.wait(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() { done <- p.wait(ctx) }()
+	cancel()
+	select {
+	case err := <-done:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatal(err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("pacing wait ignored cancellation")
+	}
+	// Cancelling one backend does not block a separate backend's unpaced path.
+	if err := newUploadPacer(0).wait(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestUploadDataPacingCancelledWaitDoesNotReserveSlot(t *testing.T) {
+	p := newUploadPacer(time.Hour)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := p.wait(ctx); !errors.Is(err, context.Canceled) {
+		t.Fatal(err)
+	}
+	if err := p.wait(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+	if err := p.wait(ctx); !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatal(err)
+	}
+}
+
+func TestUploadConnectionLimitIncludesMetadataAndCancels(t *testing.T) {
+	f := &Fs{dataPacer: newUploadPacer(0), requestSlots: make(chan struct{}, 1),
+		pacer: fs.NewPacer(context.Background(), pacer.NewDefault(pacer.MinSleep(0)))}
+	release, err := f.startDataRequest(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if release != nil {
+			release()
+		}
+	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+	err = f.call(ctx, func() (bool, error) { t.Error("metadata bypassed connection limit"); return false, nil })
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("admission wait: %v", err)
+	}
+	release()
+	release = nil
+	called := false
+	if err := f.call(context.Background(), func() (bool, error) { called = true; return false, nil }); err != nil || !called || len(f.requestSlots) != 0 {
+		t.Fatalf("admission leaked after cancellation: %v", err)
+	}
+}
+
+func TestUploadConnectionLimitAcrossFiles(t *testing.T) {
+	f := &Fs{dataPacer: newUploadPacer(0), requestSlots: make(chan struct{}, 2)}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	entered := make(chan struct{}, 8)
+	var workers sync.WaitGroup
+	for range 8 {
+		workers.Go(func() {
+			release, err := f.startDataRequest(ctx)
+			if err != nil {
+				return
+			}
+			defer release()
+			entered <- struct{}{}
+			<-ctx.Done()
+		})
+	}
+	for range 2 {
+		select {
+		case <-entered:
+		case <-time.After(time.Second):
+			t.Fatal("upload workers did not acquire slots")
+		}
+	}
+	if len(f.requestSlots) != 2 {
+		t.Fatal("unexpected connection admission count")
+	}
+	cancel()
+	workers.Wait()
+	if len(f.requestSlots) != 0 {
+		t.Fatal("connection slots retained after workers stopped")
+	}
+}
+
+func TestUploadInvalidOptionsRejectBeforeLogin(t *testing.T) {
+	for _, option := range []configmap.Simple{
+		{"upload_concurrency": "8", "upload_retries": "-2"},
+		{"upload_concurrency": "8", "upload_retries": "-1", "upload_pacing": "-1ms"},
+	} {
+		if _, err := NewFs(context.Background(), "invalid", "", option); err == nil {
+			t.Fatal("invalid upload option accepted")
 		}
 	}
 }

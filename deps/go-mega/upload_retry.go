@@ -57,6 +57,13 @@ func (u *Upload) SetUploadRetryOptions(retries int, retryBodyErrors bool) error 
 	return nil
 }
 
+// SetUploadRequestHook installs per-upload pacing/connection admission before workers start.
+// The hook runs before every data attempt, including retries. A non-nil release
+// is called after the response closes, or when request creation/transport fails.
+func (u *Upload) SetUploadRequestHook(hook func(context.Context) (func(), error)) {
+	u.requestHook = hook
+}
+
 func (u *Upload) sendUploadRequest(ctx context.Context, offset int64, ciphertext []byte) ([]byte, error) {
 	retries := u.m.retries
 	if u.uploadRetries != nil {
@@ -99,6 +106,20 @@ func (u *Upload) sendUploadRequest(ctx context.Context, offset int64, ciphertext
 }
 
 func (u *Upload) uploadRequestAttempt(ctx context.Context, offset int64, ciphertext []byte, attempt int) ([]byte, error) {
+	if u.requestHook != nil {
+		started := u.stats.start()
+		release, err := u.requestHook(ctx)
+		u.stats.record(uploadPacing, started)
+		if release != nil {
+			defer release()
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/%d", u.uploadUrl, offset), bytes.NewBuffer(ciphertext))
 	if err != nil {
 		return nil, &UploadRequestError{Kind: "request", cause: err}

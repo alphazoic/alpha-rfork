@@ -9,6 +9,9 @@
   sizes and omit private upload URLs from data-request errors.
 - Expose per-file additional retry budgets and experimental response-body replay;
   preserve the guard against replaying an uncertain final commit.
+- Add configurable data pacing (`--mega-upload-pacing`, default 10ms, 0 to disable),
+  including retries, independently of API pacing. Preserve shared foreground
+  connection admission and make upload pacing/admission waits cancellable.
 
 ## v1.75.2-rfork.0.1.0-alpha.1
 

@@ -26,6 +26,13 @@ preserves causes for inspection without printing upload URLs. Body replay remain
 opt-in until live terminal-response behavior is validated; final-commit protection
 is unchanged. None of these per-upload options mutates the shared account client.
 
+`SetUploadRequestHook` installs per-file admission before workers start. Every
+data attempt, including a retry, invokes the context-aware hook. A returned
+release callback runs after body close or on request/transport failure. The
+backend uses this for separate data pacing and foreground connection admission;
+the dependency's retry backoff remains independent. Diagnostics include hook wait
+time in `pacing`.
+
 Empty files retain a zero aggregate MAC: their empty POST obtains the upload
 handle but contributes no data chunk to the authentication fold. This fixes
 upstream empty uploads rejected by independent clients with a MAC mismatch.

@@ -1434,6 +1434,7 @@ type Upload struct {
 	stats             *uploadStats // configured before workers start
 	uploadRetries     *int
 	retryBodyErrors   bool
+	requestHook       func(context.Context) (func(), error)
 }
 
 // Create a new Upload of name into parent of fileSize
