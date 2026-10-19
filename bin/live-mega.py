@@ -42,7 +42,9 @@ class LiveTest:
             self.save()
         self.env = {k: v for k, v in os.environ.items()
                     if not k.startswith(('RCLONE_', 'RFORK_MEGA_'))}
-        self.env.update(RCLONE_CONFIG=os.devnull, RCLONE_CONFIG_CITEST_TYPE='mega')
+        # rclone recognizes this sentinel on every OS. Python's lowercase
+        # Windows os.devnull ('nul') is rejected as a reserved config filename.
+        self.env.update(RCLONE_CONFIG='notfound', RCLONE_CONFIG_CITEST_TYPE='mega')
 
     def save(self):
         self.receipt.parent.mkdir(parents=True, exist_ok=True)
