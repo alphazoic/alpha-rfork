@@ -30,6 +30,17 @@ jobs:
         with:
           go-version: '1.26.9'
           cache: false
+      - name: Install Linux NFS test helper
+        if: matrix.target == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends nfs-common
+      - name: Build Linux upstream integration-test executable
+        if: matrix.target == 'linux'
+        run: |
+          mkdir -p build/test-bin
+          bin/rfork-go build -mod=readonly -o build/test-bin/rclone .
+          echo "$PWD/build/test-bin" >> "$GITHUB_PATH"
       - name: Upload worker races
         run: RCLONE_CONFIG=/notfound bin/rfork-go test -race -timeout 5m ./backend/mega -run '^TestUpload'
       - name: Dependency races and crypto fixtures
