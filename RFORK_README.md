@@ -41,6 +41,19 @@ confirmed file commit. Collection is off by default. Process CPU and peak RSS
 remain external measurements, not per-file counters. Timing begins in the
 object update, so process startup/login are outside its elapsed measurement.
 
+`--mega-upload-retries` sets additional attempts per transient data request;
+`-1` inherits `--low-level-retries` and `0` disables them. Ciphertext is prepared
+once and reused. Permanent HTTP/provider errors stop immediately, transient
+provider/network errors have bounded jittered backoff, and `Retry-After` is
+respected with cancellable waits. Chunk errors omit private upload URLs while
+retaining provider error descriptions and programmatic causes.
+
+`--mega-upload-retry-body-errors` opts into replay after a truncated successful
+response. It is experimental and defaults to false pending live verification of
+terminal completion-handle replay. The behavior is covered by local fixtures,
+which cannot establish server replay semantics. It never enables final-commit
+replay. Retry counts are per file and do not mutate a shared account client.
+
 Workers stop and join on chunk errors or cancellation. A finalization failure
 is returned as a non-retryable error with an uncertain remote outcome: inspect
 the destination before starting another upload. A server can commit a file

@@ -21,6 +21,11 @@ type UploadTiming struct {
 type UploadDiagnostics struct {
 	Attempts                   int64        `json:"attempts"`
 	Retries                    int64        `json:"retries"`
+	TransportFailures          int64        `json:"transportFailures"`
+	HTTPFailures               int64        `json:"httpFailures"`
+	BodyFailures               int64        `json:"bodyFailures"`
+	ProviderFailures           int64        `json:"providerFailures"`
+	InvalidResponses           int64        `json:"invalidResponses"`
 	PayloadBytesRead           int64        `json:"payloadBytesRead"`
 	AcknowledgedBytes          int64        `json:"acknowledgedBytes"`
 	AcknowledgedChunks         int64        `json:"acknowledgedChunks"`
@@ -150,6 +155,26 @@ func (s *uploadStats) acknowledge(chunks, size int) {
 	s.value.AcknowledgedChunks += int64(chunks)
 	s.value.LastAcknowledgementSeconds = time.Since(s.started).Seconds()
 	s.mu.Unlock()
+}
+
+func (s *uploadStats) failure(kind string) {
+	if s == nil {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	switch kind {
+	case "transport":
+		s.value.TransportFailures++
+	case "http":
+		s.value.HTTPFailures++
+	case "body":
+		s.value.BodyFailures++
+	case "provider":
+		s.value.ProviderFailures++
+	default:
+		s.value.InvalidResponses++
+	}
 }
 
 type uploadBodyCounter struct {

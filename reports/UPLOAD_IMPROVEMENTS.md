@@ -33,3 +33,24 @@ Commands: `bin/rfork-go test -race -count=1 -timeout 90s ./backend/mega -run
 The HTTP fixture suite required execution outside the filesystem sandbox because
 the sandbox denied localhost socket listeners. No live MEGA uploads, performance
 claims or new Windows/macOS runtime validation are covered by this stage.
+
+## Chunk recovery stage — 2026-10-20
+
+Regression tests first reproduced three existing failures: a 403 was attempted
+three times, MEGA `-3` was not retried, and a transport failure printed the upload
+URL. The implementation now classifies transient versus permanent failures,
+retries identical ciphertext with a per-file budget, respects Retry-After with
+cancellable jittered waits, caps response bodies at 4 KiB and sanitizes request
+errors while preserving known provider descriptions and programmatic causes.
+
+New CLI controls are `--mega-upload-retries` (additional attempts; -1 inherits
+low-level retries) and `--mega-upload-retry-body-errors` (experimental, false by
+default). Body-error replay is deliberately not enabled by default: a fixture
+proves client behavior but cannot prove live terminal-response replay semantics.
+No final-commit replay is added.
+
+The same dependency race suite and parent lint commands passed. New tests cover
+permanent HTTP errors, temporary/permanent provider errors, retry ciphertext
+identity, body-error replay opt-in, exhausted budgets, Retry-After parsing and
+cancellation, bounded responses and URL exclusion. Backend worker race tests also
+passed. Live MEGA behavior and native Windows/macOS runtime checks remain pending.

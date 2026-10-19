@@ -1,8 +1,10 @@
 # rfork upload improvement plan
 
-Status: implementation started. Diagnostics are implemented and pass focused
+Status: diagnostics and chunk-retry improvements are implemented and pass focused
 Linux race tests and lint; see [reports/UPLOAD_IMPROVEMENTS.md](reports/UPLOAD_IMPROVEMENTS.md).
-Later stages remain pending. M3 changes are outside this work.
+Response-body replay remains opt-in pending live protocol validation. Pacing,
+batching, restart resume and release validation remain pending. M3 changes are
+outside this work.
 
 ## Objective and saved baseline
 

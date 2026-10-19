@@ -4,6 +4,11 @@
 
 - Add opt-in bounded upload diagnostics with separate source, attempted payload,
   acknowledged data and final-commit status; omit private upload identifiers.
+- Classify chunk failures, retry transient MEGA/HTTP errors with bounded jittered
+  backoff, respect Retry-After, avoid retrying permanent errors, bound response
+  sizes and omit private upload URLs from data-request errors.
+- Expose per-file additional retry budgets and experimental response-body replay;
+  preserve the guard against replaying an uncertain final commit.
 
 ## v1.75.2-rfork.0.1.0-alpha.1
 

@@ -99,6 +99,24 @@ information from the mega backend.`,
 			Default:  false,
 			Advanced: true,
 		}, {
+			Name: "upload_retries",
+			Help: `Additional attempts for a transient upload-data request.
+
+Use -1 to inherit --low-level-retries. Zero disables data-request retries.
+This setting applies per file, including when accounts share an API client.
+It does not enable replay of an uncertain final file commit.`,
+			Default:  -1,
+			Advanced: true,
+		}, {
+			Name: "upload_retry_body_errors",
+			Help: `Allow ciphertext replay after an incomplete upload response body.
+
+Experimental: a lost terminal response may contain the upload completion handle.
+Disabled until replay behavior has been verified against the live server.
+The per-request retry budget still applies. Final file commits are never replayed.`,
+			Default:  false,
+			Advanced: true,
+		}, {
 			Name: "hard_delete",
 			Help: `Delete files permanently rather than putting them into the trash.
 
@@ -150,17 +168,19 @@ HTTPS adds TLS processing and network overhead.`,
 
 // Options defines the configuration for this backend
 type Options struct {
-	User              string               `config:"user"`
-	Pass              string               `config:"pass"`
-	TwoFA             string               `config:"2fa"`
-	SessionID         string               `config:"session_id"`
-	MasterKey         string               `config:"master_key"`
-	Debug             bool                 `config:"debug"`
-	HardDelete        bool                 `config:"hard_delete"`
-	UseHTTPS          bool                 `config:"use_https"`
-	UploadConcurrency int                  `config:"upload_concurrency"`
-	UploadDiagnostics bool                 `config:"upload_diagnostics"`
-	Enc               encoder.MultiEncoder `config:"encoding"`
+	User                  string               `config:"user"`
+	Pass                  string               `config:"pass"`
+	TwoFA                 string               `config:"2fa"`
+	SessionID             string               `config:"session_id"`
+	MasterKey             string               `config:"master_key"`
+	Debug                 bool                 `config:"debug"`
+	HardDelete            bool                 `config:"hard_delete"`
+	UseHTTPS              bool                 `config:"use_https"`
+	UploadConcurrency     int                  `config:"upload_concurrency"`
+	UploadDiagnostics     bool                 `config:"upload_diagnostics"`
+	UploadRetries         int                  `config:"upload_retries"`
+	UploadRetryBodyErrors bool                 `config:"upload_retry_body_errors"`
+	Enc                   encoder.MultiEncoder `config:"encoding"`
 }
 
 // Fs represents a remote mega
@@ -246,6 +266,9 @@ func NewFs(ctx context.Context, name, root string, m configmap.Mapper) (fs.Fs, e
 	}
 	if opt.UploadConcurrency < 1 || opt.UploadConcurrency > 32 {
 		return nil, errors.New("mega upload concurrency must be between 1 and 32")
+	}
+	if opt.UploadRetries < -1 {
+		return nil, errors.New("mega upload retries must be -1 or nonnegative")
 	}
 	if opt.Pass != "" {
 		var err error
@@ -1235,18 +1258,20 @@ func (u pacedUpload) FinishContext(ctx context.Context) (node *mega.Node, err er
 }
 
 type uploadReport struct {
-	SchemaVersion  int                    `json:"schemaVersion"`
-	Workers        int                    `json:"workers"`
-	HTTPS          bool                   `json:"https"`
-	SourceBytes    int64                  `json:"sourceBytes"`
-	SourceRead     mega.UploadTiming      `json:"sourceRead"`
-	SetupSeconds   float64                `json:"setupSeconds"`
-	DataSeconds    float64                `json:"dataSeconds"`
-	CommitSeconds  float64                `json:"commitSeconds"`
-	ElapsedSeconds float64                `json:"elapsedSeconds"`
-	Committed      bool                   `json:"committed"`
-	Successful     bool                   `json:"successful"`
-	Chunks         mega.UploadDiagnostics `json:"chunks"`
+	SchemaVersion   int                    `json:"schemaVersion"`
+	Workers         int                    `json:"workers"`
+	RetryLimit      int                    `json:"retryLimit"`
+	RetryBodyErrors bool                   `json:"retryBodyErrors"`
+	HTTPS           bool                   `json:"https"`
+	SourceBytes     int64                  `json:"sourceBytes"`
+	SourceRead      mega.UploadTiming      `json:"sourceRead"`
+	SetupSeconds    float64                `json:"setupSeconds"`
+	DataSeconds     float64                `json:"dataSeconds"`
+	CommitSeconds   float64                `json:"commitSeconds"`
+	ElapsedSeconds  float64                `json:"elapsedSeconds"`
+	Committed       bool                   `json:"committed"`
+	Successful      bool                   `json:"successful"`
+	Chunks          mega.UploadDiagnostics `json:"chunks"`
 }
 
 type uploadDiagnosticReader struct {
@@ -1399,6 +1424,17 @@ func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, op
 		u.EnableDiagnostics()
 		report.SetupSeconds = time.Since(started).Seconds()
 		dataStarted = time.Now()
+	}
+	retries := o.fs.opt.UploadRetries
+	if retries < 0 {
+		retries = fs.GetConfig(ctx).LowLevelRetries
+	}
+	if err := u.SetUploadRetryOptions(retries, o.fs.opt.UploadRetryBodyErrors); err != nil {
+		return err
+	}
+	if report != nil {
+		report.RetryLimit = retries
+		report.RetryBodyErrors = o.fs.opt.UploadRetryBodyErrors
 	}
 
 	var waitEvent <-chan struct{}

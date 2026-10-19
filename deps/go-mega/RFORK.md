@@ -18,6 +18,14 @@ start; `Diagnostics` returns a concurrency-safe snapshot. No names, URLs, keys o
 completion handles are included. HTTP body reads include retry payloads and are
 distinct from acknowledged chunks and final file creation.
 
+`SetUploadRetryOptions` sets a per-file additional-attempt budget and opt-in
+response-body replay before workers start. Data requests classify transient and
+permanent HTTP/provider errors, cap response bodies, respect Retry-After and use
+cancellable jittered backoff. Encryption happens once. `UploadRequestError`
+preserves causes for inspection without printing upload URLs. Body replay remains
+opt-in until live terminal-response behavior is validated; final-commit protection
+is unchanged. None of these per-upload options mutates the shared account client.
+
 Empty files retain a zero aggregate MAC: their empty POST obtains the upload
 handle but contributes no data chunk to the authentication fold. This fixes
 upstream empty uploads rejected by independent clients with a MAC mismatch.

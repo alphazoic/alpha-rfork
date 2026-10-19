@@ -1432,6 +1432,8 @@ type Upload struct {
 	completion_handle []byte
 	finishStarted     bool
 	stats             *uploadStats // configured before workers start
+	uploadRetries     *int
+	retryBodyErrors   bool
 }
 
 // Create a new Upload of name into parent of fileSize
@@ -1593,79 +1595,15 @@ func (u *Upload) UploadChunkContext(ctx context.Context, id int, chunk []byte) (
 		enc.CryptBlocks(block, block)
 	}
 
-	var rsp *http.Response
-	var req *http.Request
 	ctr_aes.XORKeyStream(chunk, chunk)
 	u.stats.record(uploadEncryption, encryptionStarted)
-	chk_url := fmt.Sprintf("%s/%d", u.uploadUrl, chk_start)
-
-	sleepTime := minSleepTime // initial backoff time
-	for retry := 0; retry < u.m.retries+1; retry++ {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		reader := bytes.NewBuffer(chunk)
-		req, err = http.NewRequestWithContext(ctx, "POST", chk_url, reader)
-		if err != nil {
-			return err
-		}
-		u.stats.beginRequest(req, retry)
-		requestStarted := u.stats.start()
-		rsp, err = u.m.client.Do(req)
-		u.stats.record(uploadRequest, requestStarted)
-		if err == nil {
-			if rsp.StatusCode == 200 {
-				break
-			}
-			err = errors.New("Http Status: " + rsp.Status)
-			responseStarted := u.stats.start()
-			_ = rsp.Body.Close()
-			u.stats.record(uploadResponse, responseStarted)
-		}
-		u.stats.endRequest()
-		u.m.debugf("%s: Retry upload chunk %d/%d: %v", u.name, retry, u.m.retries, err)
-		if retry < u.m.retries {
-			backoffStarted := u.stats.start()
-			if err := backOffContext(ctx, &sleepTime); err != nil {
-				u.stats.record(uploadBackoff, backoffStarted)
-				return err
-			}
-			u.stats.record(uploadBackoff, backoffStarted)
-		}
-	}
+	chunkResp, err := u.sendUploadRequest(ctx, chk_start, chunk)
 	if err != nil {
 		return err
 	}
-	if rsp == nil {
-		return errors.New("retries exceeded")
-	}
-
-	responseStarted := u.stats.start()
-	defer u.stats.endRequest()
-	defer func() { u.stats.record(uploadResponse, responseStarted) }()
-	chunk_resp, err := io.ReadAll(rsp.Body)
-	if err != nil {
-		_ = rsp.Body.Close()
-		return err
-	}
-
-	err = rsp.Body.Close()
-	if err != nil {
-		return err
-	}
-
-	if len(bytes.TrimSpace(chunk_resp)) > 0 && bytes.TrimSpace(chunk_resp)[0] == '-' {
-		var code ErrorMsg
-		// Completion handles are opaque URL-safe base64 and can start with '-'.
-		if json.Unmarshal(chunk_resp, &code) == nil && code < 0 {
-			if err := parseError(code); err != nil {
-				return err
-			}
-		}
-	}
-	if !bytes.Equal(chunk_resp, nil) {
+	if len(chunkResp) > 0 {
 		u.mutex.Lock()
-		u.completion_handle = chunk_resp
+		u.completion_handle = chunkResp
 		u.mutex.Unlock()
 	}
 
