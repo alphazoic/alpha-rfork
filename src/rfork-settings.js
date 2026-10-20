@@ -74,10 +74,16 @@
     if (s.maxTransferMiB) args.push('--max-transfer', bytes(s.maxTransferMiB));
     return args;
   }
+  function effectiveRforkSettings(input, { resume = false } = {}) {
+    const { checkpointRoot, ...settings } = normalizeRforkSettings(input);
+    return { ...settings, resume: resume || settings.resume,
+      requestSizeBytes: settings.bundling ? settings.bundleSizeMiB * MiB : 0,
+      ...(resume || settings.resume ? { readBufferMiB: null } : {}) };
+  }
   function summarizeRforkSettings(input) {
     const s = normalizeRforkSettings(input);
     const request = s.bundling ? s.bundleSizeMiB : 1;
     return `${s.workers} workers; ${s.https ? 'HTTPS' : 'HTTP'}; ${s.bundling ? 'requests up to ' + request + ' MiB' : 'native requests'}; pacing ${s.pacingMs} ms; data retries ${s.dataRetries === -1 ? 'inherit (1)' : s.dataRetries}; ${s.resume ? 'restart checkpoints' : 'ordinary upload'}. Request buffers up to ${(s.workers + 1) * request} MiB + ${s.workers} MiB encryption scratch; source buffers, MACs, fingerprints and runtime are additional.`;
   }
-  return { fields: Object.freeze(fields), normalizeRforkSettings, rforkArgs, summarizeRforkSettings };
+  return { fields: Object.freeze(fields), normalizeRforkSettings, rforkArgs, effectiveRforkSettings, summarizeRforkSettings };
 });

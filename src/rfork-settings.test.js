@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeRforkSettings: normalize, rforkArgs, fields, summarizeRforkSettings } = require('./rfork-settings');
+const { normalizeRforkSettings: normalize, rforkArgs, fields, effectiveRforkSettings, summarizeRforkSettings } = require('./rfork-settings');
 test('old configuration gets compatibility defaults and meaningful zero/false/inherit round-trip', () => {
   const defaults = normalize();
   assert.equal(defaults.workers, 8); assert.equal(defaults.https, true); assert.equal(defaults.bundling, false);
@@ -33,5 +33,8 @@ test('resume args omit ineffective source buffering, require HTTPS, and summary 
   const value = normalize({ resume: true, checkpointRoot: '/private/checkpoints', readBufferMiB: 64 });
   assert.ok(!rforkArgs(value, { resume: true }).includes('--buffer-size'));
   assert.ok(!summarizeRforkSettings(value).includes('/private'));
+  const effective = effectiveRforkSettings(value);
+  assert.equal(effective.readBufferMiB, null); assert.equal(effective.requestSizeBytes, 0);
+  assert.ok(!JSON.stringify(effective).includes('/private'));
   assert.ok(fields.length >= 24);
 });

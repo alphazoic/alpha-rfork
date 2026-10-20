@@ -4,7 +4,7 @@ const network = require('./network-operations');
 const { toolDisplayName } = require('./tool-names');
 const { createUploadJournal, uploadUncertain, recordUploadCompletion } = require('./upload-journal');
 const { uploadWithRfork } = require('./rfork-upload');
-const { normalizeRforkSettings, summarizeRforkSettings } = require('./rfork-settings');
+const { normalizeRforkSettings, effectiveRforkSettings, summarizeRforkSettings } = require('./rfork-settings');
 const { rforkEnvironment } = require('./rfork-environment');
 
 const { createUploadVpnSession } = require('./upload-vpn-session');
@@ -625,6 +625,7 @@ async function startUpload({ queue, resumeAccount, manualEmail, manualPassword, 
       const destination = `${uploadFolder}/${fName}`;
       const fileSize = fs.statSync(file).size;
       send('up:log', '[rfork] ' + summarizeRforkSettings(rforkSettings));
+      send('up:log', '[rfork settings] ' + JSON.stringify(effectiveRforkSettings(rforkSettings)));
       rforkRecord = journal.begin({ account: currentEmail, destination, source: file, bytes: fileSize,
         ...(rforkSettings.resume ? { checkpoint: require('./rfork-checkpoints').newCheckpoint(rforkSettings), folderLink: currentFolderLink } : {}) });
       try {
@@ -1249,6 +1250,7 @@ async function resumeSavedUpload({ id, password: suppliedPassword }, send) {
       if (!password) throw new Error('Enter the password for the original account shown in recovery.');
       const env = rforkEnvironment(record.account, await obscurePass(password));
       send('up:log', '[rfork recovery] Verifying the original source and checkpoint. ' + summarizeRforkSettings({ ...settings, resume: true }));
+      send('up:log', '[rfork settings] ' + JSON.stringify(effectiveRforkSettings(settings, { resume: true })));
       const result = await uploadWithRfork({ binary: getBinPath('rclone'), source: record.source,
         destination: record.destination, bytes: record.bytes, env, spawn, journal, record, settings,
         cancelled: () => _upKillFlag || _upCancelFlag, onSpawn(proc) { _upCurrentProc = proc; },
