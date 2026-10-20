@@ -47,8 +47,9 @@ const (
 	eventWaitTime = 500 * time.Millisecond
 	decayConstant = 2 // bigger for slower decay, exponential
 
-	sessionIDConfigKey = "session_id"
-	masterKeyConfigKey = "master_key"
+	sessionIDConfigKey   = "session_id"
+	masterKeyConfigKey   = "master_key"
+	maxUploadRequestSize = 64 * 1024 * 1024
 )
 
 var (
@@ -112,7 +113,8 @@ It does not enable replay of an uncertain final file commit.`,
 			Help: `Allow ciphertext replay after an incomplete upload response body.
 
 Experimental: a lost terminal response may contain the upload completion handle.
-Disabled until replay behavior has been verified against the live server.
+Terminal replay passed a small live protocol probe; this remains opt-in for
+compatibility while broader failure and native-platform checks are completed.
 The per-request retry budget still applies. Final file commits are never replayed.`,
 			Default:  false,
 			Advanced: true,
@@ -131,9 +133,24 @@ permanently delete objects instead.`,
 
 This is independent of --transfers, which controls simultaneous files.
 Values from 1 to 32 are accepted. The worker pool holds at most concurrency+1
-native chunk buffers (up to 1 MiB each). Encryption, transport and rclone's
-read buffer add overhead. Use 1 for serial uploads.`,
+request buffers, up to 1 MiB each with native requests or upload_request_size
+with batching. Encryption, transport and rclone's read buffer add overhead.
+Use 1 for serial uploads.`,
 			Default:  8,
+			Advanced: true,
+		}, {
+			Name: "upload_request_size",
+			Help: `Maximum payload of a batched MEGA data request.
+
+Zero disables batching and sends one native chunk per request (compatibility
+default). Nonzero sizes from 1Mi to 64Mi group complete contiguous native chunks;
+actual requests may be shorter to preserve native crypto boundaries and EOF.
+Use explicit units (for example 4Mi or 4194304B); bare numbers mean KiB.
+The per-file payload-buffer bound is (upload_concurrency+1) times this size,
+plus up to 1 MiB encryption scratch per worker, MAC state, rclone read buffers
+and transport/runtime overhead. Simultaneous files multiply these costs.
+Generic --max-buffer-memory does not cap these payload buffers.`,
+			Default:  fs.SizeSuffix(0),
 			Advanced: true,
 		}, {
 			Name: "upload_diagnostics",
@@ -192,6 +209,7 @@ type Options struct {
 	UploadRetries         int                  `config:"upload_retries"`
 	UploadRetryBodyErrors bool                 `config:"upload_retry_body_errors"`
 	UploadPacing          fs.Duration          `config:"upload_pacing"`
+	UploadRequestSize     fs.SizeSuffix        `config:"upload_request_size"`
 	Enc                   encoder.MultiEncoder `config:"encoding"`
 }
 
@@ -366,6 +384,9 @@ func NewFs(ctx context.Context, name, root string, m configmap.Mapper) (fs.Fs, e
 	}
 	if opt.UploadPacing < 0 {
 		return nil, errors.New("mega upload pacing must be nonnegative")
+	}
+	if err := validateUploadRequestSize(int64(opt.UploadRequestSize)); err != nil {
+		return nil, err
 	}
 	if opt.Pass != "" {
 		var err error
@@ -1325,6 +1346,11 @@ type uploadSession interface {
 	FinishContext(context.Context) (*mega.Node, error)
 }
 
+type batchUploadSession interface {
+	uploadSession
+	UploadRangeContext(context.Context, int, int, []byte) error
+}
+
 type pacedUpload struct {
 	*mega.Upload
 	fs           *Fs
@@ -1350,21 +1376,22 @@ func (u pacedUpload) FinishContext(ctx context.Context) (node *mega.Node, err er
 }
 
 type uploadReport struct {
-	SchemaVersion   int                    `json:"schemaVersion"`
-	Workers         int                    `json:"workers"`
-	RetryLimit      int                    `json:"retryLimit"`
-	RetryBodyErrors bool                   `json:"retryBodyErrors"`
-	PacingSeconds   float64                `json:"pacingSeconds"`
-	HTTPS           bool                   `json:"https"`
-	SourceBytes     int64                  `json:"sourceBytes"`
-	SourceRead      mega.UploadTiming      `json:"sourceRead"`
-	SetupSeconds    float64                `json:"setupSeconds"`
-	DataSeconds     float64                `json:"dataSeconds"`
-	CommitSeconds   float64                `json:"commitSeconds"`
-	ElapsedSeconds  float64                `json:"elapsedSeconds"`
-	Committed       bool                   `json:"committed"`
-	Successful      bool                   `json:"successful"`
-	Chunks          mega.UploadDiagnostics `json:"chunks"`
+	SchemaVersion    int                    `json:"schemaVersion"`
+	Workers          int                    `json:"workers"`
+	RetryLimit       int                    `json:"retryLimit"`
+	RetryBodyErrors  bool                   `json:"retryBodyErrors"`
+	PacingSeconds    float64                `json:"pacingSeconds"`
+	RequestSizeBytes int64                  `json:"requestSizeBytes"`
+	HTTPS            bool                   `json:"https"`
+	SourceBytes      int64                  `json:"sourceBytes"`
+	SourceRead       mega.UploadTiming      `json:"sourceRead"`
+	SetupSeconds     float64                `json:"setupSeconds"`
+	DataSeconds      float64                `json:"dataSeconds"`
+	CommitSeconds    float64                `json:"commitSeconds"`
+	ElapsedSeconds   float64                `json:"elapsedSeconds"`
+	Committed        bool                   `json:"committed"`
+	Successful       bool                   `json:"successful"`
+	Chunks           mega.UploadDiagnostics `json:"chunks"`
 }
 
 type uploadDiagnosticReader struct {
@@ -1390,16 +1417,69 @@ func (r uploadDiagnosticReader) Read(b []byte) (int, error) {
 // uploadAndFinish joins all workers before committing or returning an error.
 // The input is read serially; only owned chunk buffers cross goroutines.
 func uploadAndFinish(ctx context.Context, in io.Reader, u uploadSession, concurrency int) (*mega.Node, error) {
+	return uploadAndFinishSized(ctx, in, u, concurrency, 0)
+}
+
+func validateUploadRequestSize(size int64) error {
+	if size < 0 || size > maxUploadRequestSize || (size > 0 && size < 1024*1024) {
+		return errors.New("mega upload request size must be 0 or between 1 MiB and 64 MiB")
+	}
+	return nil
+}
+
+func planUploadRange(u uploadSession, first int, limit int64) (count, size int, err error) {
+	var expected int64
+	for id := first; id < u.Chunks(); id++ {
+		position, n, err := u.ChunkLocation(id)
+		if err != nil {
+			return 0, 0, fmt.Errorf("chunk %d location: %w", id, err)
+		}
+		if n < 0 || n > 1024*1024 || position < 0 {
+			return 0, 0, fmt.Errorf("invalid native chunk %d layout", id)
+		}
+		if count > 0 && (limit == 0 || int64(size)+int64(n) > limit) {
+			break
+		}
+		if count > 0 && position != expected {
+			return 0, 0, errors.New("noncontiguous native chunks in upload request")
+		}
+		count++
+		size += n
+		expected = position + int64(n)
+		if limit == 0 {
+			break
+		}
+	}
+	if count == 0 {
+		return 0, 0, errors.New("empty upload range")
+	}
+	return count, size, nil
+}
+
+// uploadAndFinishSized groups native chunks into bounded request jobs when enabled.
+func uploadAndFinishSized(ctx context.Context, in io.Reader, u uploadSession, concurrency int, requestSize int64) (*mega.Node, error) {
 	if concurrency < 1 || concurrency > 32 {
 		return nil, errors.New("mega upload concurrency must be between 1 and 32")
+	}
+	if err := validateUploadRequestSize(requestSize); err != nil {
+		return nil, err
+	}
+	var batches batchUploadSession
+	if requestSize > 0 {
+		var ok bool
+		batches, ok = u.(batchUploadSession)
+		if !ok {
+			return nil, errors.New("upload session does not support request batching")
+		}
 	}
 	parent := ctx
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	group, workerCtx := errgroup.WithContext(ctx)
 	type chunkJob struct {
-		id   int
-		data []byte
+		id    int
+		count int
+		data  []byte
 	}
 	jobs := make(chan chunkJob)
 	for range concurrency {
@@ -1415,7 +1495,13 @@ func uploadAndFinish(ctx context.Context, in io.Reader, u uploadSession, concurr
 					if err := workerCtx.Err(); err != nil {
 						return err
 					}
-					if err := u.UploadChunkContext(workerCtx, job.id, job.data); err != nil {
+					var err error
+					if job.count > 1 {
+						err = batches.UploadRangeContext(workerCtx, job.id, job.count, job.data)
+					} else {
+						err = u.UploadChunkContext(workerCtx, job.id, job.data)
+					}
+					if err != nil {
 						return err
 					}
 				}
@@ -1423,26 +1509,24 @@ func uploadAndFinish(ctx context.Context, in io.Reader, u uploadSession, concurr
 		})
 	}
 	readErr := func() error {
-		for id := range u.Chunks() {
+		for id := 0; id < u.Chunks(); {
 			if err := workerCtx.Err(); err != nil {
 				return err
 			}
-			_, size, err := u.ChunkLocation(id)
+			count, size, err := planUploadRange(u, id, requestSize)
 			if err != nil {
-				return fmt.Errorf("chunk %d location: %w", id, err)
-			}
-			if size < 0 || size > 1024*1024 {
-				return fmt.Errorf("invalid native chunk size %d", size)
+				return err
 			}
 			chunk := make([]byte, size)
 			if _, err := io.ReadFull(in, chunk); err != nil {
 				return fmt.Errorf("chunk %d source: %w", id, err)
 			}
 			select {
-			case jobs <- chunkJob{id, chunk}:
+			case jobs <- chunkJob{id: id, count: count, data: chunk}:
 			case <-workerCtx.Done():
 				return workerCtx.Err()
 			}
+			id += count
 		}
 		return nil
 	}()
@@ -1530,10 +1614,11 @@ func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, op
 		report.RetryLimit = retries
 		report.RetryBodyErrors = o.fs.opt.UploadRetryBodyErrors
 		report.PacingSeconds = time.Duration(o.fs.opt.UploadPacing).Seconds()
+		report.RequestSizeBytes = int64(o.fs.opt.UploadRequestSize)
 	}
 
 	var waitEvent <-chan struct{}
-	info, err := uploadAndFinish(ctx, in, pacedUpload{Upload: u, fs: o.fs,
+	info, err := uploadAndFinishSized(ctx, in, pacedUpload{Upload: u, fs: o.fs,
 		beforeFinish: func() {
 			if report != nil {
 				report.DataSeconds = time.Since(dataStarted).Seconds()
@@ -1546,7 +1631,7 @@ func (o *Object) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, op
 				report.CommitSeconds = time.Since(commitStarted).Seconds()
 			}
 		},
-	}, o.fs.opt.UploadConcurrency)
+	}, o.fs.opt.UploadConcurrency, int64(o.fs.opt.UploadRequestSize))
 	if report != nil && commitStarted.IsZero() {
 		report.DataSeconds = time.Since(dataStarted).Seconds()
 	}

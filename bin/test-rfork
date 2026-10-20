@@ -3,6 +3,8 @@ set -euo pipefail
 RFORK_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export RCLONE_CONFIG=/notfound
 unset X_MEGA_USER X_MEGA_PASSWORD
+python3 "$RFORK_ROOT/bin/test_probe_upload_protocol.py"
+python3 "$RFORK_ROOT/bin/test_live_upload_improvements.py"
 "$RFORK_ROOT/bin/rfork-go" test -mod=readonly -timeout 20m ./...
 "$RFORK_ROOT/bin/rfork-go" test -mod=readonly -race -timeout 5m ./backend/mega -run '^TestUpload'
 RFORK_WORKDIR="$RFORK_ROOT/deps/go-mega" "$RFORK_ROOT/bin/rfork-go" test -race -timeout 5m ./...

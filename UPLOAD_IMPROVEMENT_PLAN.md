@@ -1,14 +1,15 @@
 # rfork upload improvement plan
 
-Status: diagnostics, chunk-retry improvements and separate data pacing are implemented and pass focused
+Status: diagnostics, chunk-retry improvements, separate pacing and request grouping
+are implemented and pass focused
 Linux race tests and lint; see [reports/UPLOAD_IMPROVEMENTS.md](reports/UPLOAD_IMPROVEMENTS.md).
-Response-body replay remains opt-in pending live protocol validation. Batching,
-restart resume and release validation remain pending. M3 changes are
+The live batching/offset/terminal-replay protocol gate passed, with independent
+hash checks and verified cleanup. Response-body replay remains opt-in. Native CLI
+validation, restart resume and release promotion remain pending. M3 changes are
 outside this work.
 
-A dependency-only batching prototype and manual protocol probe now pass local
-crypto/race/lint checks. Live acceptance is the next gate before backend request
-grouping; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
+The worker pool now supports opt-in bounded request jobs while native request
+behavior remains the default; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
 
 ## Objective and saved baseline
 

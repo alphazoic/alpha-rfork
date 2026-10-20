@@ -19,15 +19,19 @@ rfork copyto movie.mkv mega:uploads/movie.mkv \
   --transfers 1 --mega-upload-concurrency 8 --mega-use-https=true
 ```
 
-`--mega-upload-concurrency` defaults to 8, accepts 1–32 and controls simultaneous native chunks
-**per file**. `--transfers` controls simultaneous files. Their product determines
-the potential number of active chunk requests. Set concurrency to 1 for serial
+`--mega-upload-concurrency` defaults to 8, accepts 1–32 and controls simultaneous data requests
+**per file**. With batching disabled, each request carries one native chunk.
+`--transfers` controls simultaneous files. Their product determines
+the potential number of active data requests, further bounded by connection
+admission and pacing. Set concurrency to 1 for serial
 diagnosis. HTTPS is enabled by default; an explicit configuration setting or
 `--mega-use-https=false` can override it.
 
-Each file's worker pool holds at most concurrency+1 chunk buffers, each up to
-1 MiB, plus encryption padding, rclone's configured read buffer and ordinary
-transport/runtime overhead. Input
+Each file's worker pool holds at most concurrency+1 payload buffers, each up to
+1 MiB with native requests or the configured batch size. Encryption padding adds
+at most 1 MiB scratch per worker, plus native MAC state, rclone's configured read
+buffer and ordinary transport/runtime overhead. Simultaneous files multiply these
+costs; `--max-buffer-memory` does not cap these payload buffers. Input
 is read sequentially, so the worker pool works with rclone's accounting and
 bandwidth limiting. Progress can include buffered data; completion requires a
 successful final commit.
@@ -49,9 +53,10 @@ respected with cancellable waits. Chunk errors omit private upload URLs while
 retaining provider error descriptions and programmatic causes.
 
 `--mega-upload-retry-body-errors` opts into replay after a truncated successful
-response. It is experimental and defaults to false pending live verification of
-terminal completion-handle replay. The behavior is covered by local fixtures,
-which cannot establish server replay semantics. It never enables final-commit
+response. It defaults to false for compatibility. A small live protocol check
+verified recovery of a terminal completion handle by replaying its ciphertext;
+local fixtures also cover truncated response bodies and retry identity. Broader
+failure/platform checks remain distinct from that protocol result. It never enables final-commit
 replay. Retry counts are per file and do not mutate a shared account client.
 
 `--mega-upload-pacing` controls the interval between data-request starts. It
@@ -63,6 +68,20 @@ separate remotes sharing an account retain independent settings. Every retry is
 paced. Metadata/API pacing remains separate. Data pacing and connection admission
 waits are cancellable. The diagnostic `pacing` aggregate includes time waiting
 for both connection admission and the configured data interval.
+
+`--mega-upload-request-size` enables HTTP request grouping. The default `0`
+preserves one native MEGA chunk per request; a nonzero limit from `1Mi` to `64Mi`
+groups complete contiguous chunks while retaining their individual encryption
+and MAC boundaries. Requests can be shorter than the limit. Use explicit units,
+such as `4Mi` or `4194304B`; bare numbers follow rclone's KiB convention. Buffer
+use grows with this limit and worker/file counts. These are configurable controls,
+not performance-tuned defaults. For example:
+
+```sh
+rfork copyto movie.mkv mega:uploads/movie.mkv --transfers 1 \
+  --mega-upload-concurrency 8 --mega-upload-request-size 4Mi \
+  --mega-upload-pacing 0 --mega-upload-diagnostics --use-json-log
+```
 
 Workers stop and join on chunk errors or cancellation. A finalization failure
 is returned as a non-retryable error with an uncertain remote outcome: inspect

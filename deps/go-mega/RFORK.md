@@ -23,7 +23,8 @@ response-body replay before workers start. Data requests classify transient and
 permanent HTTP/provider errors, cap response bodies, respect Retry-After and use
 cancellable jittered backoff. Encryption happens once. `UploadRequestError`
 preserves causes for inspection without printing upload URLs. Body replay remains
-opt-in until live terminal-response behavior is validated; final-commit protection
+opt-in for compatibility; a small live check recovered a usable terminal handle
+from a ciphertext replay. Final-commit protection
 is unchanged. None of these per-upload options mutates the shared account client.
 
 `SetUploadRequestHook` installs per-file admission before workers start. Every
@@ -37,8 +38,10 @@ time in `pacing`.
 native chunks into one request without changing per-chunk CTR/MAC boundaries.
 Failed requests record none of their constituent MACs; retries reuse the full
 ciphertext. Native single-chunk uploads use the same preparation path. These APIs
-are covered by native crypto equivalence and failure fixtures; multi-chunk live
-acceptance is a separate manual protocol gate before backend worker integration.
+are covered by native crypto equivalence and failure fixtures. A manual live gate
+verified batching, accepted-offset replay, terminal-handle recovery, independent
+stock-client SHA-256 checks and cleanup. The backend now supports configurable
+bounded request jobs; its native CLI verification is a separate gate.
 
 Empty files retain a zero aggregate MAC: their empty POST obtains the upload
 handle but contributes no data chunk to the authentication fold. This fixes

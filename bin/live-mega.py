@@ -22,12 +22,12 @@ def sha256(path):
 
 
 class LiveTest:
-    def __init__(self, target, cleanup_only=False):
+    def __init__(self, target, cleanup_only=False, receipt_prefix='live-mega'):
         self.target = target
         suffix = '.exe' if target == 'windows' else ''
         self.fork = ROOT / f'build/rfork-{target}-amd64{suffix}'
         self.stock = ROOT / f'build/rclone-v1.75.2-stock{suffix}'
-        self.receipt = ROOT / f'build/live-mega-{target}.json'
+        self.receipt = ROOT / f'build/{receipt_prefix}-{target}.json'
         self.report = None
         if cleanup_only:
             if self.receipt.exists():
@@ -74,16 +74,20 @@ class LiveTest:
             raise RuntimeError(f'{label}: process exceeded {timeout}s') from None
         seconds = round(time.monotonic() - started, 3)
         # Persist only structured transfer counters, never raw backend messages.
-        stats = []
+        stats, upload_diagnostics = [], []
         for line in result.stderr.splitlines():
             try:
                 item = json.loads(line)
                 if 'stats' in item:
                     stats.append(item['stats'])
+                if isinstance(item.get('megaUpload'), dict):
+                    upload_diagnostics.append(item['megaUpload'])
             except (ValueError, TypeError):
                 pass
         record = {'label': label, 'exitCode': result.returncode, 'seconds': seconds,
                   'bytes': max((s.get('bytes', 0) for s in stats), default=0)}
+        if upload_diagnostics:
+            record['uploadDiagnostics'] = upload_diagnostics
         if result.returncode != expected_code:
             messages = result.stderr.lower()
             record['errorCategories'] = [name for name, pattern in (
@@ -104,7 +108,7 @@ class LiveTest:
     @property
     def remote(self):
         folder = self.report['remoteFolder']
-        if not re.fullmatch(r'rfork-ci-(windows|darwin)-[a-f0-9-]{36}', folder):
+        if not re.fullmatch(r'rfork-ci-(linux|windows|darwin)-[a-f0-9-]{36}', folder):
             raise RuntimeError('Refusing cleanup of an unrecognized test folder')
         return 'citest:' + folder
 

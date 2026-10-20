@@ -45,6 +45,10 @@ jobs:
         run: RCLONE_CONFIG=/notfound bin/rfork-go test -race -timeout 5m ./backend/mega -run '^TestUpload'
       - name: Dependency races and crypto fixtures
         run: RFORK_WORKDIR="$PWD/deps/go-mega" bin/rfork-go test -race -timeout 5m ./...
+      - name: Offline live-runner cleanup and diagnostic fixtures
+        run: |
+          python bin/test_probe_upload_protocol.py
+          python bin/test_live_upload_improvements.py
       - name: Upstream unit tests
         run: RCLONE_CONFIG=/notfound bin/rfork-go test -timeout 20m ./...
       - name: Lint changed packages

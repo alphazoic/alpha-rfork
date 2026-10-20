@@ -12,6 +12,10 @@
 - Add configurable data pacing (`--mega-upload-pacing`, default 10ms, 0 to disable),
   including retries, independently of API pacing. Preserve shared foreground
   connection admission and make upload pacing/admission waits cancellable.
+- Add opt-in HTTP request grouping (`--mega-upload-request-size`, 0 or 1–64 MiB),
+  retaining native chunk encryption/MAC boundaries, bounded workers+1 payload
+  buffers and ordinary MEGA files. Preserve native requests by default.
+- Preserve zero-length POST framing when collecting upload diagnostics.
 
 ## v1.75.2-rfork.0.1.0-alpha.1
 

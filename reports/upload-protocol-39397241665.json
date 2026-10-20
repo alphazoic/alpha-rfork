@@ -1,0 +1,16 @@
+{
+  "acceptedOffsetReplay": true,
+  "batchIntegrity": true,
+  "batchPayloadBytes": 9437215,
+  "batchTargetBytes": 4194304,
+  "cleanup": true,
+  "remoteFolder": "rfork-protocol-4b777295b3c249c59b56f69da5959069",
+  "schemaVersion": 1,
+  "sourceCommit": "2f644d1262e85d09ccf54d8d609187a50b07e65e",
+  "stage": "complete",
+  "status": "passed",
+  "terminalIntegrity": true,
+  "terminalReplayReturnedHandle": true,
+  "testExitCode": 0,
+  "runURL": "https://github.com/mega-fork/rfork/actions/runs/39397241665"
+}

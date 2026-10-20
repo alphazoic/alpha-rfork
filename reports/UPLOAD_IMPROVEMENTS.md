@@ -98,3 +98,38 @@ HTTP fixture rejected the instrumented request before the fix. Diagnostic body
 counters now preserve NoBody identity, including replay-body creation. The full
 dependency race suite and parent/dependency lint passed after correction. This
 fix does not change normal nonempty payload framing or M3 bundles.
+
+## Bounded backend request grouping — 2026-10-20
+
+The manual live protocol gate passed at `2f644d1`: batching, accepted nonterminal
+offset replay, usable terminal-handle replay, independent stock-client hashes
+and verified cleanup. Receipt: `upload-protocol-39397241665.json`.
+
+The backend now exposes `--mega-upload-request-size` (0 or 1–64 MiB), retaining
+native requests by default. Complete contiguous native chunks form one owned
+request job. The producer has no queued batches beyond the workers plus one;
+retry ciphertext stays immutable and finalization still follows joined workers.
+Diagnostics report the configured size. Explicit CLI units avoid rclone's bare
+number KiB convention. Buffer bounds include separate crypto/MAC/read/transport
+overhead, as described in the option help and README.
+
+Backend and dependency race suites passed. New tests cover grouping/content,
+varying initial chunk boundaries, disabled grouping, tiny/empty files, source
+short reads, failed batches, peer cancellation/joining, unsupported sessions,
+invalid settings before source reads/login and workers+1 read-ahead. Related
+backend/operations/accounting/HTTP package tests passed after grouping was added.
+Parent/dependency lint, Python runner fixtures and workflow YAML parsing passed.
+Runner fixtures first reproduced and then corrected a byte-unit argument error.
+
+[Native CI run 39397012952](https://github.com/mega-fork/rfork/actions/runs/39397012952)
+passed on Linux, Windows and macOS for the earlier dependency-prototype commit
+`2f644d1` (full upstream units, focused races, CLI builds/smoke). This does not
+substitute for the final backend-batching commit's checks.
+
+The manual workflow's `improvements` choice validates the actual CLI on all three
+native platforms, sequentially against the dedicated account. It checks grouping
+through the maximum accepted request size, effective diagnostic settings, explicit
+connection limits, independent hashes, empty/boundary files, replacement, multiple
+files and cancellation. It publishes sanitized receipts and always retries scoped
+cleanup. It is not a performance-ranking matrix. Those final native/live results,
+restart resume and standalone release promotion remain pending.

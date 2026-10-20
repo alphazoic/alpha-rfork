@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"flag"
 	"io"
 	"net/http"
 	"os"
@@ -17,7 +18,7 @@ import (
 )
 
 func TestLiveUploadProtocol(t *testing.T) {
-	if os.Getenv("RFORK_LIVE_PROTOCOL") != "1" {
+	if os.Getenv("RFORK_LIVE_PROTOCOL") != "1" || flag.Lookup("test.run").Value.String() != "^TestLiveUploadProtocol$" {
 		t.Skip("manual dedicated-account protocol probe only")
 	}
 	email, password := os.Getenv("RFORK_MEGA_EMAIL"), os.Getenv("RFORK_MEGA_PASSWORD")

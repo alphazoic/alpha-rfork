@@ -25,7 +25,7 @@ func (u *Upload) ChunkRangeLocation(first, count int) (position int64, size int,
 // UploadRangeContext encrypts complete contiguous native chunks and sends them
 // in one request. The caller owns plaintext and supplies each chunk only once.
 // Native MAC boundaries remain unchanged; retries reuse the encrypted buffer.
-// This is experimental until live server acceptance has been validated.
+// The caller bounds payload memory and joins workers before finalization.
 func (u *Upload) UploadRangeContext(ctx context.Context, first, count int, plaintext []byte) error {
 	if err := ctx.Err(); err != nil {
 		return err

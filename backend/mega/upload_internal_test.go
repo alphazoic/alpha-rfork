@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -357,9 +358,17 @@ func TestUploadInvalidOptionsRejectBeforeLogin(t *testing.T) {
 	for _, option := range []configmap.Simple{
 		{"upload_concurrency": "8", "upload_retries": "-2"},
 		{"upload_concurrency": "8", "upload_retries": "-1", "upload_pacing": "-1ms"},
+		{"upload_concurrency": "8", "upload_retries": "-1", "upload_request_size": "65Mi"},
 	} {
-		if _, err := NewFs(context.Background(), "invalid", "", option); err == nil {
-			t.Fatal("invalid upload option accepted")
+		want := "mega upload retries"
+		if option["upload_pacing"] != "" {
+			want = "mega upload pacing"
+		}
+		if option["upload_request_size"] != "" {
+			want = "mega upload request size"
+		}
+		if _, err := NewFs(context.Background(), "invalid", "", option); err == nil || !strings.Contains(err.Error(), want) {
+			t.Fatalf("invalid option not rejected before login: %v", err)
 		}
 	}
 }
