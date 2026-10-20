@@ -14,6 +14,15 @@ on:
           - improvements
           - resume-protocol
           - resume
+      resume_target:
+        description: Native platform for the integrated resume gate
+        type: choice
+        default: all
+        options:
+          - all
+          - linux
+          - windows
+          - darwin
       cleanup_folder:
         description: Exact rfork-protocol UUID folder for cleanup only (resume-protocol mode)
         type: string
@@ -131,17 +140,11 @@ jobs:
   resume:
     if: inputs.platform == 'resume'
     strategy:
-      fail-fast: false
+      fail-fast: true
       max-parallel: 1
       matrix:
-        include:
-          - os: ubuntu-latest
-            target: linux
-          - os: windows-latest
-            target: windows
-          - os: macos-15-intel
-            target: darwin
-    runs-on: ${{ matrix.os }}
+        target: ${{ inputs.resume_target == 'all' && fromJSON('["linux","windows","darwin"]') || fromJSON(format('["{0}"]', inputs.resume_target)) }}
+    runs-on: ${{ matrix.target == 'linux' && 'ubuntu-latest' || matrix.target == 'windows' && 'windows-latest' || 'macos-15-intel' }}
     timeout-minutes: 45
     defaults:
       run:
