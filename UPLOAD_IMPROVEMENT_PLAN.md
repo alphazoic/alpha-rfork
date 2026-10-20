@@ -6,10 +6,11 @@ Linux race tests and lint; see [reports/UPLOAD_IMPROVEMENTS.md](reports/UPLOAD_I
 The live batching/offset/terminal-replay protocol gate passed, with independent
 hash checks and verified cleanup. Response-body replay remains opt-in. Full native
 checks passed on Linux, Windows and macOS in the temporary repository (receipt:
-`reports/upload-improvements-native-39409187807.json`). Linux integrated live CLI
-checks passed (15 independent hashes and verified cleanup); Windows/macOS live
-checks, restart resume and release promotion remain pending. M3 changes are outside
-this work.
+`reports/upload-improvements-native-39409187807.json`). Integrated live CLI checks
+also passed on all three platforms (15 independent hashes each and verified cleanup,
+run `39409214017`). The fresh-process resume protocol gate passed as well
+(`39409953855`); production checkpoints/recovery and release promotion remain
+pending. M3 changes are outside this work.
 
 The worker pool now supports opt-in bounded request jobs while native request
 behavior remains the default; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
@@ -18,8 +19,9 @@ The original GitHub account blocked the final native/live runs before any steps
 executed because of a billing/spending-limit restriction. The user supplied a
 temporary repository, `alphazoic/alpha-rfork`, and added the dedicated test-account
 secrets there. Hosted validation is being resumed on the same source history;
-`origin` remains the original repository. The state-machine contract and missing
-two-process resume gate are in [RESUME_DESIGN.md](RESUME_DESIGN.md).
+`origin` remains the original repository. The passed two-process resume gate,
+remaining limits and unimplemented state-machine contract are in
+[RESUME_DESIGN.md](RESUME_DESIGN.md).
 
 Local final validation is recorded in
 [reports/upload-improvements-local-464acac.json](reports/upload-improvements-local-464acac.json):

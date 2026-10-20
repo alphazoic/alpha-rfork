@@ -20,10 +20,11 @@ requests and opt-in response-body replay. No performance-setting sweep was run.
 - Linux, Windows and macOS amd64 native full unit suites, upload/dependency races,
   builds and CLI smoke checks passed in the temporary repository at `b4bd97c`, whose
   upload implementation matches `464acac`. Linux lint and runner fixtures also
-  passed. Receipt: `upload-improvements-native-39409187807.json`. Linux integrated
-  live MEGA checks passed with 15 independent hashes and verified cleanup in
-  `upload-improvements-live-linux-39409214017.json`; Windows/macOS live checks are
-  pending. Earlier local hashes/provenance are in
+  passed. Receipt: `upload-improvements-native-39409187807.json`. Integrated live
+  MEGA checks also passed on all three platforms: 54 recorded checks and 15
+  independent hashes per platform, with verified cleanup. Receipts:
+  `upload-improvements-live-{linux,windows,darwin}-39409214017.json`.
+  Earlier local hashes/provenance are in
   `upload-improvements-local-464acac.json`.
 - GitHub rejected final runs `39400711200` and `39401087755` before any steps in
   the inspected Linux jobs because of an account payment/spending-limit issue.
@@ -37,14 +38,16 @@ requests and opt-in response-body replay. No performance-setting sweep was run.
   isolated follow-up (`TestPutObjectFailureCached`, 4.646s), without source changes.
   Do not describe the full suite as green. No Docker permissions or unrelated
   S3 code were changed.
-- Durable resume is not implemented. `../RESUME_DESIGN.md` records the required
-  fresh-process protocol gate and crash-safe state/source/commit contract. A
-  same-process replay result does not establish restart-resume support.
+- The fresh-process resume protocol gate passed all three cases with independent
+  hashes and cleanup (`upload-resume-protocol-39409953855.json`). Production durable
+  resume is not implemented. `../RESUME_DESIGN.md` records the passed short-delay
+  protocol cases and the remaining crash-safe state/source/commit contract, native
+  storage/locking checks and expiry limits.
 
 The saved alpha references/artifacts are preserved, all M3 bundle checksums still
 match their saved manifest, and no M3 code/settings/bundle replacement is included.
-No release tag/promotion is made with integrated live gates pending. Stage
-records below retain their results and limits at the time each was saved.
+No release tag/promotion has been made; artifacts remain development builds.
+Stage records below retain their results and limits at the time each was saved.
 
 ## Hosted validation restart and resume probe preparation — 2026-10-20
 
@@ -56,12 +59,27 @@ remote rather than assuming the original account.
 
 Native checks passed on all three platforms in run `39409187807`; the duplicate
 earlier dispatch was cancelled after workflow registration triggered its own run.
-The registered live `improvements` workflow is in progress (`39409214017`): Linux
-passed 54 checks, including 15 independent stock-client SHA-256 comparisons and
-verified scoped cleanup. Its artifact SHA-256 matches the saved local Linux build
-from implementation source `464acac` exactly. Windows/macOS are pending. The
-fresh-process protocol gate is queued behind it (`39409953855`). Results are kept
-separate from the original account's pre-start billing failures.
+The live `improvements` workflow passed on Linux, Windows and macOS (`39409214017`):
+54 recorded checks per platform, including 15 independent stock-client SHA-256
+comparisons and verified scoped cleanup. The fresh-process protocol gate also
+passed (`39409953855`), with three additional independent hashes and cleanup.
+Results are kept separate from the original account's
+pre-start billing failures.
+
+Hash-verified native artifacts are retained under ignored
+`build/validated-39409214017/`. These are development builds, not M3 replacements.
+
+| Target | Live checks | Independent hashes | Cleanup | Native artifact SHA-256 |
+| --- | --- | --- | --- | --- |
+| Linux amd64 | 54 passed | 15 matched | verified | `4340cbeef83db8fdf9d419b301c40bd38da0f5664f9a546faa8cb57258d4251a` |
+| Windows amd64 | 54 passed | 15 matched | verified | `76d60d5194a2c44a001d8a277e199e9fd8d6ec9fb409b71b55d9d39c607e9c36` |
+| macOS amd64 | 54 passed | 15 matched | verified | `6f07065199c8b4aef8cb219f023ad63f7893357da32d7d4c25414085430611b5` |
+
+Linux/macOS native binaries match the saved local cross-build hashes exactly.
+The Windows native binary differs from the earlier cross-build, although their Go
+build metadata (toolchain/options/dependencies) agrees. No cross-host reproducibility
+claim is made for Windows; use the native artifact/checksum above, which passed the
+live checks. The source commit and artifact digest are retained in each receipt.
 
 A manual `resume-protocol` gate now exercises separate-process fresh authentication,
 saved acknowledgements, accepted-data replay and a lost multi-chunk terminal reply.
@@ -72,9 +90,15 @@ checkpoint format, M3 integration or release promotion is included.
 
 Tests first failed because the new state helpers and Python resume selector did
 not exist. After implementation, dependency race tests, seven Python runner
-fixtures, workflow YAML parsing and parent/dependency lint passed locally. Live
-restart behavior and general expiry semantics remain unproven until the new gate
-runs; a passing short-delay probe will not establish a universal session lifetime.
+fixtures, workflow YAML parsing and parent/dependency lint passed locally. The live
+gate subsequently passed: acknowledged-prefix restoration (no intentional pause),
+accepted data absent from saved acknowledgements (15-second pause), and a deliberately
+lost multi-chunk terminal response (one-second pause). Every case used separate
+processes and fresh authentication, then passed an independent hash check. No
+universal session lifetime or general expiry behavior is established. Production
+encrypted checkpoints, process locking, source identity enforcement and uncertain-
+commit recovery remain the next implementation stage; native storage/fault tests
+must pass before advertising durable resume.
 
 ## Diagnostics stage — 2026-10-20
 

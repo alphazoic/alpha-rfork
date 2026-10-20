@@ -1,0 +1,1551 @@
+{
+  "target": "windows",
+  "commit": "b4bd97cc34fe1dfa81fb9b7e7114b060ede6f76a",
+  "remoteFolder": "rfork-ci-windows-f6e41b2a-d39c-489f-ac57-2bcf988f0e77",
+  "binarySHA256": "76d60d5194a2c44a001d8a277e199e9fd8d6ec9fb409b71b55d9d39c607e9c36",
+  "verifierSHA256": "b3c8401439bf20137ff1e5e8b1e0f1b7be6b82e94b62324e06c55b12eeb34690",
+  "checks": [
+    {
+      "label": "create isolated test folder",
+      "exitCode": 0,
+      "seconds": 1.431,
+      "bytes": 0
+    },
+    {
+      "label": "upload native.bin",
+      "exitCode": 0,
+      "seconds": 2.473,
+      "bytes": 67108895,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0.01,
+          "requestSizeBytes": 0,
+          "https": true,
+          "sourceBytes": 67108895,
+          "sourceRead": {
+            "count": 139,
+            "seconds": 0.0069123000000000006,
+            "minSeconds": 0,
+            "maxSeconds": 0.0012577
+          },
+          "setupSeconds": 0.1400886,
+          "dataSeconds": 0.9526179,
+          "commitSeconds": 0.1082289,
+          "elapsedSeconds": 1.5445533999999999,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 68,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 67108895,
+            "acknowledgedBytes": 67108895,
+            "acknowledgedChunks": 68,
+            "activeRequests": 0,
+            "peakRequests": 8,
+            "minRequestBytes": 131072,
+            "maxRequestBytes": 1048576,
+            "firstRequestSeconds": 0.0003039,
+            "lastAcknowledgementSeconds": 0.9526179,
+            "encryption": {
+              "count": 68,
+              "seconds": 0.17788179999999995,
+              "minSeconds": 0.0003039,
+              "maxSeconds": 0.0041459
+            },
+            "pacing": {
+              "count": 68,
+              "seconds": 2.7824213999999996,
+              "minSeconds": 0,
+              "maxSeconds": 0.0666475
+            },
+            "request": {
+              "count": 68,
+              "seconds": 3.7699671000000006,
+              "minSeconds": 0.0190194,
+              "maxSeconds": 0.2292971
+            },
+            "response": {
+              "count": 68,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 67108895,
+      "workers": 8,
+      "requestSizeBytes": 0,
+      "pacing": "10ms",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download native.bin",
+      "exitCode": 0,
+      "seconds": 5.601,
+      "bytes": 67108895
+    },
+    {
+      "label": "SHA256 native.bin",
+      "expected": "f746b9e03407e4add43bb8a5a53cf40f7276ca945c44982ce165ecb90a9bba44",
+      "actual": "f746b9e03407e4add43bb8a5a53cf40f7276ca945c44982ce165ecb90a9bba44",
+      "matches": true
+    },
+    {
+      "label": "delete native.bin",
+      "exitCode": 0,
+      "seconds": 1.637,
+      "bytes": 0
+    },
+    {
+      "label": "upload batch-4Mi.bin",
+      "exitCode": 0,
+      "seconds": 26.804,
+      "bytes": 67108895,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 4194304,
+          "https": true,
+          "sourceBytes": 67108895,
+          "sourceRead": {
+            "count": 88,
+            "seconds": 0.022565799999999997,
+            "minSeconds": 0,
+            "maxSeconds": 0.0083831
+          },
+          "setupSeconds": 0.0938689,
+          "dataSeconds": 24.9335046,
+          "commitSeconds": 0.1713091,
+          "elapsedSeconds": 25.602081599999998,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 17,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 67108895,
+            "acknowledgedBytes": 67108895,
+            "acknowledgedChunks": 68,
+            "activeRequests": 0,
+            "peakRequests": 2,
+            "minRequestBytes": 524319,
+            "maxRequestBytes": 4194304,
+            "firstRequestSeconds": 0.0126882,
+            "lastAcknowledgementSeconds": 24.9335046,
+            "encryption": {
+              "count": 68,
+              "seconds": 0.17951990000000007,
+              "minSeconds": 0.0005624,
+              "maxSeconds": 0.0052091
+            },
+            "pacing": {
+              "count": 17,
+              "seconds": 115.9286169,
+              "minSeconds": 0,
+              "maxSeconds": 19.1993259
+            },
+            "request": {
+              "count": 17,
+              "seconds": 44.31806890000001,
+              "minSeconds": 0.0248508,
+              "maxSeconds": 11.5893175
+            },
+            "response": {
+              "count": 17,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 67108895,
+      "workers": 8,
+      "requestSizeBytes": 4194304,
+      "pacing": "0",
+      "maxConnections": 2
+    },
+    {
+      "label": "stock download batch-4Mi.bin",
+      "exitCode": 0,
+      "seconds": 5.725,
+      "bytes": 67108895
+    },
+    {
+      "label": "SHA256 batch-4Mi.bin",
+      "expected": "f746b9e03407e4add43bb8a5a53cf40f7276ca945c44982ce165ecb90a9bba44",
+      "actual": "f746b9e03407e4add43bb8a5a53cf40f7276ca945c44982ce165ecb90a9bba44",
+      "matches": true
+    },
+    {
+      "label": "delete batch-4Mi.bin",
+      "exitCode": 0,
+      "seconds": 2.41,
+      "bytes": 0
+    },
+    {
+      "label": "upload batch-8Mi.bin",
+      "exitCode": 0,
+      "seconds": 2.658,
+      "bytes": 67108895,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0.001,
+          "requestSizeBytes": 8388608,
+          "https": true,
+          "sourceBytes": 67108895,
+          "sourceRead": {
+            "count": 80,
+            "seconds": 0.014724099999999999,
+            "minSeconds": 0,
+            "maxSeconds": 0.0015467
+          },
+          "setupSeconds": 0.2432373,
+          "dataSeconds": 0.7563933,
+          "commitSeconds": 0.1540361,
+          "elapsedSeconds": 1.3814421000000001,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 9,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 67108895,
+            "acknowledgedBytes": 67108895,
+            "acknowledgedChunks": 68,
+            "activeRequests": 0,
+            "peakRequests": 8,
+            "minRequestBytes": 524319,
+            "maxRequestBytes": 8388608,
+            "firstRequestSeconds": 0.033332,
+            "lastAcknowledgementSeconds": 0.7563933,
+            "encryption": {
+              "count": 68,
+              "seconds": 0.2200087,
+              "minSeconds": 0.0004728,
+              "maxSeconds": 0.008641
+            },
+            "pacing": {
+              "count": 9,
+              "seconds": 0.0644529,
+              "minSeconds": 0,
+              "maxSeconds": 0.0240511
+            },
+            "request": {
+              "count": 9,
+              "seconds": 3.8933302999999997,
+              "minSeconds": 0.2767133,
+              "maxSeconds": 0.4737131
+            },
+            "response": {
+              "count": 9,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 67108895,
+      "workers": 8,
+      "requestSizeBytes": 8388608,
+      "pacing": "1ms",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download batch-8Mi.bin",
+      "exitCode": 0,
+      "seconds": 4.563,
+      "bytes": 67108895
+    },
+    {
+      "label": "SHA256 batch-8Mi.bin",
+      "expected": "f746b9e03407e4add43bb8a5a53cf40f7276ca945c44982ce165ecb90a9bba44",
+      "actual": "f746b9e03407e4add43bb8a5a53cf40f7276ca945c44982ce165ecb90a9bba44",
+      "matches": true
+    },
+    {
+      "label": "delete batch-8Mi.bin",
+      "exitCode": 0,
+      "seconds": 2.561,
+      "bytes": 0
+    },
+    {
+      "label": "upload batch-64Mi.bin",
+      "exitCode": 0,
+      "seconds": 3.677,
+      "bytes": 67108895,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 67108864,
+          "https": true,
+          "sourceBytes": 67108895,
+          "sourceRead": {
+            "count": 73,
+            "seconds": 0.0139466,
+            "minSeconds": 0,
+            "maxSeconds": 0.0008647
+          },
+          "setupSeconds": 0.3471054,
+          "dataSeconds": 0.6353542,
+          "commitSeconds": 0.5307758,
+          "elapsedSeconds": 2.0134975,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 2,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 67108895,
+            "acknowledgedBytes": 67108895,
+            "acknowledgedChunks": 68,
+            "activeRequests": 0,
+            "peakRequests": 2,
+            "minRequestBytes": 524319,
+            "maxRequestBytes": 66584576,
+            "firstRequestSeconds": 0.0160189,
+            "lastAcknowledgementSeconds": 0.6353542,
+            "encryption": {
+              "count": 68,
+              "seconds": 0.14475480000000002,
+              "minSeconds": 0,
+              "maxSeconds": 0.004066
+            },
+            "pacing": {
+              "count": 2,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 2,
+              "seconds": 0.7196267000000001,
+              "minSeconds": 0.2426358,
+              "maxSeconds": 0.4769909
+            },
+            "response": {
+              "count": 2,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 67108895,
+      "workers": 8,
+      "requestSizeBytes": 67108864,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download batch-64Mi.bin",
+      "exitCode": 0,
+      "seconds": 5.367,
+      "bytes": 67108895
+    },
+    {
+      "label": "SHA256 batch-64Mi.bin",
+      "expected": "f746b9e03407e4add43bb8a5a53cf40f7276ca945c44982ce165ecb90a9bba44",
+      "actual": "f746b9e03407e4add43bb8a5a53cf40f7276ca945c44982ce165ecb90a9bba44",
+      "matches": true
+    },
+    {
+      "label": "delete batch-64Mi.bin",
+      "exitCode": 0,
+      "seconds": 1.746,
+      "bytes": 0
+    },
+    {
+      "label": "upload boundary-0.bin",
+      "exitCode": 0,
+      "seconds": 2.142,
+      "bytes": 0,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 2097152,
+          "https": true,
+          "sourceBytes": 0,
+          "sourceRead": {
+            "count": 0,
+            "seconds": 0,
+            "minSeconds": 0,
+            "maxSeconds": 0
+          },
+          "setupSeconds": 0.2553211,
+          "dataSeconds": 0.1664069,
+          "commitSeconds": 0.2187645,
+          "elapsedSeconds": 0.9272631,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 1,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 0,
+            "acknowledgedBytes": 0,
+            "acknowledgedChunks": 1,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 0,
+            "maxRequestBytes": 0,
+            "firstRequestSeconds": 0,
+            "lastAcknowledgementSeconds": 0.1664069,
+            "encryption": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "pacing": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 1,
+              "seconds": 0.1664069,
+              "minSeconds": 0.1664069,
+              "maxSeconds": 0.1664069
+            },
+            "response": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 0,
+      "workers": 8,
+      "requestSizeBytes": 2097152,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download boundary-0.bin",
+      "exitCode": 0,
+      "seconds": 1.928,
+      "bytes": 0
+    },
+    {
+      "label": "SHA256 boundary-0.bin",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-1.bin",
+      "exitCode": 0,
+      "seconds": 2.074,
+      "bytes": 1,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 2097152,
+          "https": true,
+          "sourceBytes": 1,
+          "sourceRead": {
+            "count": 1,
+            "seconds": 0,
+            "minSeconds": 0,
+            "maxSeconds": 0
+          },
+          "setupSeconds": 0.1962877,
+          "dataSeconds": 0.0610289,
+          "commitSeconds": 0.2166607,
+          "elapsedSeconds": 0.7100483,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 1,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 1,
+            "acknowledgedBytes": 1,
+            "acknowledgedChunks": 1,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 1,
+            "maxRequestBytes": 1,
+            "firstRequestSeconds": 0,
+            "lastAcknowledgementSeconds": 0.0610289,
+            "encryption": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "pacing": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 1,
+              "seconds": 0.0610289,
+              "minSeconds": 0.0610289,
+              "maxSeconds": 0.0610289
+            },
+            "response": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 1,
+      "workers": 8,
+      "requestSizeBytes": 2097152,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download boundary-1.bin",
+      "exitCode": 0,
+      "seconds": 1.482,
+      "bytes": 1
+    },
+    {
+      "label": "SHA256 boundary-1.bin",
+      "expected": "594e519ae499312b29433b7dd8a97ff068defcba9755b6d5d00e84c524d67b06",
+      "actual": "594e519ae499312b29433b7dd8a97ff068defcba9755b6d5d00e84c524d67b06",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-15.bin",
+      "exitCode": 0,
+      "seconds": 1.629,
+      "bytes": 15,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 2097152,
+          "https": true,
+          "sourceBytes": 15,
+          "sourceRead": {
+            "count": 1,
+            "seconds": 0,
+            "minSeconds": 0,
+            "maxSeconds": 0
+          },
+          "setupSeconds": 0.0911454,
+          "dataSeconds": 0.0635762,
+          "commitSeconds": 0.1059571,
+          "elapsedSeconds": 0.6048919,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 1,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 15,
+            "acknowledgedBytes": 15,
+            "acknowledgedChunks": 1,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 15,
+            "maxRequestBytes": 15,
+            "firstRequestSeconds": 0.000642,
+            "lastAcknowledgementSeconds": 0.0635762,
+            "encryption": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "pacing": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 1,
+              "seconds": 0.0629342,
+              "minSeconds": 0.0629342,
+              "maxSeconds": 0.0629342
+            },
+            "response": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 15,
+      "workers": 8,
+      "requestSizeBytes": 2097152,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download boundary-15.bin",
+      "exitCode": 0,
+      "seconds": 1.361,
+      "bytes": 15
+    },
+    {
+      "label": "SHA256 boundary-15.bin",
+      "expected": "f550d30bf58973605ade5ba323ae1d1f8fb99868b8333fb33a6549457671c184",
+      "actual": "f550d30bf58973605ade5ba323ae1d1f8fb99868b8333fb33a6549457671c184",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-16.bin",
+      "exitCode": 0,
+      "seconds": 2.0,
+      "bytes": 16,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 2097152,
+          "https": true,
+          "sourceBytes": 16,
+          "sourceRead": {
+            "count": 1,
+            "seconds": 0,
+            "minSeconds": 0,
+            "maxSeconds": 0
+          },
+          "setupSeconds": 0.2258371,
+          "dataSeconds": 0.1690757,
+          "commitSeconds": 0.1075949,
+          "elapsedSeconds": 0.8112026,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 1,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 16,
+            "acknowledgedBytes": 16,
+            "acknowledgedChunks": 1,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 16,
+            "maxRequestBytes": 16,
+            "firstRequestSeconds": 0,
+            "lastAcknowledgementSeconds": 0.1690757,
+            "encryption": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "pacing": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 1,
+              "seconds": 0.1690757,
+              "minSeconds": 0.1690757,
+              "maxSeconds": 0.1690757
+            },
+            "response": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 16,
+      "workers": 8,
+      "requestSizeBytes": 2097152,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download boundary-16.bin",
+      "exitCode": 0,
+      "seconds": 1.396,
+      "bytes": 16
+    },
+    {
+      "label": "SHA256 boundary-16.bin",
+      "expected": "345cf55caa4e51d8219081ce74e4c57c1b10f56c47794d05491dad3a933c8565",
+      "actual": "345cf55caa4e51d8219081ce74e4c57c1b10f56c47794d05491dad3a933c8565",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-17.bin",
+      "exitCode": 0,
+      "seconds": 2.464,
+      "bytes": 17,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 2097152,
+          "https": true,
+          "sourceBytes": 17,
+          "sourceRead": {
+            "count": 1,
+            "seconds": 0,
+            "minSeconds": 0,
+            "maxSeconds": 0
+          },
+          "setupSeconds": 0.3699916,
+          "dataSeconds": 0.1662446,
+          "commitSeconds": 0.2322687,
+          "elapsedSeconds": 1.2686224,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 1,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 17,
+            "acknowledgedBytes": 17,
+            "acknowledgedChunks": 1,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 17,
+            "maxRequestBytes": 17,
+            "firstRequestSeconds": 0,
+            "lastAcknowledgementSeconds": 0.1662446,
+            "encryption": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "pacing": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 1,
+              "seconds": 0.1662446,
+              "minSeconds": 0.1662446,
+              "maxSeconds": 0.1662446
+            },
+            "response": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 17,
+      "workers": 8,
+      "requestSizeBytes": 2097152,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download boundary-17.bin",
+      "exitCode": 0,
+      "seconds": 1.185,
+      "bytes": 17
+    },
+    {
+      "label": "SHA256 boundary-17.bin",
+      "expected": "8bf0659ddca3843e08c0d2ba81f4c6eeae04dc63b592a23cf76516556f05b30d",
+      "actual": "8bf0659ddca3843e08c0d2ba81f4c6eeae04dc63b592a23cf76516556f05b30d",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-131073.bin",
+      "exitCode": 0,
+      "seconds": 2.411,
+      "bytes": 131073,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 2097152,
+          "https": true,
+          "sourceBytes": 131073,
+          "sourceRead": {
+            "count": 1,
+            "seconds": 0,
+            "minSeconds": 0,
+            "maxSeconds": 0
+          },
+          "setupSeconds": 0.2779798,
+          "dataSeconds": 0.1157595,
+          "commitSeconds": 0.2683886,
+          "elapsedSeconds": 1.0136473,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 1,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 131073,
+            "acknowledgedBytes": 131073,
+            "acknowledgedChunks": 2,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 131073,
+            "maxRequestBytes": 131073,
+            "firstRequestSeconds": 0.0004887,
+            "lastAcknowledgementSeconds": 0.1157595,
+            "encryption": {
+              "count": 2,
+              "seconds": 0.0004887,
+              "minSeconds": 0,
+              "maxSeconds": 0.0004887
+            },
+            "pacing": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 1,
+              "seconds": 0.1152708,
+              "minSeconds": 0.1152708,
+              "maxSeconds": 0.1152708
+            },
+            "response": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 131073,
+      "workers": 8,
+      "requestSizeBytes": 2097152,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download boundary-131073.bin",
+      "exitCode": 0,
+      "seconds": 1.391,
+      "bytes": 131073
+    },
+    {
+      "label": "SHA256 boundary-131073.bin",
+      "expected": "7d7a7d3b81477ca97ad2ab4f45c5261e72f6a7ad08f5bfb00f36a51fc21e031c",
+      "actual": "7d7a7d3b81477ca97ad2ab4f45c5261e72f6a7ad08f5bfb00f36a51fc21e031c",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-4194335.bin",
+      "exitCode": 0,
+      "seconds": 1.645,
+      "bytes": 4194335,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 2097152,
+          "https": true,
+          "sourceBytes": 4194335,
+          "sourceRead": {
+            "count": 14,
+            "seconds": 0.0017653,
+            "minSeconds": 0,
+            "maxSeconds": 0.0006496
+          },
+          "setupSeconds": 0.0962687,
+          "dataSeconds": 0.2247773,
+          "commitSeconds": 0.1115135,
+          "elapsedSeconds": 0.6487483,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 3,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 4194335,
+            "acknowledgedBytes": 4194335,
+            "acknowledgedChunks": 8,
+            "activeRequests": 0,
+            "peakRequests": 3,
+            "minRequestBytes": 524319,
+            "maxRequestBytes": 1966080,
+            "firstRequestSeconds": 0.0035466,
+            "lastAcknowledgementSeconds": 0.2247773,
+            "encryption": {
+              "count": 8,
+              "seconds": 0.011864699999999999,
+              "minSeconds": 0,
+              "maxSeconds": 0.002277
+            },
+            "pacing": {
+              "count": 3,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 3,
+              "seconds": 0.5580574,
+              "minSeconds": 0.1447297,
+              "maxSeconds": 0.2187133
+            },
+            "response": {
+              "count": 3,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 4194335,
+      "workers": 8,
+      "requestSizeBytes": 2097152,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download boundary-4194335.bin",
+      "exitCode": 0,
+      "seconds": 2.158,
+      "bytes": 4194335
+    },
+    {
+      "label": "SHA256 boundary-4194335.bin",
+      "expected": "40e460b32fd777eab429e149a9d6a88a5a524cf85e866e544ba70402b5a0377b",
+      "actual": "40e460b32fd777eab429e149a9d6a88a5a524cf85e866e544ba70402b5a0377b",
+      "matches": true
+    },
+    {
+      "label": "upload replacement.bin",
+      "exitCode": 0,
+      "seconds": 2.856,
+      "bytes": 1048593,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 4194304,
+          "https": true,
+          "sourceBytes": 1048593,
+          "sourceRead": {
+            "count": 9,
+            "seconds": 0.0003606,
+            "minSeconds": 0,
+            "maxSeconds": 0.0003606
+          },
+          "setupSeconds": 0.5593894,
+          "dataSeconds": 0.31713,
+          "commitSeconds": 0.3742073,
+          "elapsedSeconds": 1.5755464,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 1,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 1048593,
+            "acknowledgedBytes": 1048593,
+            "acknowledgedChunks": 4,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 1048593,
+            "maxRequestBytes": 1048593,
+            "firstRequestSeconds": 0.0032765,
+            "lastAcknowledgementSeconds": 0.31713,
+            "encryption": {
+              "count": 4,
+              "seconds": 0.0029159,
+              "minSeconds": 0.0005234,
+              "maxSeconds": 0.0008937
+            },
+            "pacing": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 1,
+              "seconds": 0.3138535,
+              "minSeconds": 0.3138535,
+              "maxSeconds": 0.3138535
+            },
+            "response": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 1048593,
+      "workers": 8,
+      "requestSizeBytes": 4194304,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download replacement.bin",
+      "exitCode": 0,
+      "seconds": 1.406,
+      "bytes": 1048593
+    },
+    {
+      "label": "SHA256 replacement.bin",
+      "expected": "d91b4bb100f75df0e6f37e68c8cb9f16cf0ea513a754e0a6882f9dac09ec51d0",
+      "actual": "d91b4bb100f75df0e6f37e68c8cb9f16cf0ea513a754e0a6882f9dac09ec51d0",
+      "matches": true
+    },
+    {
+      "label": "upload replacement.bin",
+      "exitCode": 0,
+      "seconds": 2.662,
+      "bytes": 1048607,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 1,
+          "retryBodyErrors": true,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 4194304,
+          "https": true,
+          "sourceBytes": 1048607,
+          "sourceRead": {
+            "count": 9,
+            "seconds": 0.0011389999999999998,
+            "minSeconds": 0,
+            "maxSeconds": 0.00057
+          },
+          "setupSeconds": 0.1584423,
+          "dataSeconds": 0.2882907,
+          "commitSeconds": 0.2436967,
+          "elapsedSeconds": 1.3623905,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 1,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 1048607,
+            "acknowledgedBytes": 1048607,
+            "acknowledgedChunks": 4,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 1048607,
+            "maxRequestBytes": 1048607,
+            "firstRequestSeconds": 0.0037674,
+            "lastAcknowledgementSeconds": 0.2882907,
+            "encryption": {
+              "count": 4,
+              "seconds": 0.0026284,
+              "minSeconds": 0,
+              "maxSeconds": 0.0011404
+            },
+            "pacing": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 1,
+              "seconds": 0.2845233,
+              "minSeconds": 0.2845233,
+              "maxSeconds": 0.2845233
+            },
+            "response": {
+              "count": 1,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ],
+      "fileBytes": 1048607,
+      "workers": 8,
+      "requestSizeBytes": 4194304,
+      "pacing": "0",
+      "maxConnections": 0
+    },
+    {
+      "label": "stock download replacement.bin",
+      "exitCode": 0,
+      "seconds": 1.803,
+      "bytes": 1048607
+    },
+    {
+      "label": "SHA256 replacement.bin",
+      "expected": "c2754ef137533e4ebbddfbfde00dcce08b545404ec3793c28c57921d8de4fa0c",
+      "actual": "c2754ef137533e4ebbddfbfde00dcce08b545404ec3793c28c57921d8de4fa0c",
+      "matches": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.622,
+      "bytes": 0
+    },
+    {
+      "label": "simultaneous files",
+      "exitCode": 0,
+      "seconds": 4.329,
+      "bytes": 16777278,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 5,
+          "retryLimit": 3,
+          "retryBodyErrors": false,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 4194304,
+          "https": true,
+          "sourceBytes": 8388639,
+          "sourceRead": {
+            "count": 18,
+            "seconds": 0.0029370000000000004,
+            "minSeconds": 0,
+            "maxSeconds": 0.0007638
+          },
+          "setupSeconds": 0.7082959,
+          "dataSeconds": 0.8312926,
+          "commitSeconds": 0.1079428,
+          "elapsedSeconds": 2.1480478,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 3,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 8388639,
+            "acknowledgedBytes": 8388639,
+            "acknowledgedChunks": 12,
+            "activeRequests": 0,
+            "peakRequests": 2,
+            "minRequestBytes": 524319,
+            "maxRequestBytes": 4194304,
+            "firstRequestSeconds": 0.0045848,
+            "lastAcknowledgementSeconds": 0.8312926,
+            "encryption": {
+              "count": 12,
+              "seconds": 0.0200737,
+              "minSeconds": 0,
+              "maxSeconds": 0.0029564
+            },
+            "pacing": {
+              "count": 3,
+              "seconds": 0.4734386,
+              "minSeconds": 0,
+              "maxSeconds": 0.4352861
+            },
+            "request": {
+              "count": 3,
+              "seconds": 1.5913172,
+              "minSeconds": 0.3848174,
+              "maxSeconds": 0.7646094
+            },
+            "response": {
+              "count": 3,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "workers": 5,
+          "retryLimit": 3,
+          "retryBodyErrors": false,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 4194304,
+          "https": true,
+          "sourceBytes": 8388639,
+          "sourceRead": {
+            "count": 18,
+            "seconds": 0.0027240000000000003,
+            "minSeconds": 0,
+            "maxSeconds": 0.000769
+          },
+          "setupSeconds": 0.4948937,
+          "dataSeconds": 1.1796417,
+          "commitSeconds": 0.3053618,
+          "elapsedSeconds": 2.358261,
+          "committed": true,
+          "successful": true,
+          "chunks": {
+            "attempts": 3,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 8388639,
+            "acknowledgedBytes": 8388639,
+            "acknowledgedChunks": 12,
+            "activeRequests": 0,
+            "peakRequests": 3,
+            "minRequestBytes": 524319,
+            "maxRequestBytes": 4194304,
+            "firstRequestSeconds": 0.0060583,
+            "lastAcknowledgementSeconds": 1.1796417,
+            "encryption": {
+              "count": 12,
+              "seconds": 0.0274238,
+              "minSeconds": 0.0010742,
+              "maxSeconds": 0.0035168
+            },
+            "pacing": {
+              "count": 3,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 3,
+              "seconds": 2.4207891000000004,
+              "minSeconds": 0.2561466,
+              "maxSeconds": 1.1619626
+            },
+            "response": {
+              "count": 3,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "stock download multi/first.bin",
+      "exitCode": 0,
+      "seconds": 2.018,
+      "bytes": 8388639
+    },
+    {
+      "label": "SHA256 multi/first.bin",
+      "expected": "d6ee3f7a6e2c9de1b71afa056c1d13cd28d1d28f434db98d43d619ad13670e69",
+      "actual": "d6ee3f7a6e2c9de1b71afa056c1d13cd28d1d28f434db98d43d619ad13670e69",
+      "matches": true
+    },
+    {
+      "label": "stock download multi/second.bin",
+      "exitCode": 0,
+      "seconds": 2.326,
+      "bytes": 8388639
+    },
+    {
+      "label": "SHA256 multi/second.bin",
+      "expected": "87136e47ec1316b42aeb9d39e5901beecc73037c50c298896b6edab74e6bf079",
+      "actual": "87136e47ec1316b42aeb9d39e5901beecc73037c50c298896b6edab74e6bf079",
+      "matches": true
+    },
+    {
+      "label": "cancel batched upload",
+      "exitCode": 10,
+      "seconds": 14.13,
+      "bytes": 14675968,
+      "uploadDiagnostics": [
+        {
+          "schemaVersion": 1,
+          "workers": 8,
+          "retryLimit": 3,
+          "retryBodyErrors": false,
+          "pacingSeconds": 0,
+          "requestSizeBytes": 4194304,
+          "https": true,
+          "sourceBytes": 14675968,
+          "sourceRead": {
+            "count": 25,
+            "seconds": 12.5984612,
+            "minSeconds": 0,
+            "maxSeconds": 1.0006597
+          },
+          "setupSeconds": 0.1874081,
+          "dataSeconds": 12.5984612,
+          "commitSeconds": 0,
+          "elapsedSeconds": 12.7858693,
+          "committed": false,
+          "successful": false,
+          "chunks": {
+            "attempts": 3,
+            "retries": 0,
+            "transportFailures": 0,
+            "httpFailures": 0,
+            "bodyFailures": 0,
+            "providerFailures": 0,
+            "invalidResponses": 0,
+            "payloadBytesRead": 12058624,
+            "acknowledgedBytes": 12058624,
+            "acknowledgedChunks": 15,
+            "activeRequests": 0,
+            "peakRequests": 1,
+            "minRequestBytes": 3670016,
+            "maxRequestBytes": 4194304,
+            "firstRequestSeconds": 2.1108277,
+            "lastAcknowledgementSeconds": 10.222929,
+            "encryption": {
+              "count": 15,
+              "seconds": 0.0256889,
+              "minSeconds": 0,
+              "maxSeconds": 0.0027397
+            },
+            "pacing": {
+              "count": 3,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "request": {
+              "count": 3,
+              "seconds": 0.6710807000000001,
+              "minSeconds": 0.053241,
+              "maxSeconds": 0.5044804
+            },
+            "response": {
+              "count": 3,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            },
+            "backoff": {
+              "count": 0,
+              "seconds": 0,
+              "minSeconds": 0,
+              "maxSeconds": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "list/cancel",
+      "exitCode": 0,
+      "seconds": 1.125,
+      "bytes": 0
+    },
+    {
+      "label": "purge test folder",
+      "exitCode": 0,
+      "seconds": 1.926,
+      "bytes": 0
+    },
+    {
+      "label": "verify cleanup",
+      "exitCode": 0,
+      "seconds": 1.515,
+      "bytes": 0
+    }
+  ],
+  "status": "success",
+  "cleanup": true,
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39409214017"
+}

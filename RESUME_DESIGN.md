@@ -1,11 +1,11 @@
 # Restart-resume investigation and implementation contract
 
-Status: design/investigation only. Durable resume is not implemented or advertised
-as supported. Final batching/live checks are being resumed in the user-supplied
-temporary repository `alphazoic/alpha-rfork`; the original account's blocked runs
-remain recorded separately.
+Status: fresh-process protocol gate passed; production durable resume remains
+unimplemented and is not advertised as supported. Full native and integrated live
+batching/pacing/retry checks passed in the user-supplied temporary repository
+`alphazoic/alpha-rfork`; the original account's blocked runs remain recorded separately.
 
-## Evidence and missing protocol gate
+## Protocol evidence and remaining limits
 
 The saved live receipt `reports/upload-protocol-39397241665.json` establishes
 multi-chunk POSTs, replay of an accepted nonterminal offset, and recovery of a
@@ -16,13 +16,13 @@ The reference SDK persists upload URLs, crypto/MAC state and upload tokens in it
 transfer cache (`src/transfer.cpp`); its mechanism is useful evidence, not proof
 of this fork's process-restart behavior or any guaranteed server session lifetime.
 
-Next live gate: create an isolated session and upload part of a file in process A;
-write sensitive state to a private runner-temporary file, end A, then authenticate
-freshly in process B and finish the same URL/key session. Test short delays,
-unacknowledged-but-accepted data, a lost multi-chunk terminal response and expired/
-rejected sessions. Independently download/hash and verify scoped cleanup. Record
-the tested delays; do not infer a universal expiry time from the URL or a short
-successful pause. Never put the sensitive state in logs, receipts or artifacts.
+The fresh-process gate passed in run `39409953855`, source `a39c3b5`; receipt:
+`reports/upload-resume-protocol-39409953855.json`. Process A saves private state
+and exits; process B authenticates freshly and finishes the same URL/key session.
+All three 9 MiB+31-byte files passed independent stock-client SHA-256 checks and
+scoped cleanup was verified. Batches target 4 MiB and retain native crypto boundaries.
+Accepted-data replay and recovery of a deliberately lost multi-chunk terminal reply
+both worked after process exit. This establishes the tested protocol behavior.
 
 The manual workflow now has a `resume-protocol` choice implementing the first
 three process-restart checks. It uses separate test-executable processes with fresh
@@ -35,8 +35,8 @@ failure. This is a correctness probe, not a performance or worker-count sweep.
 
 The probe's temporary private snapshot codec is test-only, Linux-only and never
 included in artifacts; it is not the production checkpoint/storage design below.
-Offline tests validate state rejection/deep copying and runner isolation. Its live
-result is still pending. The probe cannot establish general session expiry, native
+Offline tests validate state rejection/deep copying and runner isolation. The live
+receipt confirms all three cases. The probe cannot establish general session expiry, native
 Windows ACL/locking behavior, crash-safe checkpoint durability or uncertain-commit
 recovery. Those remain separate implementation/release requirements.
 
@@ -61,7 +61,7 @@ recovery. Those remain separate implementation/release requirements.
 
 ## State codec and ownership
 
-Implementation direction after the protocol gate: expose an explicit MEGA backend
+Next implementation: expose an explicit MEGA backend
 command for a local source file, with a required checkpoint path and configurable
 flush interval. Existing backend-command support can carry those arguments without
 changing generic copy operations. Its CLI path currently uses a background context;
