@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/rclone/rclone/fs"
+	"github.com/rclone/rclone/fs/accounting"
 	"github.com/rclone/rclone/fs/fserrors"
 	"github.com/stretchr/testify/require"
 	megaclient "github.com/t3rm1n4l/go-mega"
@@ -303,4 +304,35 @@ func TestUploadResumeWriterCoalescesAndJoins(t *testing.T) {
 	require.False(t, concurrent.Load())
 	require.LessOrEqual(t, calls.Load(), int32(3))
 	require.Zero(t, active.Load())
+}
+
+func TestUploadResumeTransferLimitUsesPendingPayload(t *testing.T) {
+	for _, test := range []struct {
+		name                 string
+		mode                 fs.CutoffMode
+		used, pending, limit int64
+		want                 error
+	}{
+		{"disabled", fs.CutoffModeHard, 10, 100, -1, nil},
+		{"hard-before-budget", fs.CutoffModeHard, 10, 100, 11, nil},
+		{"hard-exhausted", fs.CutoffModeHard, 10, 1, 10, accounting.ErrorMaxTransferLimitReachedFatal},
+		{"soft-before-budget", fs.CutoffModeSoft, 10, 100, 11, nil},
+		{"soft-exhausted", fs.CutoffModeSoft, 10, 1, 10, accounting.ErrorMaxTransferLimitReachedGraceful},
+		{"cautious-pending-fits", fs.CutoffModeCautious, 10, 5, 20, nil},
+		{"cautious-pending-exceeds", fs.CutoffModeCautious, 10, 11, 20, accounting.ErrorMaxTransferLimitReachedGraceful},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			ctx, ci := fs.AddConfig(context.Background())
+			ctx = accounting.WithStatsGroup(ctx, t.Name())
+			ci.MaxTransfer = fs.SizeSuffix(test.limit)
+			ci.CutoffMode = test.mode
+			accounting.Stats(ctx).Bytes(test.used)
+			err := checkResumeTransferLimit(ctx, test.pending)
+			if test.want == nil {
+				require.NoError(t, err)
+			} else {
+				require.ErrorIs(t, err, test.want)
+			}
+		})
+	}
 }

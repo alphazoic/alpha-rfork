@@ -227,6 +227,8 @@ are active, coalescing/serialization, source mutation even with restored metadat
 MAC mismatches, pending-only accounting, bandwidth cancellation and request sizes
 larger than token-bucket burst capacity. Existing accounting callers retain their
 behavior; an additive context-aware API supports the explicit upload operation.
+The explicit command also applies the ordinary hard/soft/cautious transfer-budget
+admission rules to pending payload; hard cutoffs remain active during accounting.
 
 Live protocol rerun `39418890708` failed before recording a case; cleanup also
 failed. Cleanup-only run `39432815707` independently classified pristine stock

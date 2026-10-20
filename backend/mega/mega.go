@@ -2130,6 +2130,26 @@ type resumeResult struct {
 	SourceBytesRead           int64  `json:"sourceBytesRead"`
 }
 
+// checkResumeTransferLimit mirrors copy's file-admission rules, using only bytes
+// still pending on this session. Hard cutoffs also apply inside AccountReadContext.
+func checkResumeTransferLimit(ctx context.Context, pending int64) error {
+	ci := fs.GetConfig(ctx)
+	if ci.MaxTransfer < 0 {
+		return nil
+	}
+	used := accounting.Stats(ctx).GetBytes()
+	if ci.CutoffMode == fs.CutoffModeCautious {
+		used = accounting.Stats(ctx).GetBytesWithPending() + pending
+	}
+	if used >= int64(ci.MaxTransfer) {
+		if ci.CutoffMode == fs.CutoffModeHard {
+			return accounting.ErrorMaxTransferLimitReachedFatal
+		}
+		return accounting.ErrorMaxTransferLimitReachedGraceful
+	}
+	return nil
+}
+
 type resumeFailure struct {
 	stage string
 	cause error
@@ -2156,6 +2176,8 @@ func (e resumeFailure) Error() string {
 		category = "invalid or incompatible encrypted checkpoint"
 	case errors.Is(e.cause, checkpoint.ErrIO):
 		category = "checkpoint storage failed"
+	case errors.Is(e.cause, accounting.ErrorMaxTransferLimitReachedFatal), errors.Is(e.cause, accounting.ErrorMaxTransferLimitReachedGraceful):
+		category = "configured maximum transfer reached"
 	}
 	return e.stage + ": " + category
 }
@@ -2238,6 +2260,9 @@ func (f *Fs) resumeLocalUpload(ctx context.Context, opt resumeCommandOptions) (o
 		if child.GetName() == encodedName {
 			return nil, errors.New("upload-resume refuses an existing destination name; checkpoint retained")
 		}
+	}
+	if err := checkResumeTransferLimit(ctx, out.PendingSourceBytes); err != nil {
+		return nil, err
 	}
 	if u == nil {
 		err = f.call(ctx, func() (bool, error) {

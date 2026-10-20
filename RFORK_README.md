@@ -123,6 +123,10 @@ limits apply to pending source payload. Restored acknowledgements, actual source
 reads and retry-inclusive HTTP reads are separate counters (`megaResume` JSON
 diagnostics when enabled). Source preflight/skipped reads do not consume the
 current attempt's network accounting budget.
+Hard transfer cutoffs apply during pending-byte accounting; soft/cautious modes
+use the usual file-admission rules before starting data, with cautious admission
+counting only the remaining payload. `--max-duration` cancels this explicit
+operation, including its preflight, and workers/checkpoint writes join before exit.
 
 Cancellation joins workers and flushes progress. A crash may lose recent ACKs;
 their original ciphertext is replayed. Before finalization, commit intent is
