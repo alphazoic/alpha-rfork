@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "version": "v1.75.2-rfork.0.2.0-dev",
+  "sourceCommit": "8de3a300a816f98d0a516a47ed491d2e56f450f8",
+  "nativeRunURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39442759187",
+  "nativeValidation": "passed on all three platforms",
+  "fullUpstreamBaseline": {
+    "sourceCommit": "a032839303919e78bee2adccb379c8d22536aa40",
+    "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39436148540",
+    "result": "passed on all three platforms"
+  },
+  "binaries": [
+    {
+      "target": "linux/amd64",
+      "file": "rfork-linux-amd64",
+      "bytes": 85852322,
+      "sha256": "38f9b6878fedbce2c4697c37bbba3ee9313a0ccebaf22055f75b6af609cc0aae",
+      "artifactArchiveDigest": "sha256:6f79231378d3d7bbedbc0e2809ac32745f86099054a16a8a36d644044c536265",
+      "githubArtifactDigestVerified": true
+    },
+    {
+      "target": "windows/amd64",
+      "file": "rfork-windows-amd64.exe",
+      "bytes": 86319104,
+      "sha256": "a2efa4d1b627a8ee902c7aeddea27877f51559d159c6ac126e5a023b10031abf",
+      "artifactArchiveDigest": "sha256:e2194d866b02c4c11f32cfffd5c90e9cdbc3349db25f7c9acd4e66f79b92be8f",
+      "githubArtifactDigestVerified": true
+    },
+    {
+      "target": "darwin/amd64",
+      "file": "rfork-darwin-amd64",
+      "bytes": 87927760,
+      "sha256": "8d82e47a00233c62ab43a3c6025d0a5ed3a5401dd218044927e3daab1330d544",
+      "artifactArchiveDigest": "sha256:a2209cb158933c729d73eb3bb23e6184b431cdd9f8e827b015fd5855819e7c91",
+      "githubArtifactDigestVerified": true
+    }
+  ],
+  "localArtifactDirectory": "build/validated-native-39442759187/",
+  "liveProofs": [
+    {
+      "target": "linux/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034",
+      "sourceCommit": "986d261bd480c9ecdc89d94d953ea47c543a0147",
+      "binarySHA256": "38f9b6878fedbce2c4697c37bbba3ee9313a0ccebaf22055f75b6af609cc0aae",
+      "checks": 45,
+      "independentSHA256Checks": 6,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true,
+      "exactNativeBinaryMatch": true
+    },
+    {
+      "target": "windows/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034",
+      "sourceCommit": "986d261bd480c9ecdc89d94d953ea47c543a0147",
+      "binarySHA256": "a2efa4d1b627a8ee902c7aeddea27877f51559d159c6ac126e5a023b10031abf",
+      "checks": 34,
+      "independentSHA256Checks": 5,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true,
+      "exactNativeBinaryMatch": true
+    },
+    {
+      "target": "darwin/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034",
+      "sourceCommit": "986d261bd480c9ecdc89d94d953ea47c543a0147",
+      "binarySHA256": "8d82e47a00233c62ab43a3c6025d0a5ed3a5401dd218044927e3daab1330d544",
+      "checks": 45,
+      "independentSHA256Checks": 6,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true,
+      "exactNativeBinaryMatch": true
+    }
+  ],
+  "liveProofBoundary": "All three exact final native binaries passed integrated live CLI recovery in run 39445181034; downloaded live and native binaries have identical SHA-256 values. The workflow source 986d261 changes only documentation and receipts after production source 8de3a30.",
+  "exactFinalBinaryLiveTested": true,
+  "legacyCleanup": "Unverified on the previous blocked account: rfork-protocol-8097f0bbab2147e28329abfe5e0215d6",
+  "releasePromoted": false,
+  "m3Modified": false,
+  "previousLiveProofs": [
+    {
+      "target": "linux/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39440121324",
+      "sourceCommit": "bcbb252a5b6e4a333bb14797e763a3887e43bdf8",
+      "binarySHA256": "fcd5533f0112ed99b24f8c799a439cbc5148ec8f8a3109cd334bc77c45117567",
+      "checks": 45,
+      "independentSHA256Checks": 6,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true
+    },
+    {
+      "target": "windows/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39440941355",
+      "sourceCommit": "d2fc2514a19da41633d44a928dfc06ca4a681b1f",
+      "binarySHA256": "c6eee31d46cd40702ec42390c98853b938836d8255b50a4e485b43c304b4bcfc",
+      "checks": 34,
+      "independentSHA256Checks": 5,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true
+    },
+    {
+      "target": "darwin/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39441287938",
+      "sourceCommit": "7acfc4099896277b557530799543627e095f1ee4",
+      "binarySHA256": "a11bdb3095474229d032e0434d33f26457d73e1875573db7f71a6a86608c3ae9",
+      "checks": 45,
+      "independentSHA256Checks": 6,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true
+    }
+  ],
+  "liveArtifactDirectory": "build/validated-39445181034/"
+}

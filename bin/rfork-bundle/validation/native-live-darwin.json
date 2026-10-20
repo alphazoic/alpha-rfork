@@ -1,0 +1,355 @@
+{
+  "target": "darwin",
+  "commit": "27aade913b11611eae90b9c5f9e0b4c3e9d336fb",
+  "remoteFolder": "rfork-ci-darwin-07419935-a993-4c19-8842-1c17b62a9d93",
+  "binarySHA256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365",
+  "verifierSHA256": "7b8d7d53890ffe7094ff5f7b2f8480a684b1f1e429533e67aa7a5510386f3b52",
+  "checks": [
+    {
+      "label": "create isolated test folder",
+      "exitCode": 0,
+      "seconds": 1.915,
+      "bytes": 0
+    },
+    {
+      "label": "upload payload-1.bin workers=1",
+      "exitCode": 0,
+      "seconds": 68.224,
+      "bytes": 536870912,
+      "fileBytes": 536870912,
+      "workers": 1
+    },
+    {
+      "label": "stock download payload-1.bin",
+      "exitCode": 0,
+      "seconds": 19.038,
+      "bytes": 536870912
+    },
+    {
+      "label": "SHA256 payload-1.bin",
+      "expected": "c7b6c1d27c05bdc6fdfc25a82011b3cb0a9e548cca9727e49afe06de675d92f6",
+      "actual": "c7b6c1d27c05bdc6fdfc25a82011b3cb0a9e548cca9727e49afe06de675d92f6",
+      "matches": true
+    },
+    {
+      "label": "delete payload-1.bin",
+      "exitCode": 0,
+      "seconds": 2.236,
+      "bytes": 0
+    },
+    {
+      "label": "upload payload-4.bin workers=4",
+      "exitCode": 0,
+      "seconds": 62.126,
+      "bytes": 536870912,
+      "fileBytes": 536870912,
+      "workers": 4
+    },
+    {
+      "label": "stock download payload-4.bin",
+      "exitCode": 0,
+      "seconds": 10.158,
+      "bytes": 536870912
+    },
+    {
+      "label": "SHA256 payload-4.bin",
+      "expected": "c7b6c1d27c05bdc6fdfc25a82011b3cb0a9e548cca9727e49afe06de675d92f6",
+      "actual": "c7b6c1d27c05bdc6fdfc25a82011b3cb0a9e548cca9727e49afe06de675d92f6",
+      "matches": true
+    },
+    {
+      "label": "delete payload-4.bin",
+      "exitCode": 0,
+      "seconds": 2.58,
+      "bytes": 0
+    },
+    {
+      "label": "upload payload-8.bin workers=8",
+      "exitCode": 0,
+      "seconds": 8.815,
+      "bytes": 536870912,
+      "fileBytes": 536870912,
+      "workers": 8
+    },
+    {
+      "label": "stock download payload-8.bin",
+      "exitCode": 0,
+      "seconds": 9.806,
+      "bytes": 536870912
+    },
+    {
+      "label": "SHA256 payload-8.bin",
+      "expected": "c7b6c1d27c05bdc6fdfc25a82011b3cb0a9e548cca9727e49afe06de675d92f6",
+      "actual": "c7b6c1d27c05bdc6fdfc25a82011b3cb0a9e548cca9727e49afe06de675d92f6",
+      "matches": true
+    },
+    {
+      "label": "delete payload-8.bin",
+      "exitCode": 0,
+      "seconds": 2.218,
+      "bytes": 0
+    },
+    {
+      "label": "upload boundary-0.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.492,
+      "bytes": 0,
+      "fileBytes": 0,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-0.bin",
+      "exitCode": 0,
+      "seconds": 1.983,
+      "bytes": 0
+    },
+    {
+      "label": "SHA256 boundary-0.bin",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-1.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.496,
+      "bytes": 1,
+      "fileBytes": 1,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-1.bin",
+      "exitCode": 0,
+      "seconds": 2.082,
+      "bytes": 1
+    },
+    {
+      "label": "SHA256 boundary-1.bin",
+      "expected": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96",
+      "actual": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-15.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.235,
+      "bytes": 15,
+      "fileBytes": 15,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-15.bin",
+      "exitCode": 0,
+      "seconds": 1.927,
+      "bytes": 15
+    },
+    {
+      "label": "SHA256 boundary-15.bin",
+      "expected": "b669eca87e70f221a3be6c7c38ec815664151ad6541b6320777298207310a951",
+      "actual": "b669eca87e70f221a3be6c7c38ec815664151ad6541b6320777298207310a951",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-16.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.488,
+      "bytes": 16,
+      "fileBytes": 16,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-16.bin",
+      "exitCode": 0,
+      "seconds": 1.953,
+      "bytes": 16
+    },
+    {
+      "label": "SHA256 boundary-16.bin",
+      "expected": "9fa9cf6bc4f5260d02c2e765aec5d407ce3db096fd2088e7e54f9d46075b6ea6",
+      "actual": "9fa9cf6bc4f5260d02c2e765aec5d407ce3db096fd2088e7e54f9d46075b6ea6",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-17.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.207,
+      "bytes": 17,
+      "fileBytes": 17,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-17.bin",
+      "exitCode": 0,
+      "seconds": 1.909,
+      "bytes": 17
+    },
+    {
+      "label": "SHA256 boundary-17.bin",
+      "expected": "c68aefeb7f184ee2e079bb066bacd3ca7bb995d3944bf95e4b4f3c9473c312e4",
+      "actual": "c68aefeb7f184ee2e079bb066bacd3ca7bb995d3944bf95e4b4f3c9473c312e4",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-131071.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.697,
+      "bytes": 131071,
+      "fileBytes": 131071,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-131071.bin",
+      "exitCode": 0,
+      "seconds": 2.437,
+      "bytes": 131071
+    },
+    {
+      "label": "SHA256 boundary-131071.bin",
+      "expected": "0ceea4798db7589c3162e1a5513d9c984db00c533bba2d3b8525cc09ad193447",
+      "actual": "0ceea4798db7589c3162e1a5513d9c984db00c533bba2d3b8525cc09ad193447",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-131072.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.783,
+      "bytes": 131072,
+      "fileBytes": 131072,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-131072.bin",
+      "exitCode": 0,
+      "seconds": 2.237,
+      "bytes": 131072
+    },
+    {
+      "label": "SHA256 boundary-131072.bin",
+      "expected": "f18e597b68d62518e7c3f17170f02ced713f88365b4a603640c5c27345e41883",
+      "actual": "f18e597b68d62518e7c3f17170f02ced713f88365b4a603640c5c27345e41883",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-131073.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.38,
+      "bytes": 131073,
+      "fileBytes": 131073,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-131073.bin",
+      "exitCode": 0,
+      "seconds": 2.057,
+      "bytes": 131073
+    },
+    {
+      "label": "SHA256 boundary-131073.bin",
+      "expected": "33e029118c6dce042ac2ca945baa09faddfc5ccfb27c30b79c43945f18e0609a",
+      "actual": "33e029118c6dce042ac2ca945baa09faddfc5ccfb27c30b79c43945f18e0609a",
+      "matches": true
+    },
+    {
+      "label": "upload boundary-8388639.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.623,
+      "bytes": 8388639,
+      "fileBytes": 8388639,
+      "workers": 8
+    },
+    {
+      "label": "stock download boundary-8388639.bin",
+      "exitCode": 0,
+      "seconds": 2.647,
+      "bytes": 8388639
+    },
+    {
+      "label": "SHA256 boundary-8388639.bin",
+      "expected": "8dca3744ab28fe8740c4c0003406b67eacca1b197317baf55cca8aad16c83218",
+      "actual": "8dca3744ab28fe8740c4c0003406b67eacca1b197317baf55cca8aad16c83218",
+      "matches": true
+    },
+    {
+      "label": "upload replacement.bin workers=4",
+      "exitCode": 0,
+      "seconds": 2.432,
+      "bytes": 1048593,
+      "fileBytes": 1048593,
+      "workers": 4
+    },
+    {
+      "label": "stock download replacement.bin",
+      "exitCode": 0,
+      "seconds": 2.116,
+      "bytes": 1048593
+    },
+    {
+      "label": "SHA256 replacement.bin",
+      "expected": "9f45b16e4ee7fd537065b6f054e9c0221c7fb9d6ee62f07fedf90c95d79780f4",
+      "actual": "9f45b16e4ee7fd537065b6f054e9c0221c7fb9d6ee62f07fedf90c95d79780f4",
+      "matches": true
+    },
+    {
+      "label": "upload replacement.bin workers=8",
+      "exitCode": 0,
+      "seconds": 2.718,
+      "bytes": 1048607,
+      "fileBytes": 1048607,
+      "workers": 8
+    },
+    {
+      "label": "stock download replacement.bin",
+      "exitCode": 0,
+      "seconds": 1.994,
+      "bytes": 1048607
+    },
+    {
+      "label": "SHA256 replacement.bin",
+      "expected": "92e066de0e95e2271b2dba5065a84a1d458d5d62543c8bed92add257cb8decb7",
+      "actual": "92e066de0e95e2271b2dba5065a84a1d458d5d62543c8bed92add257cb8decb7",
+      "matches": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.416,
+      "bytes": 0
+    },
+    {
+      "label": "create share link",
+      "exitCode": 0,
+      "seconds": 1.703,
+      "bytes": 0
+    },
+    {
+      "label": "cancel active upload",
+      "exitCode": 10,
+      "seconds": 13.624,
+      "bytes": 14155776
+    },
+    {
+      "label": "list/cancel",
+      "exitCode": 0,
+      "seconds": 1.709,
+      "bytes": 0
+    },
+    {
+      "label": "purge test folder",
+      "exitCode": 0,
+      "seconds": 2.29,
+      "bytes": 0
+    },
+    {
+      "label": "verify cleanup",
+      "exitCode": 0,
+      "seconds": 1.534,
+      "bytes": 0
+    }
+  ],
+  "status": "success",
+  "cleanup": true,
+  "payloadSHA256": "c7b6c1d27c05bdc6fdfc25a82011b3cb0a9e548cca9727e49afe06de675d92f6",
+  "runURL": "https://github.com/mega-fork/rfork/actions/runs/39269252510",
+  "jobURL": "https://github.com/mega-fork/rfork/actions/runs/39269252510/job/118116918184",
+  "artifactID": 12194254662
+}

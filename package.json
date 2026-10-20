@@ -1,0 +1,108 @@
+{
+  "name": "M3",
+  "version": "1.2.4",
+  "main": "main.js",
+  "description": "Mega Manager Max",
+  "author": {
+    "name": "bkr",
+    "email": "bkr@bkr.com"
+  },
+  "homepage": "https://m3.com/",
+  "scripts": {
+    "check:rfork": "node scripts/check-rfork-bundle.cjs",
+    "test:rfork-bundle": "node --test src/rfork-bundle.test.js",
+    "test:rfork-adapter": "node --test src/rfork-adapter.test.js src/upload-recovery.test.js src/rfork-settings.test.js src/rfork-recovery.test.js",
+    "test:downloads": "node --test src/download-staging.test.js src/mediainfo-poller.test.js src/mega-mac.test.js src/download-recovery.test.js",
+    "test:downloads-ui": "node scripts/test-download-staging-ui.cjs",
+    "test:inbox": "node src/mail-inbox.test.js",
+    "test:signup-mail": "node --test src/signup-mail.test.js",
+    "test:signup-mail-ui": "node scripts/test-signup-mail-ui.cjs",
+    "test:inbox-ui": "node scripts/test-mail-inbox-ui.cjs",
+    "start": "electron .",
+    "test:protonvpn": "node --test src/protonvpn.test.js",
+    "check:protonvpn": "node scripts/check-protonvpn.cjs",
+    "test:vpn-ui": "node scripts/test-vpn-ui-all.cjs",
+    "test:vpn-catalog-ui": "node scripts/test-vpn-catalog-ui.cjs",
+    "test:vpn-catalog": "node --test src/vpn-catalog.test.js src/vpn-settings.test.js",
+    "test:vpn-retry": "node --test src/vpn-retry.test.js src/protonvpn.test.js src/vpn-settings.test.js",
+    "test:vpn-workflows": "node --test src/vpn-workflows.test.js src/account-refresh.test.js src/download-recovery.test.js src/upload-recovery.test.js",
+    "test:vpn-terminal": "node --test src/vpn-terminal-log.test.js src/protonvpn.test.js",
+    "test:vpn-shutdown": "node --test src/vpn-shutdown.test.js src/protonvpn.test.js src/network-operations.test.js",
+    "test:vpn": "node --test src/vpn-shutdown.test.js src/vpn-terminal-log.test.js src/protonvpn.test.js src/protonvpn-log.test.js src/vpn-controller.test.js src/network-operations.test.js src/vpn-integration.test.js src/vpn-settings.test.js src/vpn-service.test.js src/vpn-catalog.test.js src/vpn-retry.test.js src/vpn-workflows.test.js src/vpn-controls.test.js src/vpn-no-external.test.js src/account-refresh.test.js src/transfer-watchdog.test.js src/mega-mac.test.js src/download-staging.test.js src/mediainfo-poller.test.js src/download-recovery.test.js src/upload-recovery.test.js",
+    "build:linux": "npm run build:validate && electron-builder --linux deb AppImage rpm --x64",
+    "build:linux:deb": "npm run build:validate && electron-builder --linux deb --x64",
+    "build:linux:appimage": "npm run build:validate && electron-builder --linux AppImage --x64",
+    "build:linux:rpm": "npm run build:validate && electron-builder --linux rpm --x64",
+    "build:win": "npm run build:validate && electron-builder --win nsis --x64",
+    "build:mac": "npm run build:validate && electron-builder --mac dmg --x64",
+    "build:validate": "node scripts/check-rfork-bundle.cjs",
+    "test:rfork-package": "node scripts/test-rfork-package.cjs",
+    "test:rfork-settings": "node --test src/rfork-settings.test.js"
+  },
+  "devDependencies": {
+    "electron": "^41.1.0",
+    "electron-builder": "^25.1.8",
+    "ws": "^8.22.0"
+  },
+  "build": {
+    "appId": "com.bkr.m3",
+    "productName": "M3",
+    "files": [
+      "main.js",
+      "preload.js",
+      "binPath.js",
+      "index.html",
+      "styles.css",
+      "renderer/**/*",
+      "src/**/*",
+      "assets/**/*",
+      "fonts/**/*",
+      "cloudflare/mail-worker/worker.mjs",
+      "cloudflare/mail-worker/package.json",
+      "cloudflare/mail-worker/package-lock.json",
+      "cloudflare/mail-worker/wrangler.jsonc",
+      "cloudflare/mail-worker/migrations/**/*",
+      "docs/cloudflare-inbox.md"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/${os}",
+        "to": "bin",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "bin/rfork-bundle",
+        "to": "bin/rfork-bundle",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "linux": {
+      "icon": "assets/icon-512.png",
+      "target": [
+        "deb",
+        "AppImage",
+        "rpm"
+      ],
+      "category": "Utility"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": "nsis"
+    },
+    "mac": {
+      "icon": "assets/icon-512.png",
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.utilities"
+    },
+    "beforePack": "./scripts/rfork-before-pack.cjs"
+  },
+  "dependencies": {
+    "puppeteer": "^24.40.0"
+  }
+}

@@ -1,0 +1,107 @@
+name: M3 configurable rfork validation
+on:
+  push:
+    branches: [codex/m3-rfork-settings]
+    paths-ignore: ['docs/**', 'README.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rfork-live-mega-account
+  cancel-in-progress: false
+jobs:
+  native:
+    name: M3 settings and resume (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - target: linux
+            os: ubuntu-latest
+            build: --linux dir deb
+            executable: linux-unpacked/m3
+            verifier: rclone
+          - target: windows
+            os: windows-latest
+            build: --win dir nsis
+            executable: win-unpacked/M3.exe
+            verifier: rclone.exe
+          - target: macos-intel
+            os: macos-15-intel
+            build: --mac dir dmg
+            executable: mac/M3.app/Contents/MacOS/M3
+            verifier: rclone
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.9'
+          cache: false
+      - name: Configure isolated paths
+        run: |
+          echo "M3_VALIDATION_PROFILE=$RUNNER_TEMP/m3-settings-validation" >> "$GITHUB_ENV"
+          echo "M3_VALIDATION_REPORT=$GITHUB_WORKSPACE/validation-output/settings-${{ matrix.target }}.json" >> "$GITHUB_ENV"
+          echo "M3_STOCK_VERIFIER=$RUNNER_TEMP/m3-stock/${{ matrix.verifier }}" >> "$GITHUB_ENV"
+      - run: npm ci
+      - name: Linux display and packaging dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libasound2t64
+      - name: Settings, bundle, adapter and recovery regression checks
+        run: |
+          npm run check:rfork
+          npm run test:rfork-bundle
+          npm run test:rfork-adapter
+      - name: Independent stock verifier
+        run: python scripts/build-rfork-stock-verifier.py
+      - name: Build native unsigned package
+        run: node node_modules/electron-builder/cli.js ${{ matrix.build }} --x64 --publish never --config.directories.output=validation-output
+      - run: node scripts/record-rfork-packages.cjs validation-output
+      - name: Packaged UI save/reload and live restart/resume integrity
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: |
+          if [[ -z "$RFORK_MEGA_EMAIL" || -z "$RFORK_MEGA_PASSWORD" ]]; then
+            echo 'Testing-account secrets are required.'
+            exit 1
+          fi
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            xvfb-run -a node scripts/test-rfork-package.cjs 'validation-output/${{ matrix.executable }}' --live
+          else
+            node scripts/test-rfork-package.cjs 'validation-output/${{ matrix.executable }}' --live
+          fi
+      - name: Always clean isolated remote folder and private profile
+        if: always()
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: node scripts/cleanup-rfork-live.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m3-rfork-settings-${{ matrix.target }}
+          retention-days: 7
+          path: |
+            validation-output/*.deb
+            validation-output/*.exe
+            validation-output/*.dmg
+            validation-output/*.json
+          if-no-files-found: warn

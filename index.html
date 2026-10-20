@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
+<title>M3</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="toast"></div>
+<div class="app">
+
+<!-- ── Header ─────────────────────────────────────────────────────────────── -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">
+      <img src="./assets/icon-64.png" class="logo-mark-img" alt="" draggable="false" />
+    </div>
+    M3
+    <span class="logo-sub">Mega Manager Max</span>
+  </div>
+  <div class="hdr-space"></div>
+  <button class="status-pill vpn-pill" id="vpn-status-pill" type="button" hidden title="Open VPN terminal" aria-haspopup="dialog" aria-controls="vpn-terminal">
+    <span class="pill-dot"></span><span id="vpn-status-label">VPN off</span>
+  </button>
+  <!-- Account widget — visible only while an upload is active -->
+  <div class="hdr-account-widget" id="hdrAccountWidget">
+    <div class="hdr-acc-creds">
+      <span class="hdr-acc-email" id="hdrAccEmail">—</span>
+      <span class="hdr-acc-pass"  id="hdrAccPass">—</span>
+    </div>
+    <div class="hdr-acc-meter">
+      <div class="hdr-acc-usage"><strong id="hdrAccUsedGb">0.00</strong> / 20 GB</div>
+      <div class="hdr-acc-bar-wrap">
+        <div class="hdr-acc-bar-fill" id="hdrAccBarFill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="status-pill" id="statusPill" title="No downloads running.">
+    <span class="pill-dot"></span>
+    <span id="statusText">Downloads: idle</span>
+  </button>
+  <button type="button" class="status-pill" id="healthPill" title="Account refresh reminder.">
+    <span class="pill-dot"></span>
+    <span id="healthText">Checking…</span>
+  </button>
+  <div class="tab-bar" style="margin-left:10px">
+    <button class="tab active" data-tab="download">Download</button>
+    <button class="tab" data-tab="upload">Upload</button>
+    <button class="tab" data-tab="inbox">Inbox</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </div>
+</div>
+
+<!-- ── Body ───────────────────────────────────────────────────────────────── -->
+<div class="body">
+
+<!-- ── Sidebar (Download) ──────────────────────────────────────────────────── -->
+<div class="sidebar" id="dlSidebar">
+<div class="sb-scroll">
+
+  <!-- URL / Bulk input -->
+  <div class="sb-section">
+    <div class="sb-label">Add to queue</div>
+
+    <!-- MEGA URLs -->
+    <div class="field">
+    <button id="browseFolderBtn" class="btn btn-ghost btn-sm">
+      📂 Browse MEGA Folder
+    </button>
+      <textarea id="bulkTextarea" placeholder="Paste MEGA links here, one per line…"></textarea>
+      <div class="bulk-actions">
+        <button class="btn btn-ghost btn-sm" id="loadTxtBtn">Load .txt…</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1" id="addBulkBtn">Add to queue</button>
+      </div>
+    </div>
+
+    <!-- Output dir -->
+    <div class="field">
+      <label>Output folder</label>
+      <div class="irow">
+        <input type="text" id="outDirInput" placeholder="Choose folder…" readonly />
+        <button class="btn btn-ghost btn-icon" id="browseDirBtn" title="Browse">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+            <path d="M2 4.5A1.5 1.5 0 013.5 3h3l2 2H13a1.5 1.5 0 011.5 1.5v6A1.5 1.5 0 0113 14H3a1.5 1.5 0 01-1.5-1.5v-9z" stroke="currentColor" stroke-width="1.4" fill="none"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sb-sep" />
+
+  <!-- Queue -->
+  <div class="sb-section">
+    <div class="queue-header">
+      <div class="sb-label">Queue</div>
+      <label class="stream-mode-label" title="Download head and tail first, then body — enables immediate seeking in a media player">
+        <input type="checkbox" id="streamModeCheckbox"> Stream Mode
+      </label>
+      <button class="btn btn-ghost btn-sm" id="clearDoneBtn" title="Clear completed items" style="padding:1px 5px;font-size:12px;margin-left:auto;margin-right:6px;opacity:0.7">🧹</button>
+      <div class="queue-count" id="queueCount">0</div>
+    </div>
+    <div class="queue-list" id="queueList">
+      <div class="queue-empty" id="queueEmpty">No items queued.</div>
+    </div>
+  </div>
+
+</div><!-- /sb-scroll -->
+
+<!-- Start / Stop pinned at bottom -->
+<div class="sb-actions">
+  <button class="btn btn-accent btn-full" id="startBtn">
+    ▶ Download
+  </button>
+  <button class="btn btn-danger btn-full" id="stopBtn" disabled>
+    ■ Stop
+  </button>
+</div>
+
+</div><!-- /sidebar (download) -->
+
+<!-- ── Sidebar (Upload + Bulk Import — share one Account Strategy block) ─────── -->
+<div class="sidebar" id="upSidebar" style="display:none">
+<div class="sb-scroll">
+
+  <!-- Account Strategy — SINGLE shared instance for Upload and Bulk Import.
+       Read directly by both upload.js (up*Btn handlers) and bulk-import.js
+       (Start button handler) — do not duplicate these ids per-tab again. -->
+  <div class="sb-section">
+    <div class="sb-label">Account Strategy</div>
+
+    <!-- ── Account source ──────────────────────────────────── -->
+    <label class="radio-row">
+      <input type="radio" name="up-strategy" value="resume" checked>
+      <span>Resume last account</span>
+    </label>
+    <!-- Preview of the account that would be resumed -->
+    <div id="up-resumePreview" class="up-resume-preview">
+      <span id="up-resumeEmail" class="up-resume-email">—</span>
+      <div class="up-resume-bar-row">
+        <div class="hdr-acc-bar-wrap">
+          <div id="up-resumeBarFill" class="hdr-acc-bar-fill" style="width:0%"></div>
+        </div>
+        <span id="up-resumeUsage" class="up-resume-usage">0.00 / 20 GB</span>
+      </div>
+    </div>
+    <label class="radio-row">
+      <input type="radio" name="up-strategy" value="fresh">
+      <span>Create fresh account</span>
+    </label>
+    <label class="radio-row">
+      <input type="radio" name="up-strategy" value="manual">
+      <span>Manual Login</span>
+    </label>
+    <!-- Manual login fields — shown only when "Manual Login" is selected -->
+    <div id="up-manualLoginFields" style="display:none;flex-direction:column;gap:6px;margin-top:2px">
+      <div class="field">
+        <label>Email</label>
+        <input type="text" id="up-manualEmail" placeholder="account@example.com" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="text" id="up-manualPassword" placeholder="Password" />
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="sb-sep"/>
+
+  <!-- ── Upload-mode body — hidden while Bulk Import subtab is active ───────── -->
+  <div id="up-modeBody">
+
+  <!-- ── Tool overrides (collapsed by default) ────────────────────────────── -->
+  <div class="sb-section">
+    <div class="bulk-toggle" id="up-toolToggle">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <path d="M3 1l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Tool overrides
+    </div>
+    <div id="up-toolArea" style="display:none;flex-direction:column;gap:4px;margin-top:4px">
+      <!-- Creation row — hidden unless "Create fresh account" is selected -->
+      <div id="up-toolCreateRow" class="up-inline-tool-row">
+        <span class="up-itool-lbl">Creation</span>
+        <div id="up-createChips" class="up-itool-chips"></div>
+        <label class="up-force-toggle" title="Use only this tool — no fallback">
+          <input type="checkbox" id="up-createForceChk"><span>Force</span>
+        </label>
+      </div>
+      <!-- Upload row — always shown -->
+      <div class="up-inline-tool-row up-inline-tool-row--stacked">
+        <span class="up-itool-lbl">Upload</span>
+        <div class="up-itool-row-body">
+          <div id="up-uploadChips" class="up-itool-chips"></div>
+          <label class="up-force-toggle" title="Use only this tool — no fallback">
+            <input type="checkbox" id="up-uploadForceChk"><span>Force</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sb-sep"/>
+
+  <!-- Queue Management -->
+  <div class="sb-section">
+    <div class="queue-header">
+      <div class="sb-label">File Selection</div>
+      <div class="queue-count" id="up-queueCount">0</div>
+    </div>
+
+    <!-- Manual path entry (multi-line) -->
+    <div class="field">
+      <label>Add paths <span class="lbl-note">(one per line, or paste a list)</span></label>
+      <textarea id="up-manualPath" placeholder="Paste one or more file/folder paths here, one per line…" style="min-height:60px;max-height:120px"></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none">
+          <input type="checkbox" id="up-smartOrdering" />
+          Smart ordering
+        </label>
+        <button class="btn btn-ghost btn-sm" id="up-addPath">+ Add to queue</button>
+      </div>
+    </div>
+
+    <!-- Browse buttons -->
+    <div class="up-browse-row">
+      <button class="btn btn-ghost btn-sm" id="up-browseFiles" style="flex:1">Browse Files</button>
+      <button class="btn btn-ghost btn-sm" id="up-browseFolder" style="flex:1">Browse Folder</button>
+    </div>
+
+    <!-- Destination folder name -->
+    <div class="field">
+      <label>Destination folder <span class="lbl-note">(optional, default: "folder")</span></label>
+      <input type="text" id="up-folderName" placeholder="folder" />
+    </div>
+
+    <!-- Staging list -->
+    <div class="queue-list" id="up-queueList">
+      <div class="queue-empty" id="up-queueEmpty">No files selected. Add files above, then press Upload.</div>
+    </div>
+  </div>
+
+  </div><!-- /up-modeBody -->
+
+  <!-- ── Bulk-Import-mode body — hidden unless Bulk Import subtab is active ─── -->
+  <div id="bi-modeBody" style="display:none">
+
+  <!-- Queue Management -->
+  <div class="sb-section">
+    <div class="queue-header">
+      <div class="sb-label">Link Selection</div>
+      <div class="queue-count" id="bi-queueCount">0</div>
+    </div>
+
+    <!-- Bulk link textarea -->
+    <div class="field">
+      <label>Add links <span class="lbl-note">(one per line, or paste a list)</span></label>
+      <textarea id="bi-bulkTextarea" placeholder="Paste MEGA links here, one per line…" style="min-height:60px;max-height:120px"></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none">
+          <input type="checkbox" id="bi-smartOrdering" />
+          Smart ordering
+        </label>
+        <button class="btn btn-ghost btn-sm" id="bi-addBulkBtn">+ Add to queue</button>
+      </div>
+    </div>
+
+    <!-- Load .txt -->
+    <div class="up-browse-row">
+      <button class="btn btn-ghost btn-sm" id="bi-loadTxtBtn" style="flex:1">Load .txt…</button>
+    </div>
+
+    <!-- Destination folder name -->
+    <div class="field">
+      <label>Destination folder <span class="lbl-note">(optional, default: "folder")</span></label>
+      <input type="text" id="bi-folderName" placeholder="folder" />
+    </div>
+
+    <!-- Staging list -->
+    <div class="queue-list" id="bi-queueList">
+      <div class="queue-empty" id="bi-queueEmpty">No links added. Paste links above, then press Import.</div>
+    </div>
+  </div>
+
+  </div><!-- /bi-modeBody -->
+
+</div><!-- /sb-scroll -->
+<!--  -->
+<!-- Confirm / Clear pinned at bottom -->
+<div class="sb-actions">
+  <div id="up-modeActions" style="display:flex;flex-direction:column;gap:8px">
+    <button type="button" class="btn btn-ghost btn-full" id="up-rforkRecovery">Upload recovery…</button>
+    <button class="btn btn-accent btn-full" id="up-startBtn" disabled>▶ Upload</button>
+    <button class="btn btn-danger btn-full" id="up-killBtn" style="display:none">■ Kill Queue</button>
+    <button class="btn btn-danger btn-full" id="up-closeBrowserBtn" style="display:none">✕ Close Browser</button>
+    <button class="btn btn-ghost btn-full" id="up-newQueueBtn" style="display:none">↺ New Queue</button>
+    <button class="btn btn-danger btn-full" id="up-clearBtn" disabled>✕ Clear Selected</button>
+  </div>
+  <div id="bi-modeActions" style="display:none;flex-direction:column;gap:8px">
+    <button class="btn btn-accent btn-full" id="bi-startBtn" disabled>▶ Import</button>
+    <button class="btn btn-danger btn-full" id="bi-killBtn" style="display:none">■ Kill Queue</button>
+    <button class="btn btn-danger btn-full" id="bi-clearBtn" disabled>✕ Clear Selected</button>
+  </div>
+</div>
+
+</div><!-- /sidebar (upload + bulk import) -->
+
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<div class="main">
+
+<!-- Download panel (default) -->
+<div class="download-panel" id="downloadPanel">
+
+  <!-- Sub-tab bar: Progress | Downloaded Files | Mediainfo Checker -->
+  <div class="up-subtab-bar">
+    <button class="up-subtab active" id="dl-tabProgress">Progress</button>
+    <button class="up-subtab" id="dl-tabHistory">Downloaded Files</button>
+    <button class="up-subtab" id="dl-tabMediaInfoChecker">Mediainfo Checker</button>
+    <div class="up-subtab-spacer"></div>
+    <button class="btn btn-ghost btn-sm" id="dl-openDownloadCsv" style="display:none">Open CSV</button>
+    <button class="btn btn-ghost btn-sm" id="mic-historyBtn" style="display:none">History</button>
+  </div>
+
+  <!-- ── Progress sub-panel ──────────────────────────────────────────────── -->
+  <div id="dl-dashPanel" class="panel-col">
+
+  <!-- Progress card -->
+  <div class="prog-card" id="progCard">
+    <div class="prog-filename" id="progFilename">
+      Waiting… <span id="progSize"></span><span id="progIdx" style="color:var(--text3);font-weight:400;margin-left:6px"></span>
+    </div>
+
+    <div class="prog-bar-wrap">
+      <div class="prog-bar-fill indeterminate" id="progFill"></div>
+    </div>
+
+    <!-- Chunk blocks (shown for multi-chunk files) -->
+    <div class="chunk-row" id="chunkRow" style="display:none"></div>
+
+    <div class="prog-stats">
+      <div class="stat">
+        <span class="stat-icon">↓</span>
+        <span class="stat-val" id="statSpeed">— MB/s</span>
+      </div>
+      <div class="stat">
+        <span class="stat-lbl">ETA</span>
+        <span class="stat-val" id="statEta">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-lbl">Elapsed</span>
+        <span class="stat-val" id="statElapsed">0:00</span>
+      </div>
+      <div class="stat">
+        <span class="stat-lbl" id="statChunkLbl" style="display:none">Chunk</span>
+        <span class="stat-val" id="statChunk" style="display:none"></span>
+      </div>
+      <div class="stat" id="statWatchWrap" style="display:none">
+        <span class="stat-lbl">▶ Watch in</span>
+        <span class="stat-val" id="statWatch">—</span>
+      </div>
+      <div class="stat" id="statDecryptWrap" style="display:none">
+        <span class="stat-lbl">🔓</span>
+        <span class="stat-val" id="statDecrypt">—</span>
+      </div>
+      <div class="prog-pct" id="progPct">—%</div>
+    </div>
+
+    <!-- Batch progress (for folder downloads) -->
+    <div class="batch-bar" id="batchBar">
+      <span id="batchText">Files: 0 / 0</span>
+      <div class="batch-progress-wrap">
+        <div class="batch-progress-fill" id="batchFill" style="width:0%"></div>
+      </div>
+      <span id="batchBytes"></span>
+    </div>
+  </div>
+
+  <!-- Download live queue -->
+  <div class="dl-lq-wrap" id="dlLqWrap">
+    <div id="dlLqList">
+      <div class="lq-empty" id="dlLqEmpty" style="padding:14px 18px">Queue is empty — add URLs on the left and press Start.</div>
+    </div>
+  </div>
+
+  <!-- Log / link entry (mutually exclusive) -->
+  <div id="dl-logAreaWrap" class="flex-col-fill">
+
+    <!-- ── Link entry zone — visible before any download starts ────────────── -->
+    <div id="dl-linkEntry" class="dl-link-entry">
+      <div class="dl-link-entry-inner">
+
+        <!-- Heading -->
+        <div class="dl-link-entry-heading">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+          </svg>
+          <span class="dl-link-entry-title">Paste MEGA links</span>
+        </div>
+
+        <!-- Textarea -->
+        <textarea id="dl-linkEntryInput" class="dl-link-entry-textarea"
+          placeholder="https://mega.nz/file/XXXXXXXX#YYYYYYYY&#10;https://mega.nz/folder/XXXXXXXX#YYYYYYYY&#10;&#10;One link per line — paste as many as you like."
+          spellcheck="false"
+        ></textarea>
+
+        <!-- Actions row -->
+        <div class="dl-link-entry-actions">
+          <button class="btn btn-accent" id="dl-linkEntryAddBtn" style="padding:0 20px;height:34px;font-size:13px">
+            + Add to queue
+          </button>
+          <button class="btn btn-accent" id="dl-linkEntryDownloadNowBtn" style="padding:0 20px;height:34px;font-size:13px">
+            ⬇ Download Now
+          </button>
+          <button class="btn btn-accent" id="dl-linkEntryStreamBtn" style="padding:0 20px;height:34px;font-size:13px">
+            ▶ Stream
+          </button>
+          <span id="dl-linkEntryHint" class="dl-link-entry-hint">
+            Set your output folder in the sidebar first.
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Download log ─────────────────────────────────────────────────────── -->
+    <div class="log-wrap" id="dl-logWrap" style="display:none">
+      <div class="log-toolbar">
+        <span class="log-title">Output log</span>
+        <div class="log-spacer"></div>
+        <button class="btn btn-ghost btn-sm" id="openOutBtn" style="display:none">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+            <path d="M7 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M10 2h4v4M14 2l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Open folder
+        </button>
+        <button class="btn btn-ghost btn-sm" id="clearLogBtn">Clear</button>
+      </div>
+      <div class="log-scroller">
+        <div id="log"><span class="ll log-empty">Download output will appear here.</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  </div><!-- /dl-dashPanel -->
+
+<!-- ── Downloaded Files sub-panel ─────────────────────────────────────── -->
+    <div class="up-links-panel" id="dl-historyPanel" style="display:none">
+    <div class="queue-empty" id="dl-historyEmpty">No download history found.</div>
+    <ul id="dl-historyList" class="panel-list"></ul>
+    <!-- Pagination controls — hidden when there's only one page -->
+    <div class="up-links-pagination" id="dl-historyPagination" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="dl-historyPrevBtn">← Prev</button>
+      <span class="up-links-pageinfo" id="dl-historyPageInfo">Page 1 of 1</span>
+      <button class="btn btn-ghost btn-sm" id="dl-historyNextBtn">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── Mediainfo Checker sub-panel ─────────────────────────────────────── -->
+  <div class="panel-col" id="dl-mediaInfoCheckerPanel" style="display:none">
+
+    <!-- URL bar + Get Mediainfo button -->
+    <div class="mic-bar">
+      <input type="text" id="mic-urlInput" class="mic-url-input"
+             placeholder="Paste a MEGA file or folder link…" spellcheck="false" />
+      <button class="btn btn-accent" id="mic-getBtn">Get Mediainfo</button>
+    </div>
+
+    <div id="mic-status" class="fb-status" hidden></div>
+
+    <!-- Current-check result — empty until a link has been checked -->
+    <div class="up-links-panel" id="mic-resultWrap"></div>
+
+    <!-- History — hidden until the History button is pressed -->
+    <div class="up-links-panel" id="mic-historyWrap" style="display:none">
+      <div class="queue-empty" id="mic-historyEmpty">No mediainfo records found.</div>
+      <ul id="mic-historyList" class="panel-list"></ul>
+      <div class="up-links-pagination" id="mic-historyPagination" style="display:none">
+        <button class="btn btn-ghost btn-sm" id="mic-historyPrevBtn">← Prev</button>
+        <span class="up-links-pageinfo" id="mic-historyPageInfo">Page 1 of 1</span>
+        <button class="btn btn-ghost btn-sm" id="mic-historyNextBtn">Next →</button>
+      </div>
+    </div>
+
+  </div><!-- /dl-mediaInfoCheckerPanel -->
+
+</div><!-- /download-panel -->
+
+<!-- ── Upload panel ───────────────────────────────────────────────────────── -->
+<div class="download-panel hidden" id="uploadPanel">
+
+  <!-- Sub-tab bar: Progress / Generated Links / Accounts / MediaInfo -->
+  <div class="up-subtab-bar">
+    <button class="up-subtab active" id="up-tabProgress">Progress</button>
+    <button class="up-subtab" id="up-tabLinks">Generated Links</button>
+    <button class="up-subtab" id="up-tabAccounts">Accounts</button>
+    <button class="up-subtab" id="up-tabMediaInfo">MediaInfo</button>
+    <button class="up-subtab" id="up-tabViewImport">View &amp; Import</button>
+    <button class="up-subtab" id="up-tabImportedLinks">Imported Links</button>
+    <button class="up-subtab" id="up-tabBulkImport">Bulk Import</button>
+    <div class="up-subtab-spacer"></div>
+    <button class="btn btn-ghost btn-sm" id="up-openUploadCsv" style="display:none">Open CSV</button>
+    <button class="btn btn-ghost btn-sm" id="up-openAccountCsv" style="display:none">Open CSV</button>
+    <button class="btn btn-ghost btn-sm" id="up-openImportCsv" style="display:none">Open CSV</button>
+  </div>
+
+  <!-- ── Progress sub-panel ──────────────────────────────────────────────── -->
+  <div id="up-dashPanel" class="panel-col">
+
+    <!-- Folder link bar -->
+    <div class="up-folder-bar" id="up-folderBar">
+      <span class="up-folder-bar-label">Folder</span>
+      <span class="up-folder-link" id="up-folderLinkEl">—</span>
+    </div>
+
+    <!-- Archive progress card — shown only while 7z is splitting a large file -->
+    <div id="up-archiveCard" class="up-archive-card" style="display:none">
+      <div class="up-archive-label">
+        <span class="up-archive-prefix">Archiving</span><span id="up-archiveFileName"></span>
+      </div>
+      <div class="prog-bar-wrap" style="margin-bottom:0">
+        <div class="prog-bar-fill" id="up-archiveFill" style="width:0%"></div>
+      </div>
+      <div class="up-archive-pct-row">
+        <span class="up-archive-pct" id="up-archivePct">0%</span>
+      </div>
+    </div>
+
+    <!-- File progress card -->
+    <div class="prog-card" id="up-progCard" style="display:block">
+      <div class="prog-filename" id="up-statFile">
+        <span id="up-statFileName" class="up-cred-chip" title="Click to copy filename">Idle — add files to the queue and press Start Engine</span><span id="up-statIdx"></span><span id="up-statBytes" style="color:var(--text3);font-weight:400;margin-left:6px"></span>
+      </div>
+      <div class="prog-bar-wrap">
+        <div class="prog-bar-fill" id="up-progFill" style="width:0%"></div>
+      </div>
+      <div class="prog-stats">
+        <div class="stat">
+          <span class="stat-icon">↑</span>
+          <span class="stat-val" id="up-statSpeed">— B/s</span>
+        </div>
+        <div class="stat">
+          <span class="stat-lbl">Account</span>
+          <span class="stat-val up-cred-chip" id="up-accLabel" title="Click to copy email">None</span>
+        </div>
+        <div class="stat" id="up-passStatWrap" style="display:none">
+          <span class="stat-lbl">Pass</span>
+          <span class="stat-val up-cred-chip" id="up-passLabel" title="Click to copy password">—</span>
+        </div>
+        <div class="prog-pct" id="up-progPct">—%</div>
+      </div>
+    </div>
+
+    <!-- Live upload queue — files arrive here when upload starts -->
+    <div class="up-lq-wrap" id="up-lqWrap">
+      <div id="up-liveQueueList">
+        <div class="lq-empty" id="up-liveQueueEmpty">No active upload. Select files on the left and press Upload.</div>
+      </div>
+    </div>
+
+    <!-- Upload log / drop zone (mutually exclusive) -->
+    <div id="up-logAreaWrap" class="flex-col-fill">
+
+      <!-- Drop zone — visible before an upload starts and after log is cleared -->
+      <div id="up-dropZone" class="up-drop-zone">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span class="up-drop-zone-title">Drop files or folders here</span>
+        <span class="up-drop-zone-hint">They'll be added to the queue on the left</span>
+      </div>
+
+      <!-- Upload log -->
+      <div class="log-wrap" id="up-logWrap" style="display:none">
+        <div class="log-toolbar">
+          <span class="log-title">Upload log</span>
+          <div class="log-spacer"></div>
+          <button class="btn btn-ghost btn-sm" id="up-clearLogBtn">Clear</button>
+        </div>
+        <div class="log-scroller" id="up-logScroller">
+          <div id="up-log"><span class="ll log-empty">Upload output will appear here.</span></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /up-dashPanel -->
+
+  <!-- ── Links sub-panel ─────────────────────────────────────────────────── -->
+  <div class="up-links-panel" id="up-linksPanel" style="display:none;position:relative">
+    <div class="up-links-toolbar" id="up-linksToolbar">
+      <label class="up-links-selectall" title="Select/deselect all visible links">
+        <input type="checkbox" id="up-selectAllChk" />
+        <span>Select All</span>
+      </label>
+    </div>
+  <div class="queue-empty" id="up-linksEmpty">No links generated yet.</div>
+    <ul id="up-linksList" class="panel-list"></ul>
+    <!-- Pagination controls — hidden when there's only one page -->
+    <div class="up-links-pagination" id="up-linksPagination" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="up-linksPrevBtn">← Prev</button>
+      <span class="up-links-pageinfo" id="up-linksPageInfo">Page 1 of 1</span>
+      <button class="btn btn-ghost btn-sm" id="up-linksNextBtn">Next →</button>
+    </div>
+    <!-- Floating action bar — visible when ≥1 link is selected -->
+    <div class="up-links-actionbar" id="up-linksActionBar" style="display:none">
+      <span class="up-lab-count" id="up-labCount">0 selected</span>
+      <button class="btn-post up-lab-btn" id="up-labPostBtn">📋 Post Selected</button>
+      <button class="btn-post up-lab-btn" id="up-labTitleBtn">📋 Title</button>
+      <button class="btn-post up-lab-btn up-lab-deselect" id="up-labDeselectBtn">✕ Deselect</button>
+    </div>
+  </div>
+
+  <!-- ── Accounts sub-panel ─────────────────────────────────────────────── -->
+  <div class="up-links-panel" id="up-accountsPanel" style="display:none;flex-direction:column">
+    <div class="acc-refresh-bar">
+      <button class="btn btn-ghost btn-sm" id="btn-refreshAll">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+          <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+          <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+        </svg>Refresh All Accounts
+      </button>
+
+      <button class="btn btn-ghost btn-sm" id="btn-refreshInactive">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+          <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+          <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+        </svg>Refresh Dormant
+      </button>
+      <button class="btn btn-ghost btn-sm" id="btn-refreshDormantBatch" title="Refresh the oldest dormant accounts (batch size is set in Settings)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+          <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+          <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+        </svg>Refresh Oldest Dormant
+      </button>
+      <button class="btn btn-ghost btn-sm" id="btn-upgradeInsecure">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+          <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+          <path d="M12 8l-4 4" />
+          <path d="M12 8v8" />
+          <path d="M16 12l-4 -4" />
+        </svg>Upgrade All Insecure
+      </button>
+      <button class="btn btn-danger btn-sm" id="btn-cancelRefresh" type="button" hidden>Cancel refresh</button>
+      <span class="acc-refresh-progress" id="acc-refreshStatus" role="status"></span>
+    </div>
+    <div class="acc-refresh-log" id="acc-refreshLog"></div>
+    <div class="queue-empty" id="up-accountsEmpty">No account history found.</div>
+    <ul id="up-accountsList" class="panel-list"></ul>
+    <!-- Pagination controls — hidden when there's only one page -->
+    <div class="up-links-pagination" id="up-accountsPagination" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="up-accountsPrevBtn">← Prev</button>
+      <span class="up-links-pageinfo" id="up-accountsPageInfo">Page 1 of 1</span>
+      <button class="btn btn-ghost btn-sm" id="up-accountsNextBtn">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── MediaInfo sub-panel ─────────────────────────────────────────────── -->
+  <div class="up-links-panel" id="up-mediaInfoPanel" style="display:none">
+    <div class="queue-empty" id="up-mediaInfoEmpty">No mediainfo records found.</div>
+    <ul id="up-mediaInfoList" class="panel-list"></ul>
+    <!-- Pagination controls — hidden when there's only one page -->
+    <div class="up-links-pagination" id="up-mediaInfoPagination" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="up-mediaInfoPrevBtn">← Prev</button>
+      <span class="up-links-pageinfo" id="up-mediaInfoPageInfo">Page 1 of 1</span>
+      <button class="btn btn-ghost btn-sm" id="up-mediaInfoNextBtn">Next →</button>
+    </div>
+  </div>
+
+<!-- ── View & Import sub-panel ─────────────────────────────────────────── -->
+  <div class="up-links-panel" id="up-viewImportPanel" style="display:none;flex-direction:column">
+
+    <!-- URL import bar -->
+    <div class="vi-url-bar">
+      <input
+        id="vi-urlInput"
+        class="vi-url-input"
+        type="text"
+        placeholder="Paste a MEGA folder link to import from…"
+        spellcheck="false"
+      />
+      <button id="vi-importSomeBtn" class="btn btn-ghost">Open</button>
+      <button id="vi-importAllBtn" class="btn btn-accent">Import All</button>
+    </div>
+
+    <!-- Drive header: refresh + Your Drive/email | Public Drive/url -->
+    <div class="vi-drive-label">
+      <button id="vi-refreshBtn" class="btn btn-ghost btn-icon vi-refresh-btn" title="Refresh">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+          <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+        </svg>
+      </button>
+      <div class="vi-drive-col">
+        <span id="vi-driveYour" class="vi-drive-active">Your Drive</span>
+        <span class="vi-drive-sub" id="vi-browserAccount">No account selected</span>
+      </div>
+      <div class="vi-drive-divider"></div>
+      <div class="vi-drive-col">
+        <span id="vi-drivePublic" class="vi-drive-active">Public Drive</span>
+        <span class="vi-drive-sub vi-drive-url" id="vi-publicUrlLabel"></span>
+      </div>
+    </div>
+
+    <!-- Two-pane browser -->
+    <div class="vi-browser">
+
+      <div class="vi-pane vi-pane-account">
+        <div class="vi-browser-toolbar">
+          <input id="vi-search" class="fb-search vi-search" type="text" placeholder="Filter files…" />
+          <label class="fb-chk-label">
+            <input type="checkbox" id="vi-selectAll" /> Select all visible
+          </label>
+        </div>
+
+        <div id="vi-status" class="fb-status" hidden></div>
+
+        <div class="vi-tree-wrap">
+          <div id="vi-tree" class="fb-tree"></div>
+          <div id="vi-treeEmpty" class="vi-tree-empty">
+            Press ↻ to load files from the selected account.
+          </div>
+        </div>
+      </div>
+
+      <div class="vi-pane-divider"></div>
+
+      <div class="vi-pane vi-pane-public">
+        <div class="vi-browser-toolbar">
+          <input id="vi-publicSearch" class="fb-search vi-search" type="text" placeholder="Filter files…" />
+          <label class="fb-chk-label">
+            <input type="checkbox" id="vi-publicSelectAll" /> Select all visible
+          </label>
+        </div>
+
+        <div id="vi-publicStatus" class="fb-status" hidden></div>
+
+        <div class="vi-tree-wrap">
+          <div id="vi-publicTree" class="fb-tree"></div>
+          <div id="vi-publicTreeEmpty" class="vi-tree-empty">
+            Press "Open" to load a public folder.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="vi-footer">
+      <div class="vi-footer-dest">
+        <input
+          id="vi-destInput"
+          class="vi-dest-input"
+          type="text"
+          placeholder="/folder"
+          value="/folder"
+          spellcheck="false"
+          disabled
+        />
+        <span id="vi-selCount" class="fb-sel-count">0 files selected</span>
+      </div>
+      <div class="vi-footer-actions">
+        <button id="vi-downloadSelectedBtn" class="btn btn-ghost" disabled>⬇ Download Selected</button>
+        <button id="vi-importSelectedBtn"   class="btn btn-accent" disabled>↩ Import Selected</button>
+      </div>
+    </div>
+
+</div><!-- /up-viewImportPanel -->
+
+  <!-- ── Imported Links sub-panel ──────────────────────────────────────────── -->
+  <div class="up-links-panel" id="up-importedLinksPanel" style="display:none;position:relative">
+    <div class="up-links-toolbar" id="up-importedToolbar">
+      <label class="up-links-selectall" title="Select/deselect all visible links">
+        <input type="checkbox" id="up-importedSelectAllChk" />
+        <span>Select All</span>
+      </label>
+    </div>
+  <div class="queue-empty" id="up-importedEmpty">No imports yet.</div>
+    <ul id="up-importedList" class="panel-list"></ul>
+    <!-- Pagination controls — hidden when there's only one page -->
+    <div class="up-links-pagination" id="up-importedPagination" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="up-importedPrevBtn">← Prev</button>
+      <span class="up-links-pageinfo" id="up-importedPageInfo">Page 1 of 1</span>
+      <button class="btn btn-ghost btn-sm" id="up-importedNextBtn">Next →</button>
+    </div>
+    <!-- Floating action bar — visible when ≥1 import is selected -->
+    <div class="up-links-actionbar" id="up-importedActionBar" style="display:none">
+      <span class="up-lab-count" id="up-iabCount">0 selected</span>
+      <button class="btn-post up-lab-btn" id="up-iabPostBtn">📋 Post Selected</button>
+      <button class="btn-post up-lab-btn" id="up-iabTitleBtn">📋 Title</button>
+      <button class="btn-post up-lab-btn up-lab-deselect" id="up-iabDeselectBtn">✕ Deselect</button>
+    </div>
+  </div>
+
+<!-- ── Bulk Import sub-panel ──────────────────────────────────────────── -->
+  <div id="bi-dashPanel" class="panel-col" style="display:none">
+
+    <!-- Folder link bar -->
+    <div class="up-folder-bar" id="bi-folderBar">
+      <span class="up-folder-bar-label">Folder</span>
+      <span class="up-folder-link" id="bi-folderLinkEl">—</span>
+    </div>
+
+    <!-- Status / progress card -->
+    <div class="prog-card" id="bi-progCard" style="display:block">
+      <div class="prog-filename" id="bi-statFile">
+        <span id="bi-statFileName" class="up-cred-chip" title="Click to copy filename">Idle — add links to the queue and press Import</span><span id="bi-statIdx"></span>
+      </div>
+      <div class="prog-stats">
+        <div class="stat">
+          <span class="stat-lbl">Account</span>
+          <span class="stat-val up-cred-chip" id="bi-accLabel" title="Click to copy email">None</span>
+        </div>
+        <div class="stat" id="bi-passStatWrap" style="display:none">
+          <span class="stat-lbl">Pass</span>
+          <span class="stat-val up-cred-chip" id="bi-passLabel" title="Click to copy password">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live import queue — items arrive here when the import starts -->
+    <div class="up-lq-wrap" id="bi-lqWrap">
+      <div id="bi-liveList">
+        <div class="lq-empty" id="bi-liveQueueEmpty">No active import. Paste links on the left and press Import.</div>
+      </div>
+    </div>
+
+    <!-- Import log -->
+    <div id="bi-logAreaWrap" class="flex-col-fill">
+      <div class="log-wrap" id="bi-logWrap">
+        <div class="log-toolbar">
+          <span class="log-title">Import log</span>
+          <div class="log-spacer"></div>
+          <button class="btn btn-ghost btn-sm" id="bi-clearLogBtn">Clear</button>
+        </div>
+        <div class="log-scroller" id="bi-logScroller">
+          <div id="bi-log"><span class="ll log-empty">Bulk import output will appear here.</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /bi-dashPanel -->
+
+</div><!-- /upload-panel -->
+
+<!-- Catch-all inbox -->
+<section id="mailPanel" class="mail-panel" aria-label="Catch-all inbox" hidden>
+  <header class="mail-heading">
+    <div><h1>Inbox</h1><p id="mail-domain-label">All domains, one inbox.</p></div>
+    <div class="mail-actions"><button id="mail-manage" class="btn btn-ghost" type="button">Manage domains</button><button id="mail-refresh" class="btn btn-ghost" type="button" disabled>Refresh</button></div>
+  </header>
+  <details id="mail-connection" class="mail-connection" open>
+    <summary>Domains and mail connections</summary>
+    <p>One mail Worker can receive mail for many domains. Export the setup files and follow SETUP.md to configure Cloudflare.</p>
+    <button id="mail-export" class="btn btn-ghost btn-sm" type="button">Export Worker setup…</button>
+    <div class="mail-management-grid">
+      <section aria-label="Mail connections">
+        <h2>Mail connections</h2>
+        <label class="mail-field">Edit connection<select id="mail-connections"><option value="">New connection…</option></select></label>
+        <form id="mail-form" class="mail-form">
+          <label>Connection name<input id="mail-name" type="text" placeholder="My Cloudflare mail" maxlength="80" autocomplete="off"></label>
+          <label>Mail Worker URL<input id="mail-url" type="url" placeholder="https://m3-mail-inbox.your-account.workers.dev" required spellcheck="false" autocomplete="off"></label>
+          <label>Access token<input id="mail-token" type="password" placeholder="Worker access token" autocomplete="off" spellcheck="false"></label>
+          <button id="mail-connect" class="btn btn-accent" type="submit">Save &amp; test</button>
+        </form>
+        <p id="mail-storage-note"></p>
+        <button id="mail-disconnect" class="btn btn-ghost btn-sm" type="button" disabled>Disconnect from M3…</button>
+      </section>
+      <section aria-label="Add domains">
+        <h2>Add domains</h2>
+        <label class="mail-field">Domains for this connection<textarea id="mail-add-domains" rows="4" placeholder="first-domain.com&#10;second-domain.com&#10;Paste one per line, or separate with commas." spellcheck="false"></textarea></label>
+        <button id="mail-add" class="btn btn-accent" type="button" disabled>Add domains</button>
+        <p id="mail-add-note">Save a connection, then add its domains. Configure each catch-all rule in Cloudflare.</p>
+        <div id="mail-add-results" class="mail-add-results" role="status"></div>
+        <p id="mail-connection-problems" class="mail-error" role="status"></p>
+      </section>
+    </div>
+  </details>
+  <p id="mail-status" class="mail-status" role="status" aria-live="polite">Connect a mail Worker to get started.</p>
+  <div class="mail-filters">
+    <label>Recipient<input id="mail-recipient" type="search" placeholder="All addresses (or enter a full address)" spellcheck="false" autocomplete="off"></label>
+    <label>Search<input id="mail-search" type="search" placeholder="Subject, sender or recipient" autocomplete="off"></label>
+    <span>Messages kept for 7 days</span>
+  </div>
+  <div class="mail-workspace">
+    <aside class="mail-domains-pane" aria-label="Email domains">
+      <label class="mail-field">Connection<select id="mail-source-filter"><option value="">All connections</option></select></label>
+      <label class="mail-field">Find a domain<input id="mail-domain-search" type="search" placeholder="Search domains…" autocomplete="off"></label>
+      <button id="mail-all" class="mail-domain-button selected" type="button">All domains</button>
+      <div id="mail-domains" role="list" aria-label="Domains"></div>
+      <div class="mail-actions"><button id="mail-domain-first" type="button" class="btn btn-ghost btn-sm" hidden>First page</button><button id="mail-domain-more" type="button" class="btn btn-ghost btn-sm" hidden>More domains</button></div>
+      <section id="mail-domain-details" class="mail-domain-details" hidden>
+        <strong id="mail-selected-domain"></strong><p id="mail-domain-state"></p>
+        <div class="mail-actions"><button id="mail-test-domain" class="btn btn-ghost btn-sm" type="button">Test delivery</button><button id="mail-toggle-domain" class="btn btn-ghost btn-sm" type="button">Disable receiving…</button></div>
+        <label id="mail-test-wrap" class="mail-field" hidden>Send a test email to<input id="mail-test-address" type="text" readonly></label>
+        <p id="mail-test-note" hidden>Send any message to this address from another email provider, then refresh. Select the address to copy it.</p>
+      </section>
+    </aside>
+    <div class="mail-list-pane">
+      <div id="mail-list" class="mail-list" role="list" aria-label="Messages"></div>
+      <p id="mail-empty" class="mail-placeholder">No mail connections yet.</p>
+      <button id="mail-more" type="button" class="btn btn-ghost" hidden>Load older messages</button>
+    </div>
+    <article id="mail-reader" class="mail-reader" aria-label="Message" tabindex="0"><p class="mail-placeholder">Select a message to read it.</p></article>
+  </div>
+</section>
+
+<!-- Settings panel -->
+<div class="settings-panel" id="settingsPanel">
+
+  <div class="stg-top-row">
+    <div>
+      <div class="stg-heading">Settings</div>
+      <div class="stg-sub">Network and download changes take effect on the next download. Theme changes apply instantly.</div>
+    </div>
+    <button class="btn-save" id="cfg-save-top">Save settings</button>
+  </div>
+
+<div class="stg-card" id="stg-dataFolderCard">
+  <h3>Folders <span id="stg-dataFolderRequired" class="required-badge">REQUIRED</span></h3>
+
+  <div class="stg-row">
+    <label>Data Folder</label>
+    <div>
+      <div class="irow">
+        <input type="text" id="cfg-dataDir" placeholder="No folder selected — required to use the app" readonly />
+        <button class="btn btn-ghost" id="cfg-browseDataDir">Browse…</button>
+        <button class="btn btn-ghost btn-icon" id="cfg-openDataDir" title="Open in file manager">📂</button>
+      </div>
+      <div class="stg-hint">
+        Where the app stores its data files: <code>upload_log.csv</code>,
+        <code>account_log.csv</code>,
+        <code>download_log.csv</code>,
+        <code>import_log.csv</code>, as well as
+        <code>mediainfo_log.ndjson</code>,
+        <code>mediainfo_import.ndjson</code>, and
+        <code>mediainfo_grabbed.ndjson</code>.
+        Must be set before downloading or uploading. Choose a stable folder you won't move or delete.
+      </div>
+    </div>
+  </div>
+
+
+  <div class="stg-row">
+    <label>Default Downloads Folder</label>
+    <div>
+      <div class="irow">
+        <input type="text" id="cfg-defaultDir" placeholder="None set — choose per download" readonly />
+        <button class="btn btn-ghost" id="cfg-browseDir">Browse…</button>
+        <button class="btn btn-ghost btn-icon" id="cfg-clearDir" title="Clear default">✕</button>
+      </div>
+      <div class="stg-hint">
+        When set, this folder is pre-filled in the output folder field on startup
+        and after every save. Leave unset to require manual selection each time.
+      </div>
+    </div>
+  </div>
+
+  <div class="stg-row">
+    <label>7z Archive Folder</label>
+    <div>
+      <div class="irow">
+        <input type="text" id="cfg-tempDir" placeholder="Default: ~/mega_temp" readonly />
+        <button class="btn btn-ghost" id="cfg-browseTempDir">Browse…</button>
+        <button class="btn btn-ghost btn-icon" id="cfg-clearTempDir" title="Reset to default">✕</button>
+      </div>
+      <div class="stg-hint">
+        Where 7z stores split archive parts for files that exceed the split threshold below,
+        before they are uploaded. Defaults to <code>~/mega_temp</code> if left unset.
+      </div>
+    </div>
+  </div>
+
+  <div class="stg-row">
+    <label>7z Split Size (GB)</label>
+    <div>
+      <div class="irow">
+        <input type="number" id="cfg-splitSizeGb" min="1" max="19" step="1" value="5" style="width:80px" />
+      </div>
+      <div class="stg-hint">
+        Size of each split part (in GB) when a file exceeds the split threshold below. Defaults to 5 GB.
+      </div>
+    </div>
+  </div>
+
+  <div class="stg-row">
+    <label>7z Split Threshold (GB)</label>
+    <div>
+      <div class="irow">
+        <input type="number" id="cfg-splitThresholdGb" min="1" max="20" step="0.1" value="19.5" style="width:80px" />
+      </div>
+      <div class="stg-hint">
+        Files larger than this size are split into parts with 7z before uploading. Range: 1–20 GB. Default: <strong>19.5 GB</strong>.
+      </div>
+    </div>
+  </div>
+
+  <div class="stg-row">
+        <label>Account Rollover Threshold (GB)</label>
+        <div>
+          <div class="irow">
+            <input type="number" id="cfg-accountThresholdGb" min="1" max="20" step="0.1" value="19.5" style="width:80px" />
+          </div>
+          <div class="stg-hint">
+            A new account is created automatically when uploading the next file would push storage above this level. Range: 1–20 GB. Default: <strong>19.5 GB</strong>.
+          </div>
+        </div>
+      </div>
+
+      <div class="stg-row">
+        <label>Smart ordering on by default</label>
+        <div>
+          <input type="checkbox" id="cfg-smartOrderingDefault" />
+          <div class="stg-hint">
+            When checked, the Smart ordering checkbox in the upload sidebar will be pre-checked on load. You can still toggle it per-session from the sidebar without affecting this default.
+          </div>
+        </div>
+      </div>
+      <div class="stg-row">
+        <label>Bulk import smart ordering on by default</label>
+        <div>
+          <input type="checkbox" id="cfg-biSmartOrderingDefault" />
+          <div class="stg-hint">
+            When checked, the Smart ordering checkbox in the Bulk Import sidebar will be pre-checked on load. You can still toggle it per-session from the sidebar without affecting this default.
+          </div>
+        </div>
+      </div>
+</div>
+
+<div class="stg-card">
+  <h3>Account creation</h3>
+  <div class="stg-row">
+    <label id="cfg-signupEmailSource-label">Signup email</label>
+    <div>
+      <div class="signup-mail-toggle" role="group" aria-labelledby="cfg-signupEmailSource-label">
+        <label><input type="radio" name="cfg-signupEmailSource" value="temp-mail" checked>Temp mail</label>
+        <label><input type="radio" name="cfg-signupEmailSource" value="cloudflare">Cloudflare domains</label>
+      </div>
+      <div class="stg-hint">Used whenever Upload or Bulk Import creates an account. Cloudflare uses all enabled domains from Inbox in shuffled rotation and confirms email in the background. Connect your mail Worker and activate each domain’s catch-all rule first.</div>
+    </div>
+  </div>
+
+</div>
+
+  <!-- Network -->
+  <div class="stg-card vpn-card" id="vpn-settings-card" hidden>
+    <h3>Proton VPN <span class="vpn-tag">Linux</span></h3>
+    <div class="vpn-card-head">
+      <div><div class="vpn-state" id="vpn-state">Control off</div><div class="stg-hint" id="vpn-mode-summary">Check setup to use the installed Proton CLI.</div></div>
+      <div class="vpn-actions"><button class="btn btn-ghost" id="vpn-open-terminal" type="button" aria-haspopup="dialog" aria-controls="vpn-terminal">Open VPN terminal</button><button class="btn btn-ghost" id="vpn-diagnose" type="button">Check setup / status</button></div>
+    </div>
+    <dl class="vpn-facts">
+      <div><dt>Server</dt><dd id="vpn-server">—</dd></div>
+      <div><dt>Location</dt><dd id="vpn-location">—</dd></div>
+      <div><dt>CLI / account</dt><dd id="vpn-cli">Not checked</dd></div>
+    </dl>
+    <div class="vpn-notice" id="vpn-setup-message" role="status">Use Check setup to detect the CLI and existing Proton sign-in. M3 does not store your Proton password.</div>
+    <div class="vpn-error" id="vpn-error" role="alert" hidden></div>
+    <div class="vpn-actions vpn-retry-actions" id="vpn-held-actions" hidden>
+      <button class="btn btn-accent" id="vpn-retry" type="button">Retry now</button>
+      <button class="btn btn-ghost" id="vpn-change-pool" type="button">Edit waiting pool</button>
+      <button class="btn btn-ghost" id="vpn-cancel" type="button" hidden>Cancel request</button>
+    </div>
+    <div class="vpn-notice" id="vpn-waiting" hidden>
+      <div id="vpn-waiting-message" role="status"></div>
+      <dl class="vpn-facts vpn-recovery-facts" id="vpn-recovery-facts" hidden>
+        <div><dt>Command / selection</dt><dd id="vpn-recovery-command">—</dd></div>
+        <div><dt>Candidate / attempt</dt><dd id="vpn-recovery-candidate">—</dd></div>
+        <div><dt>Reason</dt><dd id="vpn-recovery-reason">—</dd></div>
+        <div><dt>Proton status</dt><dd id="vpn-recovery-status">—</dd></div>
+        <div><dt>Last confirmed by Proton</dt><dd id="vpn-recovery-last">—</dd></div>
+        <div><dt>Automatic retry</dt><dd id="vpn-recovery-next" aria-live="off">—</dd></div>
+      </dl>
+      <div id="vpn-recovery-grace" hidden></div>
+    </div>
+    <div class="stg-row">
+      <label for="vpn-enabled">App control</label>
+      <div><label class="vpn-check"><input id="vpn-enabled" type="checkbox"> Enable Proton VPN control</label>
+        <div class="stg-hint">Connection changes affect this machine. Turning control off leaves your VPN connected.</div></div>
+    </div>
+    <div class="stg-row">
+      <label for="vpn-mode">Connection policy</label>
+      <div><select id="vpn-mode" class="font-select">
+        <option value="required" disabled>VPN required — protection not verified</option>
+        <option value="manual">Manual control</option>
+      </select><div class="stg-hint" id="vpn-policy-hint">VPN-required mode is unavailable until protection has been verified. Select Manual control to enable app controls; M3 can use your normal connection when disconnected.</div></div>
+    </div>
+    <div class="vpn-catalog-box">
+      <div class="vpn-section-title">Local server catalog</div>
+      <div class="stg-hint" id="vpn-catalog-summary" role="status">Loading the bundled list…</div>
+      <div class="vpn-actions">
+        <button class="btn btn-ghost" id="vpn-catalog-import" type="button">Import local list</button>
+        <button class="btn btn-ghost" id="vpn-catalog-reload" type="button">Reload saved list</button>
+        <button class="btn btn-ghost" id="vpn-catalog-reset" type="button">Use bundled list</button>
+      </div>
+      <div class="stg-hint">Availability is learned from connection attempts. Import reads a local country, city, server CSV; your source file is preserved.</div>
+    </div>
+    <fieldset id="vpn-pool-fields" class="vpn-pool-fields">
+      <legend>Server pool</legend>
+      <div class="stg-row"><label for="vpn-pool-mode">Include</label><div><select id="vpn-pool-mode" class="font-select">
+        <option value="all">All regular servers</option><option value="countries">Selected countries</option>
+        <option value="cities">Selected cities</option><option value="servers">Exact server IDs</option>
+        <option value="mixed">Countries and server IDs</option>
+      </select></div></div>
+      <div class="stg-row" id="vpn-country-row"><label for="vpn-countries">Countries</label><div>
+        <textarea id="vpn-countries" rows="2" placeholder="Germany, Canada" spellcheck="false"></textarea>
+        <div class="vpn-inline"><select id="vpn-country-picker" class="font-select" aria-label="Catalog country"></select><button class="btn btn-ghost" id="vpn-country-add" type="button">Add country</button></div>
+        <div class="stg-hint">Separate names or server country codes with commas or new lines.</div>
+      </div></div>
+      <div class="stg-row" id="vpn-city-row"><label for="vpn-cities">Cities</label><div>
+        <select id="vpn-cities" class="font-select vpn-multi" multiple size="5"></select>
+        <div class="stg-hint">Select country/city pairs. Hold Ctrl or Shift to select more than one.</div>
+      </div></div>
+      <div class="stg-row" id="vpn-server-row"><label for="vpn-servers">Server IDs</label><div>
+        <textarea id="vpn-servers" rows="2" placeholder="CH#242, DE#12" spellcheck="false"></textarea>
+        <div class="stg-hint">Separate IDs with commas or new lines. Exact IDs are looked up in this local catalog.</div>
+      </div></div>
+      <details class="vpn-pool-details"><summary>Find servers in the local list</summary>
+        <label for="vpn-search">Search by ID, country or city</label><input id="vpn-search" type="search" maxlength="100" placeholder="Berlin or DE#" />
+        <select id="vpn-server-results" class="font-select vpn-multi" size="5" aria-label="Matching catalog servers"></select>
+        <div class="stg-hint" id="vpn-search-summary" role="status"></div>
+        <div class="vpn-actions"><button class="btn btn-ghost" id="vpn-server-add" type="button">Include selected ID</button><button class="btn btn-ghost" id="vpn-server-exclude" type="button">Exclude selected ID</button></div>
+      </details>
+      <details class="vpn-pool-details"><summary>Exclude countries, cities or servers</summary>
+        <div class="stg-row"><label for="vpn-exclude-countries">Countries</label><textarea id="vpn-exclude-countries" rows="2" placeholder="Country names or server codes"></textarea></div>
+        <div class="stg-row"><label for="vpn-exclude-cities">Cities</label><select id="vpn-exclude-cities" class="font-select vpn-multi" multiple size="5"></select></div>
+        <div class="stg-row"><label for="vpn-exclude-servers">Server IDs</label><textarea id="vpn-exclude-servers" rows="2" placeholder="CH#242, DE#12" spellcheck="false"></textarea></div>
+      </details>
+      <div class="vpn-fields">
+        <label>Order<select id="vpn-order" class="font-select"><option value="country-balanced">Country-balanced shuffle</option><option value="shuffle">Shuffle without repeats</option><option value="file-order">Order in the file</option></select></label>
+        <label>Avoid last N servers<input id="vpn-recent" type="number" min="0" max="1000" value="5"></label>
+      </div>
+      <label class="vpn-check"><input id="vpn-fallback" type="checkbox"> Allow other regular servers after this pool is exhausted</label>
+      <div class="stg-hint">Exclusions still apply to fallback servers. The current server is always skipped during rotation.</div>
+      <div class="vpn-notice" id="vpn-pool-summary" role="status">Choose your pool to see eligible local records.</div>
+    </fieldset>
+    <div class="vpn-actions" id="vpn-apply-pool-row" hidden><button class="btn btn-accent" id="vpn-apply-pool" type="button">Apply pool and retry</button><button class="btn btn-ghost" id="vpn-abandon-pool" type="button">Discard pool edits</button><span class="stg-hint">Saves this pool for future work and resumes the waiting request. Other draft settings are not applied.</span></div>
+    <details class="vpn-pool-details"><summary>Connection retry settings</summary>
+      <fieldset id="vpn-retry-fields" class="vpn-fields">
+        <label>Attempts per server<input id="vpn-retry-attempts" type="number" min="1" max="10" value="1"></label>
+        <label>Servers per round<input id="vpn-retry-candidates" type="number" min="1" max="1000" value="10"></label>
+        <label>Command deadline (seconds)<input id="vpn-retry-process" type="number" min="0.001" max="2147483.647" step="0.001" value="90"></label>
+        <label>Round budget (seconds)<input id="vpn-retry-round" type="number" min="0.001" max="2147483.647" step="0.001" value="300"></label>
+        <label>Initial retry delay (seconds)<input id="vpn-retry-initial" type="number" min="0" max="2147483.647" step="0.001" value="1.5"></label>
+        <label>Maximum retry delay (seconds)<input id="vpn-retry-max" type="number" min="0" max="2147483.647" step="0.001" value="10"></label>
+        <label>Failed-server cooldown (minutes)<input id="vpn-retry-cooldown" type="number" min="0" max="35791.39411666667" step="any" value="15"></label>
+        <label>Between rounds (seconds)<input id="vpn-retry-restart" type="number" min="0.001" max="2147483.647" step="0.001" value="30"></label>
+      </fieldset>
+      <div class="stg-hint">A failed server advances to the next candidate. Exhausted rounds keep work waiting. The command deadline is M3’s process guard; it cannot extend Proton CLI’s internal connection wait.</div>
+    </details>
+    <div class="stg-row">
+      <label for="vpn-target">Manual connection</label>
+      <div><select id="vpn-target" class="font-select"><option value="fastest">Fastest available (Proton chooses)</option><option value="pool">Use saved catalog pool</option></select>
+        <div class="vpn-actions">
+          <button class="btn btn-accent" id="vpn-connect" type="button">Connect</button>
+          <button class="btn btn-ghost" id="vpn-switch" type="button">Switch server</button>
+          <button class="btn btn-danger" id="vpn-disconnect" type="button">Disconnect</button>
+        </div>
+        <div class="stg-hint">Switch server chooses another eligible server from the local catalog. Routine switches wait for active work to finish.</div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Reconnect behavior</label>
+      <div>
+        <label class="vpn-check"><input id="vpn-auto-recover" type="checkbox"> Also reconnect while idle</label>
+        <div class="stg-hint">Active VPN-dependent jobs recover automatically. Refreshes resume the interrupted account; downloads retain partial data. Uncertain uploads stop for a remote-file check.</div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Automatic speed-switch limits</label>
+      <div class="vpn-fields">
+        <label>Cooldown (minutes)<input id="vpn-cooldown" type="number" min="0" max="1440" step="1" value="5"></label>
+        <label>Switches per window<input id="vpn-attempts" type="number" min="1" max="100" step="1" value="3"></label>
+        <label>Window (minutes)<input id="vpn-window" type="number" min="1" max="1440" step="1" value="30"></label>
+        <div class="stg-hint">At a limit, work waits until the next permitted switch and resumes automatically.</div>
+      </div>
+    </div>
+    <div class="vpn-upcoming">
+      <div class="vpn-section-title">Account rotation</div>
+      <fieldset id="vpn-refresh-fields"><label for="vpn-refresh-mode">Rotate between accounts</label>
+        <select id="vpn-refresh-mode" class="font-select"><option value="off">Off</option><option value="every-account">Every account</option><option value="batch">Every N accounts</option></select>
+        <label for="vpn-refresh-batch">Accounts per connection</label><input id="vpn-refresh-batch" type="number" min="1" max="1000" value="5">
+      </fieldset>
+      <div class="stg-hint">Uses the current Proton connection for the first group, then rotates between accounts or groups. With control off, rotation is inactive. Single-account refreshes use the connection gate without rotating.</div>
+      <div class="vpn-section-title">Download speed recovery</div>
+      <fieldset id="vpn-download-fields" class="vpn-fields">
+        <label class="vpn-check"><input id="vpn-download-enabled" type="checkbox"> Download recovery</label>
+        <label>Download minimum (MB/s)<input id="vpn-download-speed" type="number" value="2" step="0.001" min="0.001"></label>
+        <label>Download duration (seconds)<input id="vpn-download-duration" type="number" value="90" min="1"></label>
+        <label>Transfer warmup (seconds)<input id="vpn-warmup" type="number" value="30" min="0"></label>
+        <label>Transfer speed averaging (seconds)<input id="vpn-averaging" type="number" value="30" min="1"></label>
+      </fieldset>
+      <div class="stg-hint">Requires Proton to report a connected VPN. Measures received bytes on the Worker download path. Recovery retains partial data and waits for other active work. Streaming defers speed switching while bytes are advancing. Stop and Skip cancel waiting recovery.</div>
+      <div class="vpn-section-title">Upload speed recovery <span class="vpn-tag">File boundaries</span></div>
+      <fieldset id="vpn-upload-fields" class="vpn-fields">
+        <label class="vpn-check"><input id="vpn-upload-enabled" type="checkbox"> Upload recovery</label>
+        <label>Upload minimum (MB/s)<input id="vpn-upload-speed" type="number" value="0.5" step="0.001" min="0.001"></label>
+        <label>Upload duration (seconds)<input id="vpn-upload-duration" type="number" value="120" min="1"></label>
+      </fieldset>
+      <div class="stg-hint">Requires Proton to report a connected VPN. Slow uploads request a switch after the current file finishes, on the same account. A stalled file stays active until it finishes or you stop it. Unknown completion stops the queue for a remote-file check; files are never automatically restarted. Browser uploads remain manual. Settings apply to the next transfer; control off makes these policies inactive.</div>
+    </div>
+    <div class="vpn-save-row"><span class="stg-hint" id="vpn-save-status">No unsaved VPN changes.</span><button class="btn-save" id="vpn-save" type="button">Apply VPN settings</button></div>
+    <details class="vpn-history"><summary>Recent VPN activity</summary><ol id="vpn-history-list"><li>No VPN activity yet.</li></ol></details>
+  </div>
+
+  <div class="stg-card" id="stg-proxyCard">
+    <h3>Network <span id="stg-proxyRequired" class="required-badge">REQUIRED</span></h3>
+    <div class="stg-row">
+      <label>Workers proxy URL</label>
+      <div>
+        <input type="text" id="cfg-proxy" placeholder="https://your-worker.workers.dev" style="width:100%;box-sizing:border-box" />
+        <div class="stg-hint">
+          Cloudflare Worker proxy used to bypass MEGA bandwidth quotas.
+          No trailing slash. You must supply your own — downloads will not start without one.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download -->
+  <div class="stg-card">
+    <h3>Download</h3>
+    <div class="stg-row">
+      <label>Concurrent File Downloads</label>
+      <div>
+        <div class="irow" style="align-items:center;gap:10px">
+          <input type="range" class="font-size-slider" id="cfg-dlThreads"
+                 min="1" max="16" step="1" value="4" style="flex:1" />
+          <span class="font-size-val" id="cfg-dlThreadsVal" style="min-width:28px">4</span>
+        </div>
+        <div class="stg-hint">
+          How many files in a folder download in parallel. Has no effect on single-file downloads. Default: <strong>4</strong>.
+        </div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Large-file chunk size</label>
+      <div>
+        <select class="font-select" id="cfg-dlChunkSize">
+          <option value="536870912">512 MB — high resume granularity</option>
+          <option value="1073741824">1 GB</option>
+          <option value="2147483648" selected>2 GB (default)</option>
+          <option value="4294967296">4 GB — fewer pieces for very large files</option>
+        </select>
+        <div class="stg-hint">
+          Files at or above this size are split into chunks, which are assembled after the download finishes.
+          Smaller chunks give more resume checkpoints; larger chunks means fewer chunks.
+        </div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Stream Mode Method</label>
+      <div>
+        <select class="font-select" id="cfg-streamMethod">
+          <option value="http" selected>Local HTTP Proxy</option>
+          <option value="sparse">Sparse File (Linux-only)</option>
+        </select>
+        <div class="stg-hint">
+          Method used when downloading in Stream Mode. Sparse files are more efficient but only work on Linux.
+        </div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Streaming Chunk Size</label>
+      <div>
+        <div class="irow" style="align-items:center;gap:6px">
+          <input type="number" id="cfg-streamingChunkSize" min="10" max="1000" step="1" value="100" style="width:80px" />
+          <span style="font-size:12px;color:var(--text3)">MB</span>
+        </div>
+        <div class="stg-hint">
+          Chunk size used in Stream Mode downloads. Range: 10–1000 MB. Default: <strong>100 MB</strong>.
+          Smaller chunks allow the media player to seek sooner; larger chunks reduce API round-trips.
+          Stream Mode always uses 1 concurrent download regardless of the threads setting above.
+        </div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Launch video when ready</label>
+      <div>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none">
+          <input type="checkbox" id="cfg-launchWhenReady" />
+          <span style="font-size:12px">Automatically open in default player when ready to stream</span>
+        </label>
+        <div class="stg-hint">
+          When enabled, the file opens in your default media player as soon as it is ready to stream.
+          HTTP Proxy: opens when the head and tail chunks are buffered. Sparse File: opens when <strong>Watch in</strong> shows <strong>Now!</strong>. Disabled by default.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Megatools Uploads -->
+  <div class="stg-card">
+    <h3>Megatools Uploads</h3>
+    <div class="stg-hint" style="margin-bottom:16px">
+      These settings control how the bundled <strong>megatools</strong> fork uploads files. They have no effect when megacmd or rfork is used instead.
+      They control the way that data in flight is organized and transferred. Mega breaks up files into small pieces, set by <strong>buffer size</strong>. <strong>Boost mode</strong> bundles these pieces together into chunks set by <strong>chunk size</strong>. These bundles are sent simultaneously by every worker.
+    </div>
+
+    <div class="stg-row">
+      <label>Worker threads</label>
+      <div>
+        <div class="irow" style="align-items:center;gap:10px">
+            <input type="range" class="font-size-slider" id="cfg-uploadWorkers"
+                  min="1" max="100" step="1" value="5" style="flex:1" />
+            <span class="font-size-val" id="cfg-uploadWorkersVal" style="min-width:28px">5</span>
+        </div>
+        <div class="stg-hint">
+          Parallel upload threads. Range: 1–100. Each worker maintains its own HTTP connection.
+          Default: <strong>5</strong>. For me, anywhere 4-6 works. If you disable boost mode, you should increase this. More workers should be used for those with fast connections and high latency. <strong>Note:</strong> Using a VPN increases latency. Using too many workers can lead to instability and errors.
+        </div>
+      </div>
+    </div>
+
+    <div class="color-group-label" style="margin-bottom:6px;margin-top:16px">Boost Mode Settings</div>
+
+
+    <div class="stg-row">
+      <label>Enable Boost Mode</label>
+      <input type="checkbox" id="cfg-boostEnabled" checked />
+    </div>
+
+    <div class="stg-row">
+      <label>Chunk size</label>
+      <div>
+        <select class="font-select" id="cfg-uploadChunkSize">
+          <option value="2097152">2 MB</option>
+          <option value="4194304">4 MB</option>
+          <option value="8388608" selected>8 MB (default)</option>
+          <option value="16777216">16 MB</option>
+          <option value="33554432">32 MB</option>
+        </select>
+        <div class="stg-hint">
+          Determines how big the bundles of file chunks are. Like, <strong>worker threads</strong>, bigger sizes should be reserved for fast connections with high latency. Try increasing workers before increasing chunk size.
+        </div>
+      </div>
+    </div>
+
+    <div class="stg-row">
+      <label>Buffer size</label>
+      <div>
+        <select class="font-select" id="cfg-uploadBufferSize">
+          <option value="262144">256 KB</option>
+          <option value="524288" selected>512 KB (default)</option>
+          <option value="1048576">1 MB</option>
+          <option value="2097152">2 MB</option>
+        </select>
+        <div class="stg-hint">
+          curl internal send/receive buffer per worker. Larger buffers keep the pipe full on
+          high-latency connections. Setting too high may waste memory. If boost mode is enabled, increase chunk size instead and leave this smaller.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Megacmd Uploads -->
+  <div class="stg-card" id="stg-megacmdConnectionsCard">
+    <h3>Megacmd Uploads</h3>
+    <div class="stg-hint" style="margin-bottom:16px">
+      Controls the number of parallel connections MEGAcmd uses when uploading a file.
+      Has no effect when megatools or rfork is used instead.
+      Unlike megatools, setting this too high will cause little to no issues.
+    </div>
+
+    <div class="stg-row">
+      <label>Worker threads</label>
+      <div>
+        <div class="irow" style="align-items:center;gap:10px">
+          <input type="range" class="font-size-slider" id="cfg-megacmdConnections"
+                 min="1" max="100" step="1" value="10" style="flex:1" />
+          <span class="font-size-val" id="cfg-megacmdConnectionsVal" style="min-width:28px">10</span>
+        </div>
+        <div class="stg-hint">
+          Default: <strong>10</strong>. Range: 1–100.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stg-card" id="stg-rforkUploads">
+    <h3>rfork Uploads</h3>
+    <p class="stg-hint">These settings apply only to rfork uploads. Saved changes apply to the next upload run.</p>
+    <div data-rfork-basic></div>
+    <details><summary>Advanced upload and transport settings</summary><div data-rfork-advanced></div></details>
+    <details><summary>Restart/resume settings</summary><div data-rfork-recovery></div></details>
+    <p class="stg-hint" data-rfork-summary role="status" aria-live="polite"></p>
+    <button type="button" class="btn btn-ghost" data-rfork-reset>Reset rfork defaults</button>
+  </div>
+
+  <!-- Tool Priority -->
+  <div class="stg-card" id="stg-toolPriorityCard">
+    <h3>Tool Priority</h3>
+    <div class="stg-hint" style="margin-bottom:16px">
+      Set the order in which upload tools are tried for each operation. The app works down the list and falls back to the next tool if one fails. Use the <strong>▲ ▼</strong> buttons to reorder.
+    </div>
+
+    <!-- Account Creation -->
+    <div class="tool-priority-section">
+      <div class="color-group-label" style="margin-bottom:6px">Account Creation</div>
+      <div class="stg-hint" style="margin-bottom:8px;margin-top:0">Only megatools and megacmd can register accounts. rfork is not applicable here.</div>
+      <ul class="tool-order-list" id="toolOrder-create">
+        <li class="tool-order-item" data-tool="megatools">
+          <span class="tool-order-rank">1</span>
+          <span class="tool-order-name">megatools</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+        <li class="tool-order-item" data-tool="megacmd">
+          <span class="tool-order-rank">2</span>
+          <span class="tool-order-name">megacmd</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <hr class="stg-divider" />
+
+    <!-- Uploading -->
+    <div class="tool-priority-section">
+      <div class="color-group-label" style="margin-bottom:6px">Uploading</div>
+      <div class="stg-hint" style="margin-bottom:8px">rfork uses the configuration in the rfork Uploads settings above.</div>
+      <ul class="tool-order-list" id="toolOrder-upload">
+        <li class="tool-order-item" data-tool="megatools">
+          <span class="tool-order-rank">1</span>
+          <span class="tool-order-name">megatools</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+        <li class="tool-order-item" data-tool="megacmd">
+          <span class="tool-order-rank">2</span>
+          <span class="tool-order-name">megacmd</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+        <li class="tool-order-item" data-tool="rclone">
+          <span class="tool-order-rank">3</span>
+          <span class="tool-order-name">rfork</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <hr class="stg-divider" />
+
+    <!-- Account Refreshing -->
+    <div class="tool-priority-section">
+      <div class="color-group-label" style="margin-bottom:6px">Account Refreshing</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <label for="cfg-inactiveDays" style="font-size:12px">Days without login before an account is "Dormant"</label>
+        <input type="number" id="cfg-inactiveDays" min="1" max="3650" step="1" value="90" style="width:80px" />
+      </div>
+      <div class="stg-hint" style="margin-bottom:10px;margin-top:0">Active accounts with no login for this many days, or a missing or invalid login date, show as Dormant. These and accounts with blank or Unknown status count toward the amber "Refresh needed" reminder and are picked up by both dormant refresh buttons. Suspended, Terminated and Over Quota accounts are excluded. Saved email and password are required for refreshing. Default: 90.</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <label for="cfg-dormantRefreshCount" style="font-size:12px">Dormant accounts per batch refresh</label>
+        <input type="number" id="cfg-dormantRefreshCount" min="1" max="500" step="1" value="10" style="width:80px" />
+      </div>
+      <div class="stg-hint" style="margin-bottom:10px;margin-top:0">Used by "Refresh Oldest Dormant" on the Accounts tab. It picks this many of the oldest accounts needing refresh, using the last login date, then the creation date when no valid login date exists, and refreshes the selected accounts newest-first. Default: 10.</div>
+      <ul class="tool-order-list" id="toolOrder-refresh">
+        <li class="tool-order-item" data-tool="megatools">
+          <span class="tool-order-rank">1</span>
+          <span class="tool-order-name">megatools</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+        <li class="tool-order-item" data-tool="megacmd">
+          <span class="tool-order-rank">2</span>
+          <span class="tool-order-name">megacmd</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+        <li class="tool-order-item" data-tool="rclone">
+          <span class="tool-order-rank">3</span>
+          <span class="tool-order-name">rfork</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <hr class="stg-divider" />
+
+    <!-- View & Import Browsing -->
+    <div class="tool-priority-section">
+      <div class="color-group-label" style="margin-bottom:6px">View &amp; Import Browsing</div>
+      <div class="stg-hint" style="margin-bottom:8px;margin-top:0">Used when browsing account files and generating download links in the View &amp; Import tab. Tried in order — falls back automatically if one fails. Note: megatools cannot generate share links.</div>
+      <ul class="tool-order-list" id="toolOrder-view">
+        <li class="tool-order-item" data-tool="megacmd">
+          <span class="tool-order-rank">1</span>
+          <span class="tool-order-name">megacmd</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+        <li class="tool-order-item" data-tool="rclone">
+          <span class="tool-order-rank">2</span>
+          <span class="tool-order-name">rfork</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+        <li class="tool-order-item" data-tool="megatools">
+          <span class="tool-order-rank">3</span>
+          <span class="tool-order-name">megatools</span>
+          <div class="tool-order-arrows">
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="up" title="Move up">▲</button>
+            <button class="btn btn-ghost btn-sm tool-arrow-btn" data-dir="down" title="Move down">▼</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Appearance -->
+  <div class="stg-card">
+    <h3>Appearance</h3>
+
+    <!-- Preset themes -->
+    <div class="color-group-label" style="margin-bottom:10px">Preset themes</div>
+    <div class="theme-presets" id="themePresets">
+      <!-- Populated by JS -->
+    </div>
+
+    <hr class="stg-divider" />
+
+    <!-- Color groups — populated by JS into #colorGroups -->
+    <div id="colorGroups"></div>
+
+    <hr class="stg-divider" />
+
+    <!-- Typography -->
+    <div class="color-group-label" style="margin-bottom:10px">Typography</div>
+
+<div class="stg-row" style="margin-bottom:6px">
+      <label>Interface font</label>
+      <select class="font-select" id="cfg-sansFont">
+        <option class="preset-placeholder" value="" hidden>— set by theme —</option>
+        <optgroup label="Sans-serif">
+          <option value="'Asap',-apple-system,sans-serif">Asap</option>
+          <option value="'Assistant',-apple-system,sans-serif">Assistant</option>
+          <option value="'Barlow',-apple-system,sans-serif">Barlow</option>
+          <option value="'Barlow Condensed',-apple-system,sans-serif">Barlow Condensed</option>
+          <option value="'Barlow Semi Condensed',-apple-system,sans-serif">Barlow Semi Condensed</option>
+          <option value="'Cuprum',-apple-system,sans-serif">Cuprum</option>
+          <option value="'Epilogue',-apple-system,sans-serif">Epilogue</option>
+          <option value="'IBM Plex Sans',-apple-system,sans-serif">IBM Plex Sans</option>
+          <option value="'Inter',-apple-system,sans-serif">Inter</option>
+          <option value="'K2D',-apple-system,sans-serif">K2D</option>
+          <option value="'Montserrat',-apple-system,sans-serif">Montserrat</option>
+          <option value="'Nunito',-apple-system,sans-serif">Nunito</option>
+          <option value="'Outfit',-apple-system,sans-serif">Outfit</option>
+          <option value="'Oxygen',-apple-system,sans-serif">Oxygen</option>
+          <option value="'Prompt',-apple-system,sans-serif">Prompt</option>
+          <option value="'Public Sans',-apple-system,sans-serif">Public Sans</option>
+          <option value="'Recursive',-apple-system,sans-serif">Recursive</option>
+          <option value="'Share',-apple-system,sans-serif">Share</option>
+          <option value="'Share Tech',-apple-system,sans-serif">Share Tech</option>
+          <option value="'Ysabeau',-apple-system,'Segoe UI',sans-serif">Ysabeau</option>
+        </optgroup>
+        <optgroup label="Serif">
+          <option value="'IBM Plex Serif',Georgia,serif">IBM Plex Serif</option>
+          <option value="'Instrument Serif',Georgia,serif">Instrument Serif</option>
+          <option value="'Merriweather',Georgia,serif">Merriweather</option>
+          <option value="'Newsreader',Georgia,serif">Newsreader</option>
+          <option value="'Source Serif 4',Georgia,serif">Source Serif 4</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="stg-row" style="margin-bottom:12px">
+      <label style="font-size:11px;opacity:0.7">Custom interface font</label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="text" class="font-select" id="cfg-sansCustom" placeholder="Type any system font name…" spellcheck="false" style="flex:1;min-width:0" />
+        <span id="cfg-sansCustomStatus" style="font-size:11px;white-space:nowrap;flex-shrink:0"></span>
+      </div>
+    </div>
+
+    <div class="stg-row" style="margin-bottom:6px">
+      <label>Monospace font</label>
+      <select class="font-select" id="cfg-monoFont">
+        <option class="preset-placeholder" value="" hidden>— set by theme —</option>
+        <optgroup>
+          <option value="'Courier Prime','Courier New',monospace">Courier Prime</option>
+          <option value="'Geist Mono',monospace">Geist Mono</option>
+          <option value="'Google Sans Code','JetBrains Mono',monospace">Google Sans Code</option>
+          <option value="'IBM Plex Mono',monospace">IBM Plex Mono</option>
+          <option value="'JetBrains Mono','Cascadia Code',monospace">JetBrains Mono</option>
+          <option value="'Recursive Monospace',monospace">Recursive Monospace</option>
+          <option value="'Maple Mono',monospace">Maple Mono</option>
+          <option value="'Oxygen Mono',monospace">Oxygen Mono</option>
+          <option value="'Share Tech Mono',monospace">Share Tech Mono</option>
+          <option value="'Source Code Pro',monospace">Source Code Pro</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="stg-row" style="margin-bottom:12px">
+      <label style="font-size:11px;opacity:0.7">Custom monospace font</label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="text" class="font-select" id="cfg-monoCustom" placeholder="Type any system font name…" spellcheck="false" style="flex:1;min-width:0" />
+        <span id="cfg-monoCustomStatus" style="font-size:11px;white-space:nowrap;flex-shrink:0"></span>
+      </div>
+    </div>
+
+    <div class="stg-row" style="margin-bottom:0">
+      <label>Font size</label>
+      <div class="font-size-row">
+        <input type="range" class="font-size-slider" id="cfg-fontSize" min="10" max="20" step="1" value="13" />
+        <span class="font-size-val" id="cfg-fontSizeVal">13px</span>
+      </div>
+    </div>
+
+    <div class="theme-reset-row">
+      <button class="theme-reset-btn" id="cfg-resetTheme">Reset to current preset</button>
+      <button class="theme-reset-btn" id="cfg-exportTheme">Export JSON</button>
+      <button class="theme-reset-btn" id="cfg-importTheme">Import JSON</button>
+      <input type="file" id="cfg-importThemeFile" accept=".json,application/json" style="display:none" />
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="stg-card">
+    <h3>Layout</h3>
+    <div class="stg-row" style="margin-bottom:0">
+      <label>Sidebar width</label>
+      <div>
+        <div class="font-size-row">
+          <input type="range" class="font-size-slider" id="cfg-sidebarWidth" min="180" max="500" step="1" value="340" />
+          <input type="number" id="cfg-sidebarWidthNum" min="180" max="500" step="1" value="340"
+                 style="width:58px;font-family:var(--mono);font-size:11.5px;padding:3px 6px;text-align:right" />
+          <span style="font-size:11.5px;color:var(--text3);flex-shrink:0">px</span>
+        </div>
+      <div class="stg-hint">Width of the left-hand panel on the Download and Upload pages.</div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Links per page</label>
+      <div>
+        <input type="number" id="cfg-linksPerPage" min="5" max="500" step="5" value="50" style="width:80px" />
+        <div class="stg-hint">Number of rows shown per page on the Generated Links tab. Default: 50.</div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Accounts per page</label>
+      <div>
+        <input type="number" id="cfg-accountsPerPage" min="5" max="500" step="5" value="50" style="width:80px" />
+        <div class="stg-hint">Number of rows shown per page on the Accounts tab. Default: 50.</div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Downloaded files per page</label>
+      <div>
+        <input type="number" id="cfg-downloadsPerPage" min="5" max="500" step="5" value="50" style="width:80px" />
+        <div class="stg-hint">Number of rows shown per page on the Downloaded Files tab. Default: 50.</div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>MediaInfo entries per page</label>
+      <div>
+        <input type="number" id="cfg-mediaInfoPerPage" min="5" max="500" step="5" value="50" style="width:80px" />
+        <div class="stg-hint">Number of rows shown per page on the MediaInfo tab. Default: 50.</div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Imported links per page</label>
+      <div>
+        <input type="number" id="cfg-importsPerPage" min="5" max="500" step="5" value="50" style="width:80px" />
+        <div class="stg-hint">Number of rows shown per page on the Imported Links tab. Default: 50.</div>
+      </div>
+    </div>
+    <div class="stg-row">
+      <label>Mediainfo Checker history per page</label>
+      <div>
+        <input type="number" id="cfg-micHistoryPerPage" min="5" max="500" step="5" value="50" style="width:80px" />
+        <div class="stg-hint">Number of rows shown per page in the Mediainfo Checker history panel. Default: 50.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integrations -->
+  <div class="stg-card">
+    <h3>Integrations</h3>
+    <div class="stg-row">
+      <label>OMDB API key</label>
+      <div>
+        <input type="text" id="cfg-omdbKey" placeholder="Paste your OMDB API key here" />
+        <div class="stg-hint">
+          Used to pull movie/TV metadata (title, plot, cast, rating, poster…) when generating post
+          templates. Get a free key at
+          <span style="font-family:var(--mono);font-size:10.5px">omdbapi.com</span>.
+          After saving, use the <strong>🎬 OMDB</strong> search on each Generated Link to look up a
+          title, then click <strong>📋 Post</strong> to include the data in your template via
+          <span style="font-family:var(--mono);font-size:10.5px">{{OMDB …}}</span> variables.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post Template -->
+  <div class="stg-card">
+    <h3>Post Template</h3>
+    <div style="margin-bottom:14px">
+      <p>
+        This template is copied to your clipboard when you click <strong>Post</strong> on a Generated Link.
+        Use <code>{{variable}}</code> placeholders anywhere in the text.
+        Click a variable chip below to insert it at the cursor.
+      </p>
+      <textarea class="stg-template-area" id="cfg-postTemplate" spellcheck="false"></textarea>
+      <div class="var-chips" id="stg-varChips">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <div class="row-end">
+      <button class="btn btn-ghost btn-sm" id="cfg-resetTemplate">Reset to default</button>
+    </div>
+  </div>
+
+  <!-- Title Template -->
+  <div class="stg-card">
+    <h3>Title Template</h3>
+    <div style="margin-bottom:14px">
+      <p>
+        This single-line template is copied to your clipboard when you click <strong>Title</strong> on a Generated Link.
+        Supports the same <code>{{variable}}</code> placeholders as the Post Template.
+        Click a chip below to insert it at the cursor.
+      </p>
+      <input type="text" id="cfg-titleTemplate" spellcheck="false" style="width:100%;font-family:var(--mono);font-size:11.5px;" placeholder="[MEGA] {{File Name}} [{{File Size}}]" />
+      <div class="var-chips" id="stg-titleVarChips">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <div class="row-end">
+      <button class="btn btn-ghost btn-sm" id="cfg-resetTitleTemplate">Reset to default</button>
+    </div>
+  </div>
+
+<!-- Part Row Template -->
+  <div class="stg-card">
+    <h3>Part Row Template</h3>
+    <div style="margin-bottom:14px">
+      <p>
+        Controls how each individual link is rendered inside <code>{{Links Block}}</code> when multiple parts are grouped into a single post.
+        One row is generated per part, then joined with newlines.
+      </p>
+      <input type="text" id="cfg-linkRowTemplate" spellcheck="false" style="width:100%;font-family:var(--mono);font-size:11.5px;" placeholder="[url={{Part Link}}][size=150][color=#FF0000]{{Part Label}}[/color][/size][/url] — {{Part Name}} ({{Part Size}})" />
+      <div class="var-chips" id="stg-linkRowVarChips">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <div class="row-end">
+      <button class="btn btn-ghost btn-sm" id="cfg-resetLinkRowTemplate">Reset to default</button>
+    </div>
+  </div>
+
+  <!-- Default startup tab -->
+  <div class="stg-card">
+    <h3>Startup</h3>
+    <div class="stg-row">
+      <label>Default tab on launch</label>
+      <select class="font-select" id="cfg-defaultTab">
+        <option value="download">Downloads</option>
+        <option value="upload">Uploads</option>
+      </select>
+    </div>
+  </div>
+  <div class="stg-footer">
+    <button class="btn-save" id="cfg-save">Save settings</button>
+  </div>
+
+  <!-- Version -->
+  <div class="about-version">Version <span id="aboutVersion">…</span></div>
+
+</div><!-- /settings-panel -->
+
+</div><!-- /main -->
+</div><!-- /body -->
+
+<!-- ── Folder Browser Modal ───────────────────────────────────────────── -->
+<div id="fbOverlay" class="fb-overlay" hidden>
+  <div class="fb-modal">
+
+    <div class="fb-header">
+      <span class="fb-header-title">Browse MEGA Folder</span>
+      <button id="fbCloseBtn" class="btn btn-icon" title="Close">✕</button>
+    </div>
+
+    <div class="fb-url-row">
+      <input id="fbUrlInput" class="fb-url-input" type="text"
+             placeholder="Paste a MEGA folder link…" spellcheck="false">
+      <button id="fbFetchBtn" class="btn btn-accent">Fetch</button>
+    </div>
+
+    <div id="fbStatus" class="fb-status" hidden></div>
+
+    <div id="fbTreeWrap" class="fb-tree-wrap" hidden>
+      <div class="fb-toolbar">
+        <input id="fbSearch" class="fb-search" type="text" placeholder="Filter files…">
+        <label class="fb-chk-label">
+          <input type="checkbox" id="fbSelectAll"> Select all visible
+        </label>
+      </div>
+      <div id="fbTree" class="fb-tree"></div>
+    </div>
+
+<div id="fbFooter" class="fb-footer" hidden>
+      <span id="fbSelCount" class="fb-sel-count">0 files selected</span>
+      <button id="fbAddBtn" class="btn btn-accent" disabled>Add to Queue</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Mediainfo Checker — single-file Folder Browser Modal ─────────────── -->
+<div id="micFbOverlay" class="fb-overlay" hidden>
+  <div class="fb-modal">
+
+    <div class="fb-header">
+      <span class="fb-header-title">Browse MEGA Folder</span>
+      <button id="micFbCloseBtn" class="btn btn-icon" title="Close">✕</button>
+    </div>
+
+    <div class="fb-url-row">
+      <input id="micFbUrlInput" class="fb-url-input" type="text"
+             placeholder="Paste a MEGA folder link…" spellcheck="false">
+      <button id="micFbFetchBtn" class="btn btn-accent">Fetch</button>
+    </div>
+
+    <div id="micFbStatus" class="fb-status" hidden></div>
+
+    <div id="micFbTreeWrap" class="fb-tree-wrap" hidden>
+      <div class="fb-toolbar">
+        <input id="micFbSearch" class="fb-search" type="text" placeholder="Filter files…">
+      </div>
+      <div id="micFbTree" class="fb-tree"></div>
+    </div>
+
+    <div id="micFbFooter" class="fb-footer" hidden>
+      <span id="micFbSelCount" class="fb-sel-count">No file selected</span>
+      <button id="micFbGetBtn" class="btn btn-accent" disabled>Get Mediainfo</button>
+    </div>
+
+  </div>
+</div>
+
+<dialog id="app-shutdown" class="app-shutdown" aria-labelledby="app-shutdown-title">
+  <h2 id="app-shutdown-title">Closing M3</h2>
+  <p id="app-shutdown-message" role="status">Disconnecting Proton VPN…</p>
+  <div class="vpn-actions"><button type="button" class="btn btn-ghost" id="app-shutdown-terminal">View VPN terminal</button><button type="button" class="btn btn-accent" id="app-shutdown-retry" hidden>Retry disconnect</button></div>
+</dialog>
+<dialog id="vpn-terminal" class="vpn-terminal" aria-labelledby="vpn-terminal-title">
+  <div class="vpn-terminal-shell">
+    <header class="vpn-terminal-head">
+      <div class="vpn-terminal-title"><span aria-hidden="true">›_</span><h2 id="vpn-terminal-title">VPN terminal</h2><span class="vpn-terminal-live">● Live capture</span></div>
+      <div class="vpn-actions"><button type="button" class="btn btn-ghost" id="vpn-terminal-settings">VPN settings</button><button type="button" class="btn btn-ghost" id="vpn-terminal-close" aria-label="Close VPN terminal" autofocus>Close ✕</button></div>
+    </header>
+    <div class="vpn-terminal-context"><span id="vpn-terminal-state">Loading VPN state…</span><span id="vpn-terminal-confirmed"></span><span id="vpn-terminal-retry"></span></div>
+    <div class="vpn-terminal-toolbar">
+      <label class="vpn-check"><input type="checkbox" id="vpn-terminal-follow" checked> Follow output</label>
+      <button type="button" class="btn btn-ghost" id="vpn-terminal-latest" hidden>Jump to latest</button>
+      <span>Command output</span><span class="vpn-terminal-readonly">Read-only</span>
+    </div>
+    <div id="vpn-terminal-retention" class="vpn-terminal-retention" hidden></div>
+    <div id="vpn-terminal-output" class="vpn-terminal-output" tabindex="0" role="region" aria-label="Proton VPN command output" aria-live="off"><div class="vpn-terminal-empty">No Proton commands captured yet. Output will appear here when M3 runs a Proton command.</div></div>
+    <footer class="vpn-terminal-footer"><span id="vpn-terminal-progress">Waiting for command output.</span><span id="vpn-terminal-size"></span><button type="button" class="btn btn-ghost" id="vpn-terminal-copy">Copy log</button><button type="button" class="btn btn-ghost" id="vpn-terminal-save">Save .txt</button></footer>
+    <div id="vpn-terminal-feedback" class="vpn-terminal-feedback" role="status" hidden></div>
+  </div>
+</dialog>
+
+<dialog id="rfork-recovery-dialog" style="max-width:800px;max-height:85vh;overflow:auto" aria-labelledby="rfork-recovery-title">
+  <h2 id="rfork-recovery-title">Upload recovery</h2>
+  <p>Resume uses the original account, source and destination. Inspect uncertain remote outcomes before discarding a hold. Private checkpoint files are never deleted by these actions.</p>
+  <p data-recovery-status role="status" aria-live="polite"></p>
+  <div data-recovery-list></div>
+  <button type="button" class="btn btn-danger" data-recovery-stop>Stop recovery</button>
+  <button type="button" class="btn btn-ghost" data-recovery-close>Close</button>
+</dialog>
+<script src="src/tool-names.js"></script>
+<script src="renderer/shared.js"></script>
+<script src="renderer/download.js"></script>
+<script src="renderer/post-template.js"></script>
+<script src="renderer/upload.js"></script>
+<script src="renderer/rfork-recovery.js"></script>
+<script src="renderer/vpn-terminal.js"></script>
+<script src="renderer/shutdown.js"></script>
+<script src="renderer/vpn.js"></script>
+<script src="src/rfork-settings.js"></script>
+<script src="renderer/rfork-settings.js"></script>
+<script src="renderer/settings.js"></script>
+<script src="renderer/mail-inbox.js"></script>
+<script src="renderer/download-history.js"></script>
+<script src="renderer/app-bootstrap.js"></script>
+<script src="renderer/view-import.js"></script>
+<script src="renderer/folder-browser.js"></script>
+<script src="renderer/mediainfo-checker.js"></script>
+<script src="renderer/bulk-import.js"></script>
+</body>
+</html>

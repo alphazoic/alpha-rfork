@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "m3-mail-inbox",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-17",
+  "workers_dev": true,
+  "vars": { "MAIL_DOMAIN": "" },
+  "d1_databases": [{
+    "binding": "MAIL_DB",
+    "database_name": "m3-mail-inbox",
+    "database_id": "REPLACE_WITH_DATABASE_ID",
+    "migrations_dir": "migrations"
+  }],
+  "triggers": { "crons": ["17 * * * *"] }
+}

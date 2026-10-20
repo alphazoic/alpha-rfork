@@ -1,0 +1,12 @@
+rfork: https://github.com/mega-fork/rfork
+
+This bundle contains rfork v1.75.2-rfork.0.1.0-alpha.1, a fork of rclone
+1.75.2 with concurrent native MEGA chunk uploads and HTTPS enabled by default.
+M3 retains the internal provider ID "rclone" for saved-settings compatibility.
+
+LICENSE-rclone.txt contains the upstream rclone copyright and MIT license.
+LICENSE-go-mega.txt contains the modified go-mega dependency's MIT license.
+manifest.json records each executable's source reference, checksum, validation
+evidence, and the M3 revision containing the previous stock rclone bundle.
+
+Only Linux x64, Windows x64 and Intel macOS x64 artifacts are included.

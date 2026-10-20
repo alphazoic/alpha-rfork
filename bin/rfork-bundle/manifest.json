@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "providerId": "rclone",
+  "displayName": "rfork",
+  "version": "v1.75.2-rfork.0.2.0-dev",
+  "sourceRepository": "https://github.com/mega-fork/rfork",
+  "sourceReference": {
+    "commit": "8de3a300a816f98d0a516a47ed491d2e56f450f8"
+  },
+  "validationRecordsCommit": "b3861a6",
+  "toolchain": "go1.26.9",
+  "upstream": {
+    "version": "v1.75.2",
+    "sourceURL": "https://codeload.github.com/rclone/rclone/tar.gz/refs/tags/v1.75.2",
+    "archiveSHA256": "68afd7f68c84bd978966feae2116339aa7bf454b39c573910c462e87c3774d5a",
+    "missing": [],
+    "extra": [],
+    "changed": [],
+    "officialFileCount": 2621
+  },
+  "rollback": {
+    "m3Commit": "010faa27b96f2eeb6ca5c52234c1b629a4d95ce1",
+    "stockBinaries": [
+      {
+        "path": "bin/linux/rclone",
+        "sha256": "41bd63149d3bd281f9d8fb02fd8c0406234634a59cd0f591b86ad3f1e2f6abb7"
+      },
+      {
+        "path": "bin/win/rclone.exe",
+        "sha256": "5bd8f50054ed0aee8221212f7b3329d647a5a0d099474e9f4e17aa88e57ac778"
+      },
+      {
+        "path": "bin/mac/rclone",
+        "sha256": "635a37ec0b2de20ebaeac8bf6175bbab7a7a99c785f384f9a16791c6bdd54c57"
+      }
+    ],
+    "stockResourcesCommit": "0d44202040297cd96787304fc0d26f452e0837b0",
+    "resolverSHA256": "3dd622d5b7d9f6d845e8e5747d5cd7070ecb759e464293ca2625192991dfc52c"
+  },
+  "licenses": [
+    {
+      "file": "LICENSE-rclone.txt",
+      "sha256": "8cd2e9e750b90a04b7d82dbbca3930c696ae0309d7c10464f90a44f45754cd04"
+    },
+    {
+      "file": "LICENSE-go-mega.txt",
+      "sha256": "59ac8e15ce8d22c1e5e1375785e25fbced80c49972fbf8b9ef72e933ba09d057"
+    }
+  ],
+  "targets": [
+    {
+      "os": "linux",
+      "target": "linux/amd64",
+      "arch": "x64",
+      "file": "rfork",
+      "bytes": 85852322,
+      "sha256": "38f9b6878fedbce2c4697c37bbba3ee9313a0ccebaf22055f75b6af609cc0aae",
+      "nativeRuntime": "passed",
+      "liveMegaIntegrity": "passed",
+      "validationReport": "validation/resume-linux.json",
+      "validationURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034",
+      "nativeBuildCommit": "8de3a300a816f98d0a516a47ed491d2e56f450f8"
+    },
+    {
+      "os": "win",
+      "target": "windows/amd64",
+      "arch": "x64",
+      "file": "rfork.exe",
+      "bytes": 86319104,
+      "sha256": "a2efa4d1b627a8ee902c7aeddea27877f51559d159c6ac126e5a023b10031abf",
+      "nativeRuntime": "passed",
+      "liveMegaIntegrity": "passed",
+      "validationReport": "validation/resume-windows.json",
+      "nativeBuildCommit": "8de3a300a816f98d0a516a47ed491d2e56f450f8",
+      "validationURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034"
+    },
+    {
+      "os": "mac",
+      "target": "darwin/amd64",
+      "arch": "x64",
+      "file": "rfork",
+      "bytes": 87927760,
+      "sha256": "8d82e47a00233c62ab43a3c6025d0a5ed3a5401dd218044927e3daab1330d544",
+      "nativeRuntime": "passed",
+      "liveMegaIntegrity": "passed",
+      "validationReport": "validation/resume-darwin.json",
+      "nativeBuildCommit": "8de3a300a816f98d0a516a47ed491d2e56f450f8",
+      "validationURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034"
+    }
+  ],
+  "previousBundle": {
+    "version": "v1.75.2-rfork.0.1.0-alpha.1",
+    "sourceCommit": "5b2efa9af79e259a6313241d0cc61acff8f87e47"
+  },
+  "developmentBuild": true
+}

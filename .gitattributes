@@ -1,0 +1,2 @@
+# Preserve the exact bytes hashed in the pinned bundle manifest on Windows too.
+bin/rfork-bundle/** -text
