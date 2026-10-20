@@ -1,9 +1,12 @@
 # Integrated live resume gate
 
-This is the remaining gate, not a record of successful MEGA command tests.
-Production source is `39ee917`. The encrypted protocol probe passed earlier at
-`8947a62`, but the later probe failed before cases and stock login reported the
-dedicated MEGA account blocked. Do not dispatch more uploads until that is resolved.
+Completed: final production source `8de3a30` passed native validation and all
+three exact final binaries passed live recovery in `39445181034`. Results and
+limits are recorded in [UPLOAD_RESUME_VALIDATION.md](UPLOAD_RESUME_VALIDATION.md).
+The checklist below preserves the planned workload. Wrong-account binding is
+covered by authenticated codec fixtures; live tests use one replacement account.
+The prior blocked account's failed-probe cleanup remains unverified; replacement
+account access cannot prove its absence.
 
 ## Prerequisite cleanup
 

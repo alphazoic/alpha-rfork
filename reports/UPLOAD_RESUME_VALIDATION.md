@@ -13,9 +13,6 @@ unchanged. These are correctness results, not a worker/settings speed ranking.
 - `39ee917`: adds pending-only hard/soft/cautious transfer-budget admission. Final
   focused native backend/dependency/store/accounting races, lint, builds and CLI
   smoke passed on all three platforms in `39437206355`.
-- Live runs below compile that upload implementation with subsequent documentation
-  and runner changes. Each tested binary matches the corresponding `39ee917`
-  native binary hash. Sources are recorded in the individual receipts.
 - `8de3a30`: the only later production Go change wraps explicit stops with both
   no-retry markers. This prevents the CLI's transient-cause classifier from turning
   an uncertain commit into retry exit 5. A regression first reproduced the bug;
@@ -23,16 +20,24 @@ unchanged. These are correctness results, not a worker/settings speed ranking.
   actual `unexpected EOF`, restarts, refuses replay and checks both retry layers.
   Native validation/build run `39442759187` passed on all three platforms. Upload
   data, crypto, source verification, checkpoint persistence and successful commit
-  behavior are unchanged by this final error-classification delta. Do not describe
-  the earlier live receipts as exact-binary live tests of that delta.
+  behavior are unchanged by this final error-classification delta.
+- Final live run `39445181034` at `986d261` includes that fix. Only documentation
+  and receipts changed after production source `8de3a30`; SHA-256 verification
+  confirms that all three downloaded live binaries exactly match the final native
+  binaries. Earlier live receipts remain historical evidence.
 
 ## Integrated live results
 
 | Native platform | Run | Recorded checks | Independent stock SHA-256 checks | Fresh authentication before resume | Scoped cleanup |
 | --- | --- | ---: | ---: | --- | --- |
-| Linux amd64 | `39440121324` | 45 | 6 matched | passed | verified |
-| Windows amd64 | `39440941355` | 34 | 5 matched | passed | verified |
-| macOS amd64 | `39441287938` | 45 | 6 matched | passed | verified |
+| Linux amd64 | `39445181034` | 45 | 6 matched | passed | verified |
+| Windows amd64 | `39445181034` | 34 | 5 matched | passed | verified |
+| macOS amd64 | `39445181034` | 45 | 6 matched | passed | verified |
+
+[Final live workflow](https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034):
+all three native jobs succeeded. Receipts are
+`upload-resume-live-{linux,windows,darwin}-39445181034.json`.
+Total: 124 recorded checks and 17 independent stock-client SHA-256 matches.
 
 Payload: exactly 9,437,215 bytes (9 MiB + 31); two workers, a 1 MiB request limit,
 10ms data pacing and 50ms checkpoint coalescing. A temporary 2 MiB/s cap creates
@@ -55,21 +60,19 @@ The gates use actual CLI subprocesses and encrypted on-disk state. They verify:
   pristine stock rclone, plus complete scoped cleanup.
 
 Saved progress varied with interruption timing. Positive restored byte counts
-ranged from 524,288 to 1,966,080 across these cases; this demonstrates recovery,
+ranged from 786,432 to 3,670,016 across these cases; this demonstrates recovery,
 not a guaranteed retransmission budget. Current-attempt statistics matched only
 pending bytes while full-source reads remained complete.
 
 ## Artifacts and remaining limits
 
-The hash-verified live binaries and receipts are retained under ignored
-`build/validated-39440121324/`, `build/validated-39440941355/` and
-`build/validated-39441287938/`. `upload-resume-native-binaries-39437206355.json`
-records their matching native hashes. Final classification-fix artifacts are saved separately under
-`build/validated-native-39442759187/`; individual hashes, verified archive digests
-and source are recorded in `upload-resume-native-binaries-39442759187.json`.
-`upload-resume-final-manifest.json` joins the final artifacts with their exact
-native and preceding live-proof provenance. The local Linux build matches the
-final Linux native hash exactly.
+The exact tested binaries are retained under ignored `build/validated-39445181034/`.
+Final native artifacts are saved under `build/validated-native-39442759187/`;
+individual hashes, verified GitHub archive digests and source are recorded in
+`upload-resume-native-binaries-39442759187.json`. Each live binary matches its
+native counterpart. `upload-resume-final-manifest.json` joins the exact native
+and live provenance and retains earlier live proofs separately. The local Linux
+build also matches the final Linux native hash exactly.
 
 Short interruptions establish the tested provider behavior, not general session
 lifetime, IP migration or guaranteed physical power-loss behavior. Expired or

@@ -15,11 +15,14 @@ fixtures are committed at `a032839`. Local races/lint/CLI smoke passed. Full nat
 command checks passed in `39436148540` at that source. The subsequent
 pending-transfer-budget guard is committed at `39ee917`, with final focused
 native tests/builds passed in `39437206355`; its local receipt is
-`reports/upload-resume-local-39ee917.json`. Integrated live command recovery and
-release promotion remain pending. The previous MEGA account was blocked through
-stock rclone; replacement credentials passed read-only stock access in `39438939305`.
-Prior-account failed-probe cleanup remains unverified. M3 changes are outside
-this work.
+`reports/upload-resume-local-39ee917.json`. The final error-classification fix at
+`8de3a30` passed focused native validation in `39442759187`. All three exact final
+binaries passed integrated live recovery in `39445181034`, with 124 recorded
+checks, 17 independent hashes and verified scoped cleanup. Implementation and
+validation for this scope are complete; see
+[consolidated results](reports/UPLOAD_RESUME_VALIDATION.md). Release promotion and
+M3 changes are separate work. The previous MEGA account was blocked; replacement
+credentials work, but prior-account failed-probe cleanup remains unverified.
 
 The worker pool now supports opt-in bounded request jobs while native request
 behavior remains the default; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
@@ -27,7 +30,7 @@ behavior remains the default; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PR
 The original GitHub account blocked the final native/live runs before any steps
 executed because of a billing/spending-limit restriction. The user supplied a
 temporary repository, `alphazoic/alpha-rfork`, and added the dedicated test-account
-secrets there. Hosted validation is being resumed on the same source history;
+secrets there. Hosted validation passed on the same source history;
 `origin` remains the original repository. The passed two-process resume gate,
 remaining limits and implemented state-machine contract are in
 [RESUME_DESIGN.md](RESUME_DESIGN.md).
@@ -38,8 +41,9 @@ all three targets build, Linux CLI smoke and targeted races/lint pass, and M3
 bundle hashes are unchanged. The attempted full upstream suite is not green due
 to Docker fixture access and an S3 cache timing failure that passed in isolation;
 see the validation report for exact limits. Resume local checks are recorded in
-`reports/upload-resume-local-a032839.json`; integrated live validation and release
-promotion remain unfinished.
+`reports/upload-resume-local-a032839.json`; final native and exact-binary live
+validation are recorded in `reports/UPLOAD_RESUME_VALIDATION.md`. No release has
+been promoted.
 
 ## Objective and saved baseline
 

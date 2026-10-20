@@ -92,12 +92,13 @@ upload state; the explicit experimental command below supports checkpoints.
 
 ## Experimental local-file restart resume
 
-Implemented on the development branch; focused native recovery tests, builds and
-CLI smoke passed on Linux, Windows and macOS. Full upstream/native checks also
-passed before the final backend transfer-budget guard. Integrated live MEGA
-command recovery remains unverified; replacement testing credentials now pass a
-read-only stock-client check after the previous account was blocked. No release
-or M3 replacement is made.
+Implemented on the development branch. Full upstream/native checks passed before
+the final transfer-budget and error-classification guards; final focused native
+races, lint, builds and CLI smoke passed on Linux, Windows and macOS. All three
+exact final binaries also passed integrated live MEGA recovery, with 17 independent
+stock-client SHA-256 matches and verified scoped cleanup. See
+[validation results](reports/UPLOAD_RESUME_VALIDATION.md). This remains an
+experimental development build; no release or M3 replacement is made.
 
 ```sh
 rfork backend upload-resume mega:existing/uploads /absolute/movie.mkv \

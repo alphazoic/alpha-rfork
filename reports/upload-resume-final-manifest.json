@@ -39,6 +39,46 @@
   "liveProofs": [
     {
       "target": "linux/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034",
+      "sourceCommit": "986d261bd480c9ecdc89d94d953ea47c543a0147",
+      "binarySHA256": "38f9b6878fedbce2c4697c37bbba3ee9313a0ccebaf22055f75b6af609cc0aae",
+      "checks": 45,
+      "independentSHA256Checks": 6,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true,
+      "exactNativeBinaryMatch": true
+    },
+    {
+      "target": "windows/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034",
+      "sourceCommit": "986d261bd480c9ecdc89d94d953ea47c543a0147",
+      "binarySHA256": "a2efa4d1b627a8ee902c7aeddea27877f51559d159c6ac126e5a023b10031abf",
+      "checks": 34,
+      "independentSHA256Checks": 5,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true,
+      "exactNativeBinaryMatch": true
+    },
+    {
+      "target": "darwin/amd64",
+      "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39445181034",
+      "sourceCommit": "986d261bd480c9ecdc89d94d953ea47c543a0147",
+      "binarySHA256": "8d82e47a00233c62ab43a3c6025d0a5ed3a5401dd218044927e3daab1330d544",
+      "checks": 45,
+      "independentSHA256Checks": 6,
+      "cleanup": true,
+      "freshAuthenticationBeforeResume": true,
+      "exactNativeBinaryMatch": true
+    }
+  ],
+  "liveProofBoundary": "All three exact final native binaries passed integrated live CLI recovery in run 39445181034; downloaded live and native binaries have identical SHA-256 values. The workflow source 986d261 changes only documentation and receipts after production source 8de3a30.",
+  "exactFinalBinaryLiveTested": true,
+  "legacyCleanup": "Unverified on the previous blocked account: rfork-protocol-8097f0bbab2147e28329abfe5e0215d6",
+  "releasePromoted": false,
+  "m3Modified": false,
+  "previousLiveProofs": [
+    {
+      "target": "linux/amd64",
       "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39440121324",
       "sourceCommit": "bcbb252a5b6e4a333bb14797e763a3887e43bdf8",
       "binarySHA256": "fcd5533f0112ed99b24f8c799a439cbc5148ec8f8a3109cd334bc77c45117567",
@@ -68,9 +108,5 @@
       "freshAuthenticationBeforeResume": true
     }
   ],
-  "liveProofBoundary": "Live proof uses the preceding upload implementation at 39ee917 plus documentation/runner changes. The final 8de3a30 delta changes only no-retry error decoration; its transient lost-commit-body behavior is validated in native TLS process fixtures on all platforms. Exact final binary live upload is not claimed.",
-  "exactFinalBinaryLiveTested": false,
-  "legacyCleanup": "Unverified on the previous blocked account: rfork-protocol-8097f0bbab2147e28329abfe5e0215d6",
-  "releasePromoted": false,
-  "m3Modified": false
+  "liveArtifactDirectory": "build/validated-39445181034/"
 }

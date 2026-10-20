@@ -9,7 +9,8 @@
   tombstone; uncertain outcomes stop for inspection without automatic replay.
 - Add cancellable explicit payload accounting for resume; restored bytes and
   preflight/skipped reads do not consume the current attempt's bandwidth budget.
-  Integrated live recovery remains a release gate.
+  Native checks and exact-binary live recovery passed on Linux, Windows and
+  macOS; see `reports/UPLOAD_RESUME_VALIDATION.md`. No release is promoted.
 - Preserve non-retryable finalization errors through CLI exit classification,
   even when the underlying lost-response cause is a transient EOF or timeout.
 - Add opt-in bounded upload diagnostics with separate source, attempted payload,

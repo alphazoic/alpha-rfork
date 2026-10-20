@@ -5,18 +5,19 @@ local-file `upload-resume` command are implemented on the development branch.
 Full upstream/native checks passed on Linux, Windows and macOS at `a032839`
 (`reports/upload-improvements-native-39436148540.json`). Final focused native
 backend/dependency/store/accounting races, lint, builds and CLI smoke passed at
-`39ee917` (`reports/upload-improvements-native-39437206355.json`). Hash-verified
-native binaries are retained under `build/validated-native-39437206355/`; checksums
-are in `reports/upload-resume-native-binaries-39437206355.json`.
+`8de3a30` (`reports/upload-improvements-native-39442759187.json`).
 
-Integrated live command recovery remains unverified. The previous MEGA account
-reported blocked through stock rclone; the user replaced the repository secrets.
-Read-only stock access to the replacement account passed in `39438939305`.
-Cleanup of the previous account's failed-probe folder remains unverified; access
-to a different account cannot establish that folder's absence. A Linux integrated
-CLI resume gate is being started against a new isolated folder on the usable
-account. Resume remains experimental and is not promoted as release-ready.
-M3 remains unchanged.
+All three exact final native binaries passed integrated live CLI recovery in
+run `39445181034`: 124 recorded checks, 17 independent stock-client SHA-256
+matches, fresh authentication before resume and verified scoped cleanup.
+The consolidated evidence and artifact provenance are in
+[reports/UPLOAD_RESUME_VALIDATION.md](reports/UPLOAD_RESUME_VALIDATION.md).
+These fixed-setting correctness checks do not rank upload performance.
+
+The user replaced the blocked account's repository secrets. Cleanup of the prior
+account's failed-probe folder remains unverified; access to a different account
+cannot establish that folder's absence. Resume remains experimental and unreleased.
+M3 and saved release tags remain unchanged.
 
 ## Protocol evidence and remaining limits
 
