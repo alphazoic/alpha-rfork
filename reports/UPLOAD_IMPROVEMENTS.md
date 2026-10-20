@@ -89,3 +89,12 @@ dependency's Go 1.24 module contract, and it was replaced with Add/Done.
 
 Live batching/offset replay, full native suites, restart resume and release
 promotion remain pending. Backend request batching is intentionally not yet wired.
+
+## Empty diagnostic request correction — 2026-10-20
+
+Native-check preparation exposed that wrapping Go's `http.NoBody` changed an
+empty upload from a zero-length POST to chunked/unknown-length framing. A new
+HTTP fixture rejected the instrumented request before the fix. Diagnostic body
+counters now preserve NoBody identity, including replay-body creation. The full
+dependency race suite and parent/dependency lint passed after correction. This
+fix does not change normal nonempty payload framing or M3 bundles.

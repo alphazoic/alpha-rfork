@@ -53,3 +53,21 @@ func TestUploadDiagnosticsDisabled(t *testing.T) {
 		t.Fatalf("disabled diagnostics collected data: %+v", s)
 	}
 }
+
+func TestUploadDiagnosticsPreservesEmptyRequestFraming(t *testing.T) {
+	u, _ := contextUpload(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.ContentLength != 0 || len(r.TransferEncoding) != 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, _ = w.Write([]byte("completion"))
+	})
+	u.chunks = []chunkSize{{position: 0, size: 0}}
+	u.EnableDiagnostics()
+	if err := u.UploadChunkContext(context.Background(), 0, []byte{}); err != nil {
+		t.Fatalf("diagnostics changed empty request framing: %v", err)
+	}
+	if s := u.Diagnostics(); s.PayloadBytesRead != 0 || s.Attempts != 1 || s.AcknowledgedChunks != 1 {
+		t.Fatalf("empty upload diagnostics: %+v", s)
+	}
+}

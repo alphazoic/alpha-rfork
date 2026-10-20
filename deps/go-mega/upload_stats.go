@@ -111,12 +111,19 @@ func (s *uploadStats) beginRequest(req *http.Request, retry int) {
 	if s == nil {
 		return
 	}
-	req.Body = &uploadBodyCounter{ReadCloser: req.Body, stats: s}
+	// Preserve NoBody identity: wrapping it changes Go's zero-length request
+	// into an unknown-length/chunked request despite unchanged ContentLength.
+	if req.Body != nil && req.Body != http.NoBody {
+		req.Body = &uploadBodyCounter{ReadCloser: req.Body, stats: s}
+	}
 	if getBody := req.GetBody; getBody != nil {
 		req.GetBody = func() (io.ReadCloser, error) {
 			body, err := getBody()
 			if err != nil {
 				return nil, err
+			}
+			if body == http.NoBody {
+				return body, nil
 			}
 			return &uploadBodyCounter{ReadCloser: body, stats: s}, nil
 		}
