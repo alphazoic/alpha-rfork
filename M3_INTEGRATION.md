@@ -79,7 +79,11 @@ requires exit 0 and `committed` or `already-committed`. Compare node identities
 without logging private checkpoint material. HTTP payload counters include retries
 and must not be added to completed-file progress.
 
-The backend command returns rclone's non-retryable exit 6 on operation errors.
+The backend command marks operation errors non-retryable at both retry layers,
+so an uncertain transport reply cannot become retry exit 5. Binding/inspection
+refusals use exit 6; standard not-found/quota classifications can take precedence.
+Retain state on every failed resume attempt rather than inferring phase from the
+exit code alone.
 Retrying the identical checkpoint cannot silently repeat a commit: restored
 intent stops for inspection, and a committed tombstone verifies its exact node.
 Do not delete state, switch to a new checkpoint or fall back to another uploader

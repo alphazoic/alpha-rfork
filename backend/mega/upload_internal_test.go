@@ -116,6 +116,14 @@ type countedReader struct {
 	bytes atomic.Int64
 }
 
+func TestUploadLostCommitReplySuppressesTransientRetryClassification(t *testing.T) {
+	u := &fixtureUpload{chunks: 1, size: 8, finishErr: io.ErrUnexpectedEOF}
+	_, err := uploadAndFinish(context.Background(), bytes.NewReader(make([]byte, 8)), u, 1)
+	if !fserrors.IsNoRetryError(err) || fserrors.ShouldRetry(err) {
+		t.Fatalf("uncertain commit must remain non-retryable through CLI classification: %v", err)
+	}
+}
+
 func (r *countedReader) Read(b []byte) (int, error) {
 	n, err := r.in.Read(b)
 	r.bytes.Add(int64(n))

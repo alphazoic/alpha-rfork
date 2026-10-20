@@ -10,6 +10,8 @@
 - Add cancellable explicit payload accounting for resume; restored bytes and
   preflight/skipped reads do not consume the current attempt's bandwidth budget.
   Integrated live recovery remains a release gate.
+- Preserve non-retryable finalization errors through CLI exit classification,
+  even when the underlying lost-response cause is a transient EOF or timeout.
 - Add opt-in bounded upload diagnostics with separate source, attempted payload,
   acknowledged data and final-commit status; omit private upload identifiers.
 - Classify chunk failures, retry transient MEGA/HTTP errors with bounded jittered

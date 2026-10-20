@@ -1,0 +1,266 @@
+{
+  "target": "windows",
+  "commit": "d2fc2514a19da41633d44a928dfc06ca4a681b1f",
+  "remoteFolder": "rfork-ci-windows-b58ad8b6-b491-4843-8ccf-c78cc3159163",
+  "binarySHA256": "c6eee31d46cd40702ec42390c98853b938836d8255b50a4e485b43c304b4bcfc",
+  "verifierSHA256": "b3c8401439bf20137ff1e5e8b1e0f1b7be6b82e94b62324e06c55b12eeb34690",
+  "checks": [
+    {
+      "label": "create isolated resume folder",
+      "exitCode": 0,
+      "seconds": 2.065,
+      "bytes": 0
+    },
+    {
+      "label": "interrupt kill.bin",
+      "kind": "kill",
+      "exitCode": 1,
+      "seconds": 2.126,
+      "stopSeconds": 0.041,
+      "checkpointReplacementObserved": true,
+      "restoredProgressRequiresSubsequentAuthentication": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.148,
+      "bytes": 0
+    },
+    {
+      "label": "reject wrong destination binding kill",
+      "exitCode": 6,
+      "seconds": 1.349,
+      "bytes": 0
+    },
+    {
+      "label": "resume kill.bin",
+      "exitCode": 0,
+      "seconds": 2.863,
+      "bytes": 8912927,
+      "resume": {
+        "status": "committed",
+        "restoredAcknowledgedBytes": 524288,
+        "pendingSourceBytes": 8912927,
+        "sourceBytesRead": 9437215
+      }
+    },
+    {
+      "label": "stock download kill.bin",
+      "exitCode": 0,
+      "seconds": 2.503,
+      "bytes": 9437215
+    },
+    {
+      "label": "SHA256 kill.bin",
+      "expected": "f1c06e5a1353444e2087982a0c468d0095af276472be9e35baeadfde0599cc2c",
+      "actual": "f1c06e5a1353444e2087982a0c468d0095af276472be9e35baeadfde0599cc2c",
+      "matches": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.049,
+      "bytes": 0
+    },
+    {
+      "label": "resume kill.bin",
+      "exitCode": 0,
+      "seconds": 1.372,
+      "bytes": 0,
+      "resume": {
+        "status": "already-committed",
+        "restoredAcknowledgedBytes": 9437215,
+        "pendingSourceBytes": 0,
+        "sourceBytesRead": 0
+      }
+    },
+    {
+      "label": "committed identity kill",
+      "matches": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.191,
+      "bytes": 0
+    },
+    {
+      "label": "refuse existing destination kill",
+      "exitCode": 6,
+      "seconds": 1.391,
+      "bytes": 0
+    },
+    {
+      "label": "interrupt changed.bin",
+      "kind": "kill",
+      "exitCode": 1,
+      "seconds": 2.134,
+      "stopSeconds": 0.01,
+      "checkpointReplacementObserved": true,
+      "restoredProgressRequiresSubsequentAuthentication": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.171,
+      "bytes": 0
+    },
+    {
+      "label": "reject changed source despite restored metadata",
+      "exitCode": 6,
+      "seconds": 1.319,
+      "bytes": 0
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.163,
+      "bytes": 0
+    },
+    {
+      "label": "resume changed.bin",
+      "exitCode": 0,
+      "seconds": 3.844,
+      "bytes": 8126495,
+      "resume": {
+        "status": "committed",
+        "restoredAcknowledgedBytes": 1310720,
+        "pendingSourceBytes": 8126495,
+        "sourceBytesRead": 9437215
+      }
+    },
+    {
+      "label": "stock download changed.bin",
+      "exitCode": 0,
+      "seconds": 2.521,
+      "bytes": 9437215
+    },
+    {
+      "label": "SHA256 changed.bin",
+      "expected": "f1c06e5a1353444e2087982a0c468d0095af276472be9e35baeadfde0599cc2c",
+      "actual": "f1c06e5a1353444e2087982a0c468d0095af276472be9e35baeadfde0599cc2c",
+      "matches": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.175,
+      "bytes": 0
+    },
+    {
+      "label": "resume boundary-0.bin",
+      "exitCode": 0,
+      "seconds": 1.859,
+      "bytes": 0,
+      "resume": {
+        "status": "committed",
+        "restoredAcknowledgedBytes": 0,
+        "pendingSourceBytes": 0,
+        "sourceBytesRead": 0
+      }
+    },
+    {
+      "label": "stock download boundary-0.bin",
+      "exitCode": 0,
+      "seconds": 1.39,
+      "bytes": 0
+    },
+    {
+      "label": "SHA256 boundary-0.bin",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matches": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.188,
+      "bytes": 0
+    },
+    {
+      "label": "resume boundary-17.bin",
+      "exitCode": 0,
+      "seconds": 2.302,
+      "bytes": 17,
+      "resume": {
+        "status": "committed",
+        "restoredAcknowledgedBytes": 0,
+        "pendingSourceBytes": 17,
+        "sourceBytesRead": 17
+      }
+    },
+    {
+      "label": "stock download boundary-17.bin",
+      "exitCode": 0,
+      "seconds": 1.484,
+      "bytes": 17
+    },
+    {
+      "label": "SHA256 boundary-17.bin",
+      "expected": "fdd296e6e4c736460b8060b2c6f06693b46c6f5e9605001208e02aee938e0895",
+      "actual": "fdd296e6e4c736460b8060b2c6f06693b46c6f5e9605001208e02aee938e0895",
+      "matches": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.145,
+      "bytes": 0
+    },
+    {
+      "label": "resume boundary-131073.bin",
+      "exitCode": 0,
+      "seconds": 2.229,
+      "bytes": 131073,
+      "resume": {
+        "status": "committed",
+        "restoredAcknowledgedBytes": 0,
+        "pendingSourceBytes": 131073,
+        "sourceBytesRead": 131073
+      }
+    },
+    {
+      "label": "stock download boundary-131073.bin",
+      "exitCode": 0,
+      "seconds": 1.559,
+      "bytes": 131073
+    },
+    {
+      "label": "SHA256 boundary-131073.bin",
+      "expected": "8a1e62ca4f1f59cd678069975c66ebc120453508710e5f1eee5fb0c80c77be09",
+      "actual": "8a1e62ca4f1f59cd678069975c66ebc120453508710e5f1eee5fb0c80c77be09",
+      "matches": true
+    },
+    {
+      "label": "list",
+      "exitCode": 0,
+      "seconds": 1.013,
+      "bytes": 0
+    },
+    {
+      "label": "purge test folder",
+      "exitCode": 0,
+      "seconds": 1.697,
+      "bytes": 0
+    },
+    {
+      "label": "verify cleanup",
+      "exitCode": 0,
+      "seconds": 1.099,
+      "bytes": 0
+    }
+  ],
+  "status": "success",
+  "cleanup": true,
+  "settings": {
+    "workers": 2,
+    "requestSizeBytes": 1048576,
+    "pacing": "10ms",
+    "checkpointInterval": "50ms",
+    "interruptionBandwidth": "2Mi/s",
+    "purpose": "correctness interruption window; no performance ranking"
+  },
+  "payloadSHA256": "f1c06e5a1353444e2087982a0c468d0095af276472be9e35baeadfde0599cc2c",
+  "freshAuthenticationBeforeResume": true,
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39440941355"
+}

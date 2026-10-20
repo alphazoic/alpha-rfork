@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/rclone/rclone/fs"
+	"github.com/rclone/rclone/fs/fserrors"
 	"github.com/rclone/rclone/lib/pacer"
 	"github.com/stretchr/testify/require"
 	megaclient "github.com/t3rm1n4l/go-mega"
@@ -95,6 +96,8 @@ func TestUploadResumeLocalProcess(t *testing.T) {
 	}
 	if mode == "uncertain" {
 		require.ErrorContains(t, commandErr, "uncertain")
+		require.True(t, fserrors.IsNoRetryError(commandErr))
+		require.False(t, fserrors.ShouldRetry(commandErr), "CLI must not turn a transient lost commit body into retry exit 5")
 		return
 	}
 	require.NoError(t, commandErr)
@@ -168,7 +171,8 @@ func TestUploadResumeLocalFreshProcesses(t *testing.T) {
 				node := megaclient.FSNode{Hash: fmt.Sprintf("node-%d", commits), Parent: "root", T: megaclient.FILE, User: "fixture-user", Key: "fixture-user:" + msg[0].N[0].K, Attr: msg[0].N[0].A, Sz: int64(len(plain))}
 				nodes = append(nodes, node)
 				if loseCommit {
-					_, _ = io.WriteString(w, "invalid lost commit reply")
+					w.Header().Set("Content-Length", "100")
+					_, _ = io.WriteString(w, "[")
 					return
 				}
 				_ = json.NewEncoder(w).Encode([]megaclient.UploadCompleteResp{{F: []megaclient.FSNode{node}}})

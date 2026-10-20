@@ -1458,6 +1458,12 @@ func (r uploadDiagnosticReader) Read(b []byte) (int, error) {
 	return n, err
 }
 
+// noUploadRetry preserves an explicit stop through both retry layers and CLI
+// exit classification, even when the wrapped transport cause is transient.
+func noUploadRetry(err error) error {
+	return fserrors.NoRetryError(fserrors.NoLowLevelRetryError(err))
+}
+
 // uploadAndFinish joins all workers before committing or returning an error.
 // The input is read serially; only owned chunk buffers cross goroutines.
 func uploadAndFinish(ctx context.Context, in io.Reader, u uploadSession, concurrency int) (*mega.Node, error) {
@@ -1594,7 +1600,7 @@ func uploadAndFinishSized(ctx context.Context, in io.Reader, u uploadSession, co
 	node, err := u.FinishContext(parent)
 	if err != nil {
 		// A commit may have reached MEGA even if its response never arrived.
-		return nil, fserrors.NoRetryError(fmt.Errorf("MEGA finalization failed; remote outcome may be uncertain, inspect before retrying: %w", err))
+		return nil, noUploadRetry(fmt.Errorf("MEGA finalization failed; remote outcome may be uncertain, inspect before retrying: %w", err))
 	}
 	return node, nil
 }
@@ -2078,13 +2084,13 @@ func runResumeUpload(ctx context.Context, source *resumeSource, u resumableUploa
 	}
 	node, err := commit(ctx)
 	if err != nil {
-		return "", fserrors.NoRetryError(resumeFailure{"MEGA finalization outcome may be uncertain; checkpoint retained for inspection", err})
+		return "", noUploadRetry(resumeFailure{"MEGA finalization outcome may be uncertain; checkpoint retained for inspection", err})
 	}
 	if node == "" {
-		return "", fserrors.NoRetryError(resumeFailure{"MEGA finalization returned no node identity; inspect before retrying", mega.EBADRESP})
+		return "", noUploadRetry(resumeFailure{"MEGA finalization returned no node identity; inspect before retrying", mega.EBADRESP})
 	}
 	if err := saveResumeCheckpoint(u, binding, store, mega.CheckpointCommitted, node); err != nil {
-		return node, fserrors.NoRetryError(resumeFailure{fmt.Sprintf("MEGA commit confirmed but final checkpoint save failed; inspect node %s before retrying", node), err})
+		return node, noUploadRetry(resumeFailure{fmt.Sprintf("MEGA commit confirmed but final checkpoint save failed; inspect node %s before retrying", node), err})
 	}
 	return node, nil
 }
@@ -2096,14 +2102,14 @@ func (f *Fs) Command(ctx context.Context, name string, arg []string, opt map[str
 	}
 	options, err := parseResumeCommand(arg, opt)
 	if err != nil {
-		return nil, fserrors.NoRetryError(err)
+		return nil, noUploadRetry(err)
 	}
 	ci := fs.GetConfig(ctx)
 	if ci.DryRun {
 		return map[string]string{"status": "dry-run"}, nil
 	}
 	if ci.Interactive {
-		return nil, fserrors.NoRetryError(errors.New("upload-resume does not support interactive mode"))
+		return nil, noUploadRetry(errors.New("upload-resume does not support interactive mode"))
 	}
 	var cancel context.CancelFunc
 	if ci.MaxDuration > 0 {
@@ -2116,7 +2122,7 @@ func (f *Fs) Command(ctx context.Context, name string, arg []string, opt map[str
 	defer func() { cancel(); close(done); atexit.Unregister(handle) }()
 	out, err := f.resumeLocalUpload(ctx, options)
 	if err != nil {
-		return out, fserrors.NoRetryError(err)
+		return out, noUploadRetry(err)
 	}
 	return out, nil
 }
