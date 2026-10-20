@@ -50,6 +50,8 @@ jobs:
         run: RCLONE_CONFIG=/notfound bin/rfork-go test -race -timeout 5m ./backend/mega -run '^TestUpload'
       - name: Dependency races and crypto fixtures
         run: RFORK_WORKDIR="$PWD/deps/go-mega" bin/rfork-go test -race -timeout 5m ./...
+      - name: Checkpoint ownership, atomic-write and fault fixtures
+        run: RCLONE_CONFIG=/notfound bin/rfork-go test -race -timeout 5m ./backend/mega/internal/checkpoint
       - name: Offline live-runner cleanup and diagnostic fixtures
         run: |
           python bin/test_probe_upload_protocol.py
@@ -63,8 +65,10 @@ jobs:
           python3 bin/fetch-lint.py
           bin/lint-rfork
       - name: Build native CLI
+        if: '!inputs.checkpoint_only'
         run: bin/build-rfork '${{ matrix.target }}' amd64
       - name: CLI smoke
+        if: '!inputs.checkpoint_only'
         run: |
           binary="build/rfork-${{ matrix.target }}-amd64"
           if [[ '${{ matrix.target }}' == windows ]]; then binary="$binary.exe"; fi
@@ -75,6 +79,7 @@ jobs:
           "$binary" copyto build/local-smoke/source build/local-smoke/target
           cmp build/local-smoke/source build/local-smoke/target
       - uses: actions/upload-artifact@v7
+        if: '!inputs.checkpoint_only'
         with:
           name: rfork-${{ matrix.target }}-amd64
           path: build/rfork-${{ matrix.target }}-amd64*

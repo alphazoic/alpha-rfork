@@ -1,0 +1,39 @@
+{
+  "batchTargetBytes": 4194304,
+  "checks": [
+    {
+      "case": "acknowledged-prefix",
+      "delaySeconds": 0,
+      "freshAuthentication": true,
+      "independentSHA256": true,
+      "separateProcesses": true
+    },
+    {
+      "case": "accepted-without-checkpoint",
+      "delaySeconds": 15,
+      "freshAuthentication": true,
+      "independentSHA256": true,
+      "separateProcesses": true
+    },
+    {
+      "case": "lost-batched-terminal-response",
+      "delaySeconds": 1,
+      "freshAuthentication": true,
+      "independentSHA256": true,
+      "separateProcesses": true
+    }
+  ],
+  "cleanup": true,
+  "commitIntentSavedBeforeFinalization": true,
+  "encryptedCheckpointCodec": "rfork-mega-checkpoint-v1",
+  "payloadBytes": 9437215,
+  "probe": "restart",
+  "remoteFolder": "rfork-protocol-7b8a8948349a443e9797403f7f9ced5e",
+  "schemaVersion": 1,
+  "sessionLifetimeLimitEstablished": false,
+  "sourceCommit": "8947a62171ce95356e45dc7877b5c017f1d2ec2f",
+  "stage": "complete",
+  "status": "passed",
+  "testExitCode": 0,
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39417109063"
+}

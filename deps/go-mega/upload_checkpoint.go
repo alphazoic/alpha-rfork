@@ -22,6 +22,10 @@ const checkpointMagic = "rfork-mega-checkpoint-v1\x00"
 // Its message deliberately excludes private state and decryption details.
 var ErrUploadCheckpoint = errors.New("invalid or incompatible MEGA upload checkpoint")
 
+// ErrUploadCheckpointSource means saved acknowledgement MACs do not authenticate
+// the actual source bytes. Such ranges must never be skipped or finalized.
+var ErrUploadCheckpointSource = errors.New("MEGA checkpoint acknowledged content does not match source")
+
 // UploadCheckpointPhase records irreversible progress toward file creation.
 type UploadCheckpointPhase string
 
@@ -205,7 +209,8 @@ func (u *Upload) SealCheckpoint(binding UploadCheckpointBinding, phase UploadChe
 
 // OpenUploadCheckpoint authenticates state against a freshly verified binding.
 // It sends no requests and never creates a replacement upload session. The caller
-// must verify the source and resolve the exact parent handle after fresh login.
+// must verify the complete source and every saved range's MAC using
+// VerifyAcknowledgedChunk, and resolve the exact parent after fresh login.
 // Restored commit-intent/committed sessions reject data writes and finalization;
 // an uncertain commit must never be replayed on the basis of filename/size alone.
 func (m *Mega) OpenUploadCheckpoint(blob []byte, binding UploadCheckpointBinding) (*Upload, UploadCheckpointInfo, error) {
@@ -262,4 +267,23 @@ func (u *Upload) AcknowledgedChunks() []bool {
 		known[i] = len(mac) == aes.BlockSize
 	}
 	return known
+}
+
+// VerifyAcknowledgedChunk authenticates actual source bytes against a saved MAC
+// without modifying plaintext. Call it for every skipped native range during the
+// actual source read, in addition to full-file hashing. A preflight hash alone
+// cannot establish that bytes uploaded before a crash came from that version.
+func (u *Upload) VerifyAcknowledgedChunk(id int, plaintext []byte) error {
+	u.mutex.Lock()
+	if id < 0 || id >= len(u.chunks) || len(plaintext) != u.chunks[id].size ||
+		len(u.chunk_macs[id]) != aes.BlockSize {
+		u.mutex.Unlock()
+		return ErrUploadCheckpoint
+	}
+	want := bytes.Clone(u.chunk_macs[id])
+	u.mutex.Unlock()
+	if !hmac.Equal(want, u.uploadChunkMAC(plaintext)) {
+		return ErrUploadCheckpointSource
+	}
+	return nil
 }

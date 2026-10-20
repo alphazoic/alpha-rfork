@@ -82,13 +82,21 @@ func (u *Upload) encryptUploadChunk(position int64, plaintext []byte) ([]byte, e
 	if err != nil {
 		return nil, err
 	}
-	enc := cipher.NewCBCEncrypter(u.aes_block, u.iv)
-	mac := make([]byte, 16)
-	padded := paddnull(plaintext, 16)
-	for i := 0; i < len(padded); i += 16 {
-		copy(mac, padded[i:i+16])
-		enc.CryptBlocks(mac, mac)
-	}
+	mac := u.uploadChunkMAC(plaintext)
 	cipher.NewCTR(u.aes_block, iv).XORKeyStream(plaintext, plaintext)
 	return mac, nil
+}
+
+func (u *Upload) uploadChunkMAC(plaintext []byte) []byte {
+	enc := cipher.NewCBCEncrypter(u.aes_block, u.iv)
+	mac := make([]byte, 16)
+	for first := 0; first < len(plaintext); first += 16 {
+		end := min(first+16, len(plaintext))
+		if end-first < 16 {
+			clear(mac)
+		}
+		copy(mac, plaintext[first:end])
+		enc.CryptBlocks(mac, mac)
+	}
+	return mac
 }

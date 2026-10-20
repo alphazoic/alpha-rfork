@@ -1,8 +1,10 @@
 # Restart-resume investigation and implementation contract
 
 Status: the account-bound encrypted checkpoint codec, restore API and in-memory
-phase guards are implemented. File storage and the resumable local-file operation
-remain unimplemented; durable resume is not advertised as supported. The earlier
+phase guards are implemented. Protected atomic storage and OS locking are also
+implemented and pass Linux fixtures; their native Windows/macOS validation is
+pending. The resumable local-file operation remains unimplemented; durable resume
+is not advertised as supported. The earlier
 fresh-process protocol gate passed. Full native and integrated live
 batching/pacing/retry checks passed in the user-supplied temporary repository
 `alphazoic/alpha-rfork`; the original account's blocked runs remain recorded separately.
@@ -38,7 +40,10 @@ failure. This is a correctness probe, not a performance or worker-count sweep.
 The current probe uses the encrypted production codec in private Linux runner
 temporary files; it saves commit intent before finalization and the confirmed node
 afterward. These files are never included in artifacts. The saved receipt above
-used the earlier test-only snapshot, so the encrypted-codec live run remains pending.
+used the earlier test-only snapshot. The encrypted-codec run also passed all three
+cases with independent hashes and cleanup at `8947a62`: receipt
+`reports/upload-resume-protocol-39417109063.json`. Focused native races, lint,
+builds and CLI smoke passed on all three platforms in run `39417104289`.
 Offline tests validate authenticated rejection, binding, restoration and phase
 guards. The probe cannot establish general session expiry, native
 Windows ACL/locking behavior, crash-safe checkpoint durability or uncertain-commit
@@ -59,6 +64,10 @@ recovery. Those remain separate implementation/release requirements.
   Read/hash the actual upload stream as well, and refuse finalization if content
   differs. Size/mtime alone do not establish identity. Source changes must not
   silently corrupt an existing upload session or publish a mixed-version file.
+- Verify every skipped native chunk against its saved MAC during the actual source
+  read, using `Upload.VerifyAcknowledgedChunk`. A source could change during an
+  interrupted attempt and later return to its original full-file hash; that hash
+  alone cannot authenticate the bytes represented by earlier acknowledgements.
 - Define skipped-byte accounting explicitly. Network-acknowledged bytes restored
   from a checkpoint, current-attempt source reads, current HTTP payload reads and
   current acknowledgements are separate counters. Keep existing completion rules.
@@ -86,7 +95,25 @@ the lock inode on completion while another process may be waiting for it. The
 existing dependency graph contains `gofrs/flock`, which is a candidate for native
 locking, subject to subprocess tests on every platform. Encryption does not remove
 the need for private directories, owner checks, symlink rejection and Windows ACL
-validation. Production storage and its fault tests remain unimplemented.
+validation. The private store is implemented under `backend/mega/internal/checkpoint`,
+separate from backend behavior so native I/O can use platform-specific helpers.
+Linux race fixtures pass; native Windows/macOS checks are pending. The local-source
+operation, serialized/coalesced writer and commit-state integration remain unfinished.
+
+The store anchors file operations to `os.Root`, verifies ownership and private
+permissions, refuses symlinks/hardlinks, and retains one OS-locked inode across all
+atomic state replacements. Unix uses private modes, UID checks, flock and fsync;
+macOS additionally uses F_FULLFSYNC for files. Windows creates owner/SYSTEM-only
+protected ACLs at creation, pins non-reparse ancestor handles, and restricts storage
+to fixed local NTFS volumes; files and replacement use write-through plus flushes.
+An initialization marker prevents missing state from silently becoming a new upload.
+Snapshots use private temporary files and durability barriers; a late error may
+leave a complete newer snapshot, but never authorizes the caller to commit.
+
+Offline fixtures cover atomic replacement, write/sync/close/rename/barrier failures,
+short initialization writes, missing initialized state, unsafe directories, links,
+cross-process exclusion and ownership recovery after process death. Native execution
+must validate platform behavior before the store is exposed through an upload command.
 
 The dependency now exposes `Upload.SealCheckpoint`, `Mega.OpenUploadCheckpoint`
 and an independent acknowledgement bitmap. AES-256-GCM protects the complete

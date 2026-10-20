@@ -245,6 +245,10 @@ func runRestartProbeWorker(ctx context.Context, t *testing.T, phase string) {
 	stage = "data-requests"
 	for first := 0; first < u.Chunks(); {
 		if len(u.chunk_macs[first]) != 0 {
+			offset, size, err := u.ChunkLocation(first)
+			if err != nil || u.VerifyAcknowledgedChunk(first, plain[offset:offset+int64(size)]) != nil {
+				t.Fatal("acknowledged range did not match source")
+			}
 			first++
 			continue
 		}

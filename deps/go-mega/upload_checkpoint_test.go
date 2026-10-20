@@ -214,3 +214,36 @@ func TestUploadCheckpointRejectsAuthenticatedMalformedState(t *testing.T) {
 		t.Fatal("empty binding accepted")
 	}
 }
+
+func TestUploadCheckpointVerifiesAcknowledgedSourceBytes(t *testing.T) {
+	u, binding := checkpointFixture(t)
+	plain := bytes.Repeat([]byte{19}, u.chunks[0].size)
+	mac, err := u.encryptUploadChunk(0, bytes.Clone(plain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	u.chunk_macs[0] = mac
+	blob, err := u.SealCheckpoint(binding, CheckpointUploading, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, _, err := u.m.OpenUploadCheckpoint(blob, binding)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := restored.VerifyAcknowledgedChunk(0, plain); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(plain, bytes.Repeat([]byte{19}, len(plain))) {
+		t.Fatal("source verification modified plaintext")
+	}
+	// A file can change during an interrupted attempt and later return to its
+	// original full-file hash. Saved MACs must still match every skipped range.
+	plain[0]++
+	if err := restored.VerifyAcknowledgedChunk(0, plain); !errors.Is(err, ErrUploadCheckpointSource) {
+		t.Fatal("changed acknowledged content accepted")
+	}
+	if err := restored.VerifyAcknowledgedChunk(1, make([]byte, u.chunks[1].size)); !errors.Is(err, ErrUploadCheckpoint) {
+		t.Fatal("unknown chunk treated as acknowledged")
+	}
+}
