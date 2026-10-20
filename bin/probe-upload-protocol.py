@@ -18,20 +18,24 @@ def private_env():
             if not k.startswith(('RCLONE_', 'RFORK_MEGA_', 'X_MEGA_'))}
 
 
-def run():
+def run(resume=False):
     RECEIPT.parent.mkdir(exist_ok=True)
     report = {'schemaVersion': 1, 'sourceCommit': os.environ.get('GITHUB_SHA'),
               'remoteFolder': 'rfork-protocol-' + uuid.uuid4().hex,
-              'status': 'started', 'cleanup': False}
+              'status': 'started', 'cleanup': False,
+              'probe': 'restart' if resume else 'batching'}
     RECEIPT.write_text(json.dumps(report, indent=2) + '\n')
-    env = {**os.environ, 'RFORK_LIVE_PROTOCOL': '1',
+    env = {k: v for k, v in os.environ.items()
+           if not k.startswith(('RFORK_RESTART_', 'RFORK_LIVE_'))}
+    env.update({('RFORK_LIVE_RESTART' if resume else 'RFORK_LIVE_PROTOCOL'): '1',
            'RFORK_PROTOCOL_REPORT': str(RECEIPT),
            'RFORK_PROTOCOL_STOCK': str(STOCK),
            'RFORK_PROTOCOL_FOLDER': report['remoteFolder'],
-           'RFORK_WORKDIR': str(ROOT / 'deps/go-mega')}
+           'RFORK_WORKDIR': str(ROOT / 'deps/go-mega')})
+    test = '^TestLiveUploadRestartProtocol$' if resume else '^TestLiveUploadProtocol$'
     result = subprocess.run([str(ROOT / 'bin/rfork-go'), 'test', '-count=1',
-                             '-timeout', '8m', '-run', '^TestLiveUploadProtocol$', '.'],
-                            env=env, capture_output=True, text=True, timeout=540)
+                             '-timeout', '10m' if resume else '8m', '-run', test, '.'],
+                            env=env, capture_output=True, text=True, timeout=660 if resume else 540)
     # Do not publish raw account/backend output, even when the Go test fails.
     report = json.loads(RECEIPT.read_text())
     report['testExitCode'] = result.returncode
@@ -81,8 +85,11 @@ def cleanup():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', choices=['run', 'cleanup'])
+    parser.add_argument('--resume', action='store_true', help='Run the explicit two-process restart probe')
     args = parser.parse_args()
+    if args.resume:
+        RECEIPT = ROOT / 'build/upload-resume-protocol.json'
     if args.mode == 'run':
-        run()
+        run(resume=args.resume)
     else:
         cleanup()

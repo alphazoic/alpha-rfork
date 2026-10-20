@@ -72,6 +72,20 @@ class ProtocolRunnerTest(unittest.TestCase):
         self.assertNotIn(private, output.getvalue())
         self.assertEqual(json.loads(self.receipt.read_text())['testExitCode'], 1)
 
+    def test_restart_probe_is_explicit_and_selects_only_restart_test(self):
+        def command(args, **kwargs):
+            self.assertEqual(args[args.index('-run') + 1], '^TestLiveUploadRestartProtocol$')
+            self.assertEqual(kwargs['env']['RFORK_LIVE_RESTART'], '1')
+            self.assertNotIn('RFORK_RESTART_PHASE', kwargs['env'])
+            self.assertNotIn('RFORK_LIVE_PROTOCOL', kwargs['env'])
+            self.assertEqual(json.loads(self.receipt.read_text())['probe'], 'restart')
+            return subprocess.CompletedProcess(args, 0, stdout='', stderr='')
+
+        with patch.dict(os.environ, {'RFORK_RESTART_PHASE': 'finish', 'RFORK_LIVE_PROTOCOL': '1'}), \
+                patch.object(probe.subprocess, 'run', side_effect=command), \
+                contextlib.redirect_stdout(io.StringIO()):
+            probe.run(resume=True)
+
 
 if __name__ == '__main__':
     unittest.main()

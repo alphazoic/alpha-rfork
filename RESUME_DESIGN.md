@@ -24,6 +24,22 @@ rejected sessions. Independently download/hash and verify scoped cleanup. Record
 the tested delays; do not infer a universal expiry time from the URL or a short
 successful pause. Never put the sensitive state in logs, receipts or artifacts.
 
+The manual workflow now has a `resume-protocol` choice implementing the first
+three process-restart checks. It uses separate test-executable processes with fresh
+logins, an original-key/native-MAC snapshot, exact account/parent binding and an
+independent stock-rclone SHA-256 download. Cases are an acknowledged prefix (no
+intentional delay), accepted bytes whose acknowledgement is absent from saved
+state (15-second delay), and a multi-chunk terminal response deliberately lost
+after the server replies (one-second delay). Scoped remote cleanup runs even on
+failure. This is a correctness probe, not a performance or worker-count sweep.
+
+The probe's temporary private snapshot codec is test-only, Linux-only and never
+included in artifacts; it is not the production checkpoint/storage design below.
+Offline tests validate state rejection/deep copying and runner isolation. Its live
+result is still pending. The probe cannot establish general session expiry, native
+Windows ACL/locking behavior, crash-safe checkpoint durability or uncertain-commit
+recovery. Those remain separate implementation/release requirements.
+
 ## Source and destination contract
 
 - Initially support an explicit seekable regular local file. Keep arbitrary

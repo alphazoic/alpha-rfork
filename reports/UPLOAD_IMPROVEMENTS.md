@@ -41,6 +41,32 @@ match their saved manifest, and no M3 code/settings/bundle replacement is includ
 No release tag/promotion is made with final native/live gates pending. Stage
 records below retain their results and limits at the time each was saved.
 
+## Hosted validation restart and resume probe preparation — 2026-10-20
+
+The user pushed the same branch/history to `alphazoic/alpha-rfork` and supplied
+the two dedicated-account repository secrets. `origin` remains unchanged; the
+temporary remote is the branch's upstream/push destination. The local Actions
+helper derives its API repository, branch and credential path from the selected
+remote rather than assuming the original account.
+
+Native checks were dispatched; the duplicate earlier dispatch was cancelled after
+the workflow registration update triggered its own check run. The registered live
+`improvements` workflow is also queued. Results will be recorded separately from
+the original account's pre-start billing failures.
+
+A manual `resume-protocol` gate now exercises separate-process fresh authentication,
+saved acknowledgements, accepted-data replay and a lost multi-chunk terminal reply.
+It stores private test state only in owner-only runner temporary files, never in
+artifacts. Receipts contain stages/counters/check results; scoped cleanup and stock
+SHA-256 verification follow the existing protocol harness. No production resume API,
+checkpoint format, M3 integration or release promotion is included.
+
+Tests first failed because the new state helpers and Python resume selector did
+not exist. After implementation, dependency race tests, seven Python runner
+fixtures, workflow YAML parsing and parent/dependency lint passed locally. Live
+restart behavior and general expiry semantics remain unproven until the new gate
+runs; a passing short-delay probe will not establish a universal session lifetime.
+
 ## Diagnostics stage — 2026-10-20
 
 Implemented `--mega-upload-diagnostics` (default false). It emits bounded numeric

@@ -12,6 +12,7 @@ on:
           - darwin
           - protocol
           - improvements
+          - resume-protocol
 permissions:
   contents: read
 concurrency:
@@ -19,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   live:
-    if: inputs.platform != 'protocol' && inputs.platform != 'improvements'
+    if: inputs.platform != 'protocol' && inputs.platform != 'improvements' && inputs.platform != 'resume-protocol'
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -146,4 +147,33 @@ jobs:
         with:
           name: rfork-upload-protocol
           path: build/upload-protocol.json
+          if-no-files-found: warn
+  resume-protocol:
+    if: inputs.platform == 'resume-protocol'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.9'
+          cache: false
+      - name: Build pristine independent verifier
+        run: bin/build-stock
+      - name: Probe upload restart with fresh authentication
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: python3 bin/probe-upload-protocol.py run --resume
+      - name: Verify scoped cleanup
+        if: always()
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: python3 bin/probe-upload-protocol.py cleanup --resume
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: rfork-upload-resume-protocol
+          path: build/upload-resume-protocol.json
           if-no-files-found: warn
