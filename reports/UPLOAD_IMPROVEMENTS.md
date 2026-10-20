@@ -4,6 +4,43 @@ Work begins from saved commit `2500ccc2fe0e117a95df1860355c1483408291a7`.
 The baseline release and M3 bundles remain unchanged. This record distinguishes
 offline checks from live-server and native-platform validation.
 
+## Current status
+
+Implementation source: `464acac3b33b829e5e10808ba128520cde3c17a8` on
+`codex/rfork-upload-plan`, development version `0.2.0-dev`. Diagnostics, per-file
+chunk retry controls, separate data pacing and configurable request grouping are
+implemented. Compatibility defaults retain 8 workers, 10ms data pacing, native
+requests and opt-in response-body replay. No performance-setting sweep was run.
+
+- Focused backend/dependency race suites, related operations/accounting/HTTP
+  package tests, lint and six offline runner fixtures passed.
+- The live protocol gate passed batching, offset replay, terminal-handle recovery,
+  independent hashes and cleanup at `2f644d1`. It is not a substitute for the
+  integrated final CLI validation.
+- Linux, Windows and macOS amd64 development builds succeeded. Linux help/flag
+  parsing and local copy smoke passed; final Windows/macOS execution and integrated
+  live MEGA checks remain pending. Hashes/provenance are in
+  `upload-improvements-local-464acac.json`.
+- GitHub rejected final runs `39400711200` and `39401087755` before any steps in
+  the inspected Linux jobs because of an account payment/spending-limit issue.
+  See `upload-improvements-ci-blocked.json`. No failed-run live account objects
+  were created by those jobs. Rerun these exact failed jobs after Actions access
+  is restored; do not repeatedly dispatch while the restriction remains.
+- The full local upstream attempt returned failure: 171 package results passed,
+  126 had no tests, eight packages could not start Docker/docker-compose fixtures,
+  and `cmd/serve/s3` had a cache timing failure. The failing S3 test passed in an
+  isolated follow-up (`TestPutObjectFailureCached`, 4.646s), without source changes.
+  Do not describe the full suite as green. No Docker permissions or unrelated
+  S3 code were changed.
+- Durable resume is not implemented. `../RESUME_DESIGN.md` records the required
+  fresh-process protocol gate and crash-safe state/source/commit contract. A
+  same-process replay result does not establish restart-resume support.
+
+The saved alpha references/artifacts are preserved, all M3 bundle checksums still
+match their saved manifest, and no M3 code/settings/bundle replacement is included.
+No release tag/promotion is made with final native/live gates pending. Stage
+records below retain their results and limits at the time each was saved.
+
 ## Diagnostics stage — 2026-10-20
 
 Implemented `--mega-upload-diagnostics` (default false). It emits bounded numeric

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "464acac3b33b829e5e10808ba128520cde3c17a8",
+  "version": "rfork v1.75.2-rfork.0.2.0-dev",
+  "toolchain": "go1.26.9",
+  "newFlagsPresent": [
+    "--mega-upload-diagnostics",
+    "--mega-upload-retries",
+    "--mega-upload-retry-body-errors",
+    "--mega-upload-pacing",
+    "--mega-upload-request-size"
+  ],
+  "linuxLocalCopyAndFlagParsingSmoke": true,
+  "m3BundlesMatchSavedManifest": true,
+  "targets": [
+    {
+      "target": "linux/amd64",
+      "file": "build/rfork-linux-amd64",
+      "bytes": 85733538,
+      "sha256": "4340cbeef83db8fdf9d419b301c40bd38da0f5664f9a546faa8cb57258d4251a",
+      "nativeCliSmoke": "passed",
+      "integratedLiveMegaValidation": "pending"
+    },
+    {
+      "target": "windows/amd64",
+      "file": "build/rfork-windows-amd64.exe",
+      "bytes": 86166528,
+      "sha256": "585c85ab2c2f3a49bcafd77bfc1fc4e1f01c957db43d8756c682107f90bd73a3",
+      "nativeCliSmoke": "not_run",
+      "integratedLiveMegaValidation": "pending"
+    },
+    {
+      "target": "darwin/amd64",
+      "file": "build/rfork-darwin-amd64",
+      "bytes": 87802496,
+      "sha256": "6f07065199c8b4aef8cb219f023ad63f7893357da32d7d4c25414085430611b5",
+      "nativeCliSmoke": "not_run",
+      "integratedLiveMegaValidation": "pending"
+    }
+  ],
+  "focusedMegaRaceSuites": "passed",
+  "lint": "passed",
+  "offlinePythonRunnerTests": 6,
+  "relatedOperationsAccountingHttpTests": "passed",
+  "fullUpstreamLocalSuite": {
+    "status": "not_green",
+    "failedPackages": [
+      "github.com/rclone/rclone/backend/ftp",
+      "github.com/rclone/rclone/backend/hdfs",
+      "github.com/rclone/rclone/backend/seafile",
+      "github.com/rclone/rclone/backend/sftp",
+      "github.com/rclone/rclone/backend/sia",
+      "github.com/rclone/rclone/backend/smb",
+      "github.com/rclone/rclone/backend/swift",
+      "github.com/rclone/rclone/backend/webdav",
+      "github.com/rclone/rclone/cmd/serve/s3"
+    ],
+    "dockerDependentPackageFailures": 8,
+    "isolatedS3CacheFailureRetest": "passed",
+    "passedPackageResults": 171,
+    "noTestPackageResults": 126
+  },
+  "releasePromotion": "pending native/live validation and resume decision"
+}

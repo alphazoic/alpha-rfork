@@ -11,6 +11,19 @@ outside this work.
 The worker pool now supports opt-in bounded request jobs while native request
 behavior remains the default; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
 
+GitHub blocked the final native/live runs before any steps executed because of
+an account billing/spending-limit restriction. Resume protocol work awaits hosted
+testing as well; the state-machine contract and missing two-process gate are in
+[RESUME_DESIGN.md](RESUME_DESIGN.md). Local validation can continue independently.
+
+Local final validation is recorded in
+[reports/upload-improvements-local-464acac.json](reports/upload-improvements-local-464acac.json):
+all three targets build, Linux CLI smoke and targeted races/lint pass, and M3
+bundle hashes are unchanged. The attempted full upstream suite is not green due
+to Docker fixture access and an S3 cache timing failure that passed in isolation;
+see the validation report for exact limits. Resume implementation and release
+promotion remain unfinished.
+
 ## Objective and saved baseline
 
 Improve single-file MEGA upload completion time and recovery at modest concurrency,

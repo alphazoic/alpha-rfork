@@ -1,0 +1,22 @@
+{
+  "sourceCommit": "464acac3b33b829e5e10808ba128520cde3c17a8",
+  "reason": "github_account_billing_or_spending_limit",
+  "annotation": "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the Billing & plans section in your settings.",
+  "confirmedJobsWithZeroSteps": [
+    118554425002,
+    118555711735
+  ],
+  "runs": [
+    {
+      "id": 39400711200,
+      "kind": "native unit/race/CLI checks",
+      "url": "https://github.com/mega-fork/rfork/actions/runs/39400711200"
+    },
+    {
+      "id": 39401087755,
+      "kind": "native integrated upload integrity checks",
+      "url": "https://github.com/mega-fork/rfork/actions/runs/39401087755"
+    }
+  ],
+  "testCodeExecutedInConfirmedJobs": false
+}
