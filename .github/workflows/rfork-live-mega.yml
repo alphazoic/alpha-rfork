@@ -55,7 +55,7 @@ jobs:
         with:
           go-version: '1.26.9'
           cache: false
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Build native rfork and pristine stock verifier
@@ -108,7 +108,7 @@ jobs:
         with:
           go-version: '1.26.9'
           cache: false
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Build native candidate and pristine stock verifier
@@ -155,7 +155,7 @@ jobs:
         with:
           go-version: '1.26.9'
           cache: false
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Build native candidate and pristine stock verifier
