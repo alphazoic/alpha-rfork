@@ -4,6 +4,7 @@
   const card = document.getElementById('stg-rforkUploads');
   const sections = { basic: card.querySelector('[data-rfork-basic]'), advanced: card.querySelector('[data-rfork-advanced]'), recovery: card.querySelector('[data-rfork-recovery]') };
   const controls = {};
+  let defaultCheckpointRoot = 'M3 private local profile (default)';
   for (const f of fields) {
     const row = document.createElement('div'); row.className = 'stg-row';
     const label = document.createElement('label'); label.htmlFor = 'cfg-rfork-' + f.key; label.textContent = f.label;
@@ -47,10 +48,10 @@
   function apply(value) {
     const s = normalizeRforkSettings(value);
     for (const f of fields) { if (f.type === 'boolean') controls[f.key].checked = s[f.key]; else controls[f.key].value = s[f.key]; }
-    controls.checkpointRoot.placeholder = 'M3 private local profile (default)'; refresh();
+    controls.checkpointRoot.placeholder = defaultCheckpointRoot; refresh();
   }
   card.querySelector('[data-rfork-reset]').addEventListener('click', () => apply());
   apply();
-  window.api.rforkSettingsInfo().then(info => { controls.checkpointRoot.placeholder = info.checkpointRoot; card.querySelector('h3').textContent = 'rfork Uploads · ' + info.version; }).catch(() => {});
+  window.api.rforkSettingsInfo().then(info => { defaultCheckpointRoot = info.checkpointRoot; controls.checkpointRoot.placeholder = defaultCheckpointRoot; card.querySelector('h3').textContent = 'rfork Uploads · ' + info.version; }).catch(() => {});
   window.rforkSettingsUI = { readDraft, apply };
 })();
