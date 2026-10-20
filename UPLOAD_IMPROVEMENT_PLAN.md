@@ -11,10 +11,12 @@ outside this work.
 The worker pool now supports opt-in bounded request jobs while native request
 behavior remains the default; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
 
-GitHub blocked the final native/live runs before any steps executed because of
-an account billing/spending-limit restriction. Resume protocol work awaits hosted
-testing as well; the state-machine contract and missing two-process gate are in
-[RESUME_DESIGN.md](RESUME_DESIGN.md). Local validation can continue independently.
+The original GitHub account blocked the final native/live runs before any steps
+executed because of a billing/spending-limit restriction. The user supplied a
+temporary repository, `alphazoic/alpha-rfork`, and added the dedicated test-account
+secrets there. Hosted validation is being resumed on the same source history;
+`origin` remains the original repository. The state-machine contract and missing
+two-process resume gate are in [RESUME_DESIGN.md](RESUME_DESIGN.md).
 
 Local final validation is recorded in
 [reports/upload-improvements-local-464acac.json](reports/upload-improvements-local-464acac.json):

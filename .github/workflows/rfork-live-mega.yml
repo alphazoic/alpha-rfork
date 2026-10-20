@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       platform:
-        description: Native platform to validate
+        description: Native platform or upload correctness gate to validate
         type: choice
         default: all
         options:

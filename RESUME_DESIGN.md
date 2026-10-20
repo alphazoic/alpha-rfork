@@ -1,8 +1,9 @@
 # Restart-resume investigation and implementation contract
 
 Status: design/investigation only. Durable resume is not implemented or advertised
-as supported. The final batching/live checks are currently blocked by GitHub's
-account billing/spending-limit restriction; no secret-account workaround is used.
+as supported. Final batching/live checks are being resumed in the user-supplied
+temporary repository `alphazoic/alpha-rfork`; the original account's blocked runs
+remain recorded separately.
 
 ## Evidence and missing protocol gate
 
