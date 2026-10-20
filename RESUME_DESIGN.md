@@ -61,6 +61,29 @@ recovery. Those remain separate implementation/release requirements.
 
 ## State codec and ownership
 
+Implementation direction after the protocol gate: expose an explicit MEGA backend
+command for a local source file, with a required checkpoint path and configurable
+flush interval. Existing backend-command support can carry those arguments without
+changing generic copy operations. Its CLI path currently uses a background context;
+the operation must install cancellation, join workers and finish checkpoint writes
+before signal exit. An exit callback must not wait for code that needs to unregister
+that callback under the same global exit-handler lock.
+
+Keep serialization/encryption next to the dependency's private upload crypto state.
+Use an authenticated envelope with a fresh cryptographic nonce and a domain-separated
+key derived from the freshly authenticated account's master key, without exporting
+or storing that master key/password. Bind the envelope/schema to the account. This
+lets a fresh login unlock a checkpoint without a second persisted plaintext key.
+A changed/unavailable account key must reject restoration, never silently replace
+the session. Native tests must establish the envelope and permission behavior.
+
+Use one stable OS lock file across atomic checkpoint replacements; do not unlink
+the lock inode on completion while another process may be waiting for it. The
+existing dependency graph contains `gofrs/flock`, which is a candidate for native
+locking, subject to subprocess tests on every platform. Encryption does not remove
+the need for private directories, owner checks, symlink rejection and Windows ACL
+validation. Production storage and its fault tests remain unimplemented.
+
 Versioned state needs original upload key/nonce material, session URL, native chunk
 layout/size, acknowledged native MACs, any completion handle, identity fields and
 an explicit phase. Native chunk boundaries remain deterministic and unchanged.

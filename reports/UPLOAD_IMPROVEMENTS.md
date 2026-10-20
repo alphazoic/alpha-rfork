@@ -17,15 +17,20 @@ requests and opt-in response-body replay. No performance-setting sweep was run.
 - The live protocol gate passed batching, offset replay, terminal-handle recovery,
   independent hashes and cleanup at `2f644d1`. It is not a substitute for the
   integrated final CLI validation.
-- Linux, Windows and macOS amd64 development builds succeeded. Linux help/flag
-  parsing and local copy smoke passed; final Windows/macOS execution and integrated
-  live MEGA checks remain pending. Hashes/provenance are in
+- Linux, Windows and macOS amd64 native full unit suites, upload/dependency races,
+  builds and CLI smoke checks passed in the temporary repository at `b4bd97c`, whose
+  upload implementation matches `464acac`. Linux lint and runner fixtures also
+  passed. Receipt: `upload-improvements-native-39409187807.json`. Linux integrated
+  live MEGA checks passed with 15 independent hashes and verified cleanup in
+  `upload-improvements-live-linux-39409214017.json`; Windows/macOS live checks are
+  pending. Earlier local hashes/provenance are in
   `upload-improvements-local-464acac.json`.
 - GitHub rejected final runs `39400711200` and `39401087755` before any steps in
   the inspected Linux jobs because of an account payment/spending-limit issue.
   See `upload-improvements-ci-blocked.json`. No failed-run live account objects
-  were created by those jobs. Rerun these exact failed jobs after Actions access
-  is restored; do not repeatedly dispatch while the restriction remains.
+  were created by those jobs. The user supplied the temporary repository for
+  subsequent runs; the successful native run above supersedes that native-check
+  blocker without changing the original account or historical receipts.
 - The full local upstream attempt returned failure: 171 package results passed,
   126 had no tests, eight packages could not start Docker/docker-compose fixtures,
   and `cmd/serve/s3` had a cache timing failure. The failing S3 test passed in an
@@ -38,7 +43,7 @@ requests and opt-in response-body replay. No performance-setting sweep was run.
 
 The saved alpha references/artifacts are preserved, all M3 bundle checksums still
 match their saved manifest, and no M3 code/settings/bundle replacement is included.
-No release tag/promotion is made with final native/live gates pending. Stage
+No release tag/promotion is made with integrated live gates pending. Stage
 records below retain their results and limits at the time each was saved.
 
 ## Hosted validation restart and resume probe preparation — 2026-10-20
@@ -49,10 +54,14 @@ temporary remote is the branch's upstream/push destination. The local Actions
 helper derives its API repository, branch and credential path from the selected
 remote rather than assuming the original account.
 
-Native checks were dispatched; the duplicate earlier dispatch was cancelled after
-the workflow registration update triggered its own check run. The registered live
-`improvements` workflow is also queued. Results will be recorded separately from
-the original account's pre-start billing failures.
+Native checks passed on all three platforms in run `39409187807`; the duplicate
+earlier dispatch was cancelled after workflow registration triggered its own run.
+The registered live `improvements` workflow is in progress (`39409214017`): Linux
+passed 54 checks, including 15 independent stock-client SHA-256 comparisons and
+verified scoped cleanup. Its artifact SHA-256 matches the saved local Linux build
+from implementation source `464acac` exactly. Windows/macOS are pending. The
+fresh-process protocol gate is queued behind it (`39409953855`). Results are kept
+separate from the original account's pre-start billing failures.
 
 A manual `resume-protocol` gate now exercises separate-process fresh authentication,
 saved acknowledgements, accepted-data replay and a lost multi-chunk terminal reply.

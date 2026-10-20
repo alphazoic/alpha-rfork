@@ -4,9 +4,12 @@ Status: diagnostics, chunk-retry improvements, separate pacing and request group
 are implemented and pass focused
 Linux race tests and lint; see [reports/UPLOAD_IMPROVEMENTS.md](reports/UPLOAD_IMPROVEMENTS.md).
 The live batching/offset/terminal-replay protocol gate passed, with independent
-hash checks and verified cleanup. Response-body replay remains opt-in. Native CLI
-validation, restart resume and release promotion remain pending. M3 changes are
-outside this work.
+hash checks and verified cleanup. Response-body replay remains opt-in. Full native
+checks passed on Linux, Windows and macOS in the temporary repository (receipt:
+`reports/upload-improvements-native-39409187807.json`). Linux integrated live CLI
+checks passed (15 independent hashes and verified cleanup); Windows/macOS live
+checks, restart resume and release promotion remain pending. M3 changes are outside
+this work.
 
 The worker pool now supports opt-in bounded request jobs while native request
 behavior remains the default; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
