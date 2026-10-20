@@ -101,6 +101,34 @@ class ProtocolRunnerTest(unittest.TestCase):
     def test_prepare_cleanup_rejects_arbitrary_folder(self):
         with self.assertRaisesRegex(RuntimeError,'unrecognized'): probe.prepare_cleanup('ordinary-user-folder')
 
+    def test_account_access_is_read_only_and_does_not_claim_old_account_cleanup(self):
+        calls=[]
+        def command(args,**kwargs):
+            calls.append(args[1])
+            self.assertNotIn('RFORK_MEGA_PASSWORD',kwargs['env'])
+            if args[1]=='obscure': return subprocess.CompletedProcess(args,0,stdout='obscured\n')
+            self.assertEqual(args[1:3],['lsjson','rforkproto:'])
+            return subprocess.CompletedProcess(args,0,stdout='[{"Name":"private-user-folder"}]',stderr='')
+        with patch.dict(os.environ,{'RFORK_MEGA_EMAIL':'test@example.invalid','RFORK_MEGA_PASSWORD':'secret'}), \
+                patch.object(probe.subprocess,'run',side_effect=command),contextlib.redirect_stdout(io.StringIO()):
+            probe.check_account()
+        report=json.loads(self.receipt.read_text())
+        self.assertTrue(report['accountAccess'])
+        self.assertIsNone(report['cleanup'])
+        self.assertNotIn('private-user-folder',self.receipt.read_text())
+        self.assertEqual(calls,['obscure','lsjson'])
+
+    def test_account_access_failure_withholds_private_output(self):
+        def command(args,**kwargs):
+            if args[1]=='obscure':return subprocess.CompletedProcess(args,0,stdout='obscured\n')
+            return subprocess.CompletedProcess(args,1,stdout='',stderr='User blocked https://private.invalid secret')
+        with patch.dict(os.environ,{'RFORK_MEGA_EMAIL':'test@example.invalid','RFORK_MEGA_PASSWORD':'secret'}), \
+                patch.object(probe.subprocess,'run',side_effect=command),contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaisesRegex(RuntimeError,'output withheld'):probe.check_account()
+        report=json.loads(self.receipt.read_text())
+        self.assertFalse(report['accountAccess'])
+        self.assertNotIn('private.invalid',self.receipt.read_text())
+
 
 if __name__ == '__main__':
     unittest.main()

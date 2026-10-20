@@ -26,6 +26,35 @@ def prepare_cleanup(folder):
                                   'remoteFolder': folder, 'status': 'cleanup-only', 'cleanup': False}, indent=2) + '\n')
 
 
+def check_account():
+    report = {'schemaVersion': 1, 'sourceCommit': os.environ.get('GITHUB_SHA'),
+              'status': 'account-access', 'accountAccess': False, 'cleanup': None,
+              'accountScope': 'current repository secrets only; prior-account cleanup is unverified'}
+    RECEIPT.parent.mkdir(exist_ok=True)
+    RECEIPT.write_text(json.dumps(report, indent=2) + '\n')
+    password, email = os.environ.get('RFORK_MEGA_PASSWORD', ''), os.environ.get('RFORK_MEGA_EMAIL', '')
+    if not password or not email:
+        raise RuntimeError('Missing dedicated-account secrets')
+    env = private_env()
+    encoded = subprocess.run([str(STOCK), 'obscure', '-'], input=password + '\n',
+                             text=True, capture_output=True, check=True, env=env).stdout.strip()
+    env.update(RCLONE_CONFIG='notfound', RCLONE_CONFIG_RFORKPROTO_TYPE='mega',
+               RCLONE_CONFIG_RFORKPROTO_USER=email, RCLONE_CONFIG_RFORKPROTO_PASS=encoded)
+    result = subprocess.run([str(STOCK), 'lsjson', 'rforkproto:', '--dirs-only',
+                             '--mega-use-https=true', '--retries', '1', '--low-level-retries', '2', '--timeout', '60s'],
+                            env=env, capture_output=True, text=True, timeout=180)
+    if result.returncode:
+        report['accessFailure'] = {'exitCode': result.returncode,
+                                  'blocked': bool(re.search(r'user blocked|account.*blocked|account.*suspend', result.stderr.lower()))}
+        RECEIPT.write_text(json.dumps(report, indent=2) + '\n')
+        raise RuntimeError('Account access failed; output withheld')
+    if not isinstance(json.loads(result.stdout), list):
+        raise RuntimeError('Invalid account-access listing; output withheld')
+    report['accountAccess'] = True
+    RECEIPT.write_text(json.dumps(report, indent=2) + '\n')
+    print(json.dumps(report), flush=True)
+
+
 def run(resume=False):
     RECEIPT.parent.mkdir(exist_ok=True)
     report = {'schemaVersion': 1, 'sourceCommit': os.environ.get('GITHUB_SHA'),
@@ -105,7 +134,7 @@ def cleanup():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('mode', choices=['run', 'cleanup', 'prepare-cleanup'])
+    parser.add_argument('mode', choices=['run', 'cleanup', 'prepare-cleanup', 'access'])
     parser.add_argument('--folder', help='Exact isolated folder for a cleanup-only receipt')
     parser.add_argument('--resume', action='store_true', help='Run the explicit two-process restart probe')
     args = parser.parse_args()
@@ -115,6 +144,8 @@ if __name__ == '__main__':
         prepare_cleanup(args.folder or '')
     elif args.folder:
         parser.error('--folder requires prepare-cleanup')
+    elif args.mode == 'access':
+        check_account()
     elif args.mode == 'run':
         run(resume=args.resume)
     else:

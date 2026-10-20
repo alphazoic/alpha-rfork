@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "39ee917ff56537dcb6becd482d26d5ba8f2a83ec",
+  "status": "success",
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39437206355",
+  "jobs": [
+    {
+      "name": "native (windows-latest, windows)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner": "GitHub Actions 1000000036",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-go@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install Linux NFS test helper",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Build Linux upstream integration-test executable",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Upload worker races",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Dependency races and crypto fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkpoint ownership, atomic-write and fault fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Cancellable transfer accounting",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Offline live-runner cleanup and diagnostic fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Upstream unit tests",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Lint changed packages",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Build native CLI",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "CLI smoke",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-go@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "native (macos-15-intel, darwin)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner": "GitHub Actions 1000000037",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-go@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install Linux NFS test helper",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Build Linux upstream integration-test executable",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Upload worker races",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Dependency races and crypto fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkpoint ownership, atomic-write and fault fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Cancellable transfer accounting",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Offline live-runner cleanup and diagnostic fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Upstream unit tests",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Lint changed packages",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Build native CLI",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "CLI smoke",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-go@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "native (ubuntu-latest, linux)",
+      "status": "completed",
+      "conclusion": "success",
+      "runner": "GitHub Actions 1000000038",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-go@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install Linux NFS test helper",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Build Linux upstream integration-test executable",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Upload worker races",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Dependency races and crypto fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkpoint ownership, atomic-write and fault fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Cancellable transfer accounting",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Offline live-runner cleanup and diagnostic fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Upstream unit tests",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Lint changed packages",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build native CLI",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "CLI smoke",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-go@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

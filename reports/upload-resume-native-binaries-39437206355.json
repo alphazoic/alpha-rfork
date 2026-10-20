@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "39ee917ff56537dcb6becd482d26d5ba8f2a83ec",
+  "status": "passed",
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39437206355",
+  "targets": [
+    {
+      "target": "linux/amd64",
+      "file": "rfork-linux-amd64",
+      "bytes": 85848226,
+      "sha256": "fcd5533f0112ed99b24f8c799a439cbc5148ec8f8a3109cd334bc77c45117567",
+      "artifactArchiveDigest": "sha256:dc331fe56b33774553bcdda5cba7ee9696fdfa9e74e509db34743c6b5606262a",
+      "githubArtifactDigestVerified": true
+    },
+    {
+      "target": "windows/amd64",
+      "file": "rfork-windows-amd64.exe",
+      "bytes": 86318592,
+      "sha256": "c6eee31d46cd40702ec42390c98853b938836d8255b50a4e485b43c304b4bcfc",
+      "artifactArchiveDigest": "sha256:a4e7b60d86b1c114ab970e130532d83ef543d94ab58008a25199731a6ecb7205",
+      "githubArtifactDigestVerified": true
+    },
+    {
+      "target": "darwin/amd64",
+      "file": "rfork-darwin-amd64",
+      "bytes": 87923664,
+      "sha256": "a11bdb3095474229d032e0434d33f26457d73e1875573db7f71a6a86608c3ae9",
+      "artifactArchiveDigest": "sha256:d708d77e14dd8e87bb496b7850a1cedf3147656766b61a7984e1d57da7dd47b4",
+      "githubArtifactDigestVerified": true
+    }
+  ],
+  "liveMegaResume": "unverified; test account reports blocked",
+  "releasePromoted": false
+}
