@@ -68,7 +68,10 @@ unusable finalization reply without replay.
 
 The full native/upstream run `39436148540` targets `a032839`. Final focused native
 backend/dependency/store/accounting races, lint, CLI builds and smoke are running
-in `39437206355` at `39ee917`. These are in progress, not final successful receipts.
+in `39437206355` at `39ee917`. Both runs passed on all three platforms. Final native binaries were downloaded
+and verified against GitHub's artifact archive digests; their individual SHA-256
+values are in `upload-resume-native-binaries-39437206355.json`, with artifacts under
+ignored `build/validated-native-39437206355/`.
 The stale dispatch `39437143179` targeted the preceding documentation commit
 and was canceled in favor of the final revision.
 
@@ -77,8 +80,11 @@ its scoped cleanup also failed. Cleanup-only receipt
 `upload-resume-protocol-39432815707.json` classifies stock-client login as
 blocked/authentication. The isolated folder
 `rfork-protocol-8097f0bbab2147e28329abfe5e0215d6` has not been verified absent.
-A usable MEGA test account is required to verify that exact folder, then run
-integrated live CLI resume and independent stock downloads. No release tag or M3
+The user replaced the testing credentials. Read-only stock access passed in
+`39438939305` (`upload-resume-protocol-39438939305.json`). If these identify a new
+account, its listing cannot verify cleanup on the blocked account; keep that
+legacy item unresolved. Integrated CLI resume checks use fresh isolated folders
+on the usable account. No release tag or M3
 binary/settings change is included.
 
 ## Hosted validation restart and resume probe preparation — 2026-10-20

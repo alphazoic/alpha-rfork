@@ -92,9 +92,12 @@ upload state; the explicit experimental command below supports checkpoints.
 
 ## Experimental local-file restart resume
 
-Implemented on the development branch; integrated native validation is running
-and live MEGA command recovery remains unverified. The testing account currently
-reports blocked through stock rclone too. No release or M3 replacement is made.
+Implemented on the development branch; focused native recovery tests, builds and
+CLI smoke passed on Linux, Windows and macOS. Full upstream/native checks also
+passed before the final backend transfer-budget guard. Integrated live MEGA
+command recovery remains unverified; replacement testing credentials now pass a
+read-only stock-client check after the previous account was blocked. No release
+or M3 replacement is made.
 
 ```sh
 rfork backend upload-resume mega:existing/uploads /absolute/movie.mkv \

@@ -2,14 +2,21 @@
 
 Status: the account-bound encrypted codec, protected atomic storage and explicit
 local-file `upload-resume` command are implemented on the development branch.
-The store passed native Linux, Windows and macOS checks at `ebbbc15`
-(`reports/upload-improvements-native-39418887213.json`). The command, source-block
-verification, coalesced writer and commit-state integration pass local fixtures,
-races and process recovery tests; their final native checks are pending.
-Integrated live command recovery remains unverified. The MEGA testing account
-currently reports blocked even through pristine stock rclone, preventing live
-checks and verification of the earlier failed probe's cleanup. Resume is
-experimental and is not promoted as release-ready. M3 remains unchanged.
+Full upstream/native checks passed on Linux, Windows and macOS at `a032839`
+(`reports/upload-improvements-native-39436148540.json`). Final focused native
+backend/dependency/store/accounting races, lint, builds and CLI smoke passed at
+`39ee917` (`reports/upload-improvements-native-39437206355.json`). Hash-verified
+native binaries are retained under `build/validated-native-39437206355/`; checksums
+are in `reports/upload-resume-native-binaries-39437206355.json`.
+
+Integrated live command recovery remains unverified. The previous MEGA account
+reported blocked through stock rclone; the user replaced the repository secrets.
+Read-only stock access to the replacement account passed in `39438939305`.
+Cleanup of the previous account's failed-probe folder remains unverified; access
+to a different account cannot establish that folder's absence. A Linux integrated
+CLI resume gate is being started against a new isolated folder on the usable
+account. Resume remains experimental and is not promoted as release-ready.
+M3 remains unchanged.
 
 ## Protocol evidence and remaining limits
 
@@ -234,7 +241,9 @@ Live protocol rerun `39418890708` failed before recording a case; cleanup also
 failed. Cleanup-only run `39432815707` independently classified pristine stock
 login as blocked/authentication. The isolated folder
 `rfork-protocol-8097f0bbab2147e28329abfe5e0215d6` has **not** been verified absent.
-Do not dispatch more upload probes until the test account is usable and that
-exact folder can be checked/cleaned. Then validate the integrated CLI against
-MEGA and independent stock downloads on all shipping platforms, including fault
-recovery and source rejection, before any release or M3 bundle change.
+The user subsequently supplied replacement credentials, and read-only stock
+access passed in `39438939305`. Keep the prior-account cleanup unresolved if it
+is a different account; new checks use fresh isolated UUID folders. Validate the
+integrated CLI against MEGA and independent stock downloads on all shipping
+platforms, including fault recovery and source rejection, before release or M3
+bundle changes.
