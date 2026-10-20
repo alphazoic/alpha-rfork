@@ -556,6 +556,38 @@ func (acc *Account) AccountRead(n int) (err error) {
 	return err
 }
 
+// AccountReadContext accounts for n bytes already read, respecting transfer limits
+// and cancellable global/per-file bandwidth waits. Counted bytes remain counted
+// if a bandwidth wait is canceled; the caller must stop before sending them.
+func (acc *Account) AccountReadContext(ctx context.Context, n int) error {
+	acc.mu.Lock()
+	defer acc.mu.Unlock()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if n < 0 {
+		return errors.New("negative accounting read size")
+	}
+	remaining, err := acc.checkReadBefore()
+	if err != nil {
+		return err
+	}
+	n, limitErr := acc.checkReadAfter(remaining, n, nil)
+	acc.accountReadN(int64(n))
+	if err := TokenBucket.LimitBandwidthContext(ctx, TokenBucketSlotAccounting, n); err != nil {
+		return err
+	}
+	acc.values.mu.Lock()
+	limiter := acc.tokenBucket[TokenBucketSlotAccounting]
+	acc.values.mu.Unlock()
+	if limiter != nil {
+		if err := waitBandwidthContext(ctx, limiter, n); err != nil {
+			return err
+		}
+	}
+	return limitErr
+}
+
 // AccountReadN account having read n bytes
 //
 // Does not obey any transfer limits, bandwidth limits, etc.

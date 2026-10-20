@@ -174,16 +174,42 @@ func (tb *tokenBucket) StartTokenTicker(ctx context.Context) {
 // of n bytes according to the current bandwidth limit
 func (tb *tokenBucket) LimitBandwidth(i TokenBucketSlot, n int) {
 	tb.mu.RLock()
-
-	// Limit the transfer speed if required
+	defer tb.mu.RUnlock()
 	if tb.curr[i] != nil {
-		err := tb.curr[i].WaitN(context.Background(), n)
-		if err != nil {
+		if err := tb.curr[i].WaitN(context.Background(), n); err != nil {
 			fs.Errorf(nil, "Token bucket error: %v", err)
 		}
 	}
+}
 
-	tb.mu.RUnlock()
+// LimitBandwidthContext waits for n bytes of bandwidth or context cancellation.
+// Unlike LimitBandwidth it returns limiter errors to the caller.
+func (tb *tokenBucket) LimitBandwidthContext(ctx context.Context, i TokenBucketSlot, n int) error {
+	tb.mu.RLock()
+	defer tb.mu.RUnlock()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	// Limit the transfer speed if required
+	if tb.curr[i] != nil {
+		return waitBandwidthContext(ctx, tb.curr[i], n)
+	}
+	return nil
+}
+
+func waitBandwidthContext(ctx context.Context, limiter *rate.Limiter, n int) error {
+	for n > 0 {
+		part := min(n, limiter.Burst())
+		if part <= 0 {
+			return fmt.Errorf("bandwidth limiter has no burst capacity")
+		}
+		if err := limiter.WaitN(ctx, part); err != nil {
+			return err
+		}
+		n -= part
+	}
+	return ctx.Err()
 }
 
 // SetBwLimit sets the current bandwidth limit

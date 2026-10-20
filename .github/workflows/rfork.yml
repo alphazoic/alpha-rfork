@@ -52,6 +52,8 @@ jobs:
         run: RFORK_WORKDIR="$PWD/deps/go-mega" bin/rfork-go test -race -timeout 5m ./...
       - name: Checkpoint ownership, atomic-write and fault fixtures
         run: RCLONE_CONFIG=/notfound bin/rfork-go test -race -timeout 5m ./backend/mega/internal/checkpoint
+      - name: Cancellable transfer accounting
+        run: RCLONE_CONFIG=/notfound bin/rfork-go test -race -timeout 5m ./fs/accounting
       - name: Offline live-runner cleanup and diagnostic fixtures
         run: |
           python bin/test_probe_upload_protocol.py
