@@ -67,21 +67,19 @@ jobs:
           python3 bin/fetch-lint.py
           bin/lint-rfork
       - name: Build native CLI
-        if: '!inputs.checkpoint_only'
         run: bin/build-rfork '${{ matrix.target }}' amd64
       - name: CLI smoke
-        if: '!inputs.checkpoint_only'
         run: |
           binary="build/rfork-${{ matrix.target }}-amd64"
           if [[ '${{ matrix.target }}' == windows ]]; then binary="$binary.exe"; fi
           "$binary" version
           "$binary" help backend mega
+          "$binary" backend help mega
           mkdir -p build/local-smoke
           printf 'rfork native smoke\n' > build/local-smoke/source
           "$binary" copyto build/local-smoke/source build/local-smoke/target
           cmp build/local-smoke/source build/local-smoke/target
       - uses: actions/upload-artifact@v7
-        if: '!inputs.checkpoint_only'
         with:
           name: rfork-${{ matrix.target }}-amd64
           path: build/rfork-${{ matrix.target }}-amd64*

@@ -1,13 +1,15 @@
 # Restart-resume investigation and implementation contract
 
-Status: the account-bound encrypted checkpoint codec, restore API and in-memory
-phase guards are implemented. Protected atomic storage and OS locking are also
-implemented and pass Linux fixtures; their native Windows/macOS validation is
-pending. The resumable local-file operation remains unimplemented; durable resume
-is not advertised as supported. The earlier
-fresh-process protocol gate passed. Full native and integrated live
-batching/pacing/retry checks passed in the user-supplied temporary repository
-`alphazoic/alpha-rfork`; the original account's blocked runs remain recorded separately.
+Status: the account-bound encrypted codec, protected atomic storage and explicit
+local-file `upload-resume` command are implemented on the development branch.
+The store passed native Linux, Windows and macOS checks at `ebbbc15`
+(`reports/upload-improvements-native-39418887213.json`). The command, source-block
+verification, coalesced writer and commit-state integration pass local fixtures,
+races and process recovery tests; their final native checks are pending.
+Integrated live command recovery remains unverified. The MEGA testing account
+currently reports blocked even through pristine stock rclone, preventing live
+checks and verification of the earlier failed probe's cleanup. Resume is
+experimental and is not promoted as release-ready. M3 remains unchanged.
 
 ## Protocol evidence and remaining limits
 
@@ -68,19 +70,33 @@ recovery. Those remain separate implementation/release requirements.
   read, using `Upload.VerifyAcknowledgedChunk`. A source could change during an
   interrupted attempt and later return to its original full-file hash; that hash
   alone cannot authenticate the bytes represented by earlier acknowledgements.
+- The preflight also records a SHA-256 fingerprint per 128 KiB source block.
+  The actual reader validates a complete block before exposing any of its bytes
+  to upload workers. An end-of-stream hash alone could detect changes only after
+  unknown server offsets had accepted different ciphertext; verifying before
+  transmission prevents that hazard. Fingerprints are rebuilt per process, held
+  only in memory, and bound by the full source SHA-256 in the encrypted checkpoint.
+  They consume 32 bytes per 128 KiB (256 KiB for 1 GiB; at most 256 MiB for the
+  supported 1 TiB source cap), plus one 128 KiB read buffer. Source payload buffers,
+  crypto/MAC state and runtime overhead are additional.
 - Define skipped-byte accounting explicitly. Network-acknowledged bytes restored
   from a checkpoint, current-attempt source reads, current HTTP payload reads and
   current acknowledgements are separate counters. Keep existing completion rules.
 
 ## State codec and ownership
 
-Next implementation: expose an explicit MEGA backend
-command for a local source file, with a required checkpoint path and configurable
-flush interval. Existing backend-command support can carry those arguments without
-changing generic copy operations. Its CLI path currently uses a background context;
-the operation must install cancellation, join workers and finish checkpoint writes
-before signal exit. An exit callback must not wait for code that needs to unregister
-that callback under the same global exit-handler lock.
+The MEGA backend now exposes `upload-resume remote:existing/directory
+/absolute/source -o name=file.bin -o checkpoint=/absolute/private/state`, with
+`-o checkpoint-interval=1s` (0 enables immediate coalesced flushes). It refuses an
+existing destination name and requires HTTPS. It retains a committed tombstone,
+verifies the exact confirmed node on repeated commands, and stops for inspection
+on restored commit intent. Ordinary `copyto`/`Put` behavior remains unchanged.
+
+The command installs cancellation for backend-command callers, applies
+`--max-duration`, and joins workers/writes before signal exit. Its exit handler
+cancels and waits; completion closes the wait channel before unregistering the
+handler, avoiding the global exit-handler lock inversion. Local child-process
+fixtures cover both SIGINT and abrupt process death (SIGINT on Unix only).
 
 Keep serialization/encryption next to the dependency's private upload crypto state.
 Use an authenticated envelope with a fresh cryptographic nonce and a domain-separated
@@ -92,13 +108,13 @@ the session. Native tests must establish the envelope and permission behavior.
 
 Use one stable OS lock file across atomic checkpoint replacements; do not unlink
 the lock inode on completion while another process may be waiting for it. The
-existing dependency graph contains `gofrs/flock`, which is a candidate for native
-locking, subject to subprocess tests on every platform. Encryption does not remove
+store uses native flock/LockFileEx, verified with subprocess fixtures. Encryption does not remove
 the need for private directories, owner checks, symlink rejection and Windows ACL
 validation. The private store is implemented under `backend/mega/internal/checkpoint`,
 separate from backend behavior so native I/O can use platform-specific helpers.
-Linux race fixtures pass; native Windows/macOS checks are pending. The local-source
-operation, serialized/coalesced writer and commit-state integration remain unfinished.
+Native Linux, Windows and macOS storage fixtures passed in run `39418887213`.
+The local-source operation and serialized writer are implemented; their integrated
+native/live validation remains a separate gate.
 
 The store anchors file operations to `os.Root`, verifies ownership and private
 permissions, refuses symlinks/hardlinks, and retains one OS-locked inode across all
@@ -192,3 +208,31 @@ Only advertise durable resume after the two-process live gate and native state/
 fault/integrity checks pass. If server semantics prevent safe recovery, record
 that result and release the independently validated pacing/batching/retry work
 without promising resume. Keep M3 integration separate in either case.
+
+## Current integrated fixture coverage and next gate
+
+The local TLS service fixture runs the real backend command, protected store,
+production codec, native chunk encryption and finalization in fresh child
+processes. It verifies a stopped upload resumes the same URL/key session and
+skips its acknowledged prefix, reconstructs plaintext independently from the
+committed file key/ciphertext, and checks SHA-256. Repeating a committed command
+sends no new data or commit. Abrupt process death releases ownership and resumes;
+Unix SIGINT joins cancellation/checkpoint work before exit. A provider commit
+with a deliberately unusable reply leaves intent and is not repeated on restart.
+These fixtures establish local code behavior, not provider session lifetime.
+
+Additional offline tests cover missing/unsafe/lost state, disk faults at initial,
+background, intent and committed saves, background write failure while workers
+are active, coalescing/serialization, source mutation even with restored metadata,
+MAC mismatches, pending-only accounting, bandwidth cancellation and request sizes
+larger than token-bucket burst capacity. Existing accounting callers retain their
+behavior; an additive context-aware API supports the explicit upload operation.
+
+Live protocol rerun `39418890708` failed before recording a case; cleanup also
+failed. Cleanup-only run `39432815707` independently classified pristine stock
+login as blocked/authentication. The isolated folder
+`rfork-protocol-8097f0bbab2147e28329abfe5e0215d6` has **not** been verified absent.
+Do not dispatch more upload probes until the test account is usable and that
+exact folder can be checked/cleaned. Then validate the integrated CLI against
+MEGA and independent stock downloads on all shipping platforms, including fault
+recovery and source rejection, before any release or M3 bundle change.

@@ -16,17 +16,23 @@ Improvements:
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	stdhash "hash"
 	"io"
+	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/rclone/rclone/backend/mega/internal/checkpoint"
 	"github.com/rclone/rclone/fs"
+	"github.com/rclone/rclone/fs/accounting"
 	"github.com/rclone/rclone/fs/config"
 	"github.com/rclone/rclone/fs/config/configmap"
 	"github.com/rclone/rclone/fs/config/configstruct"
@@ -34,6 +40,7 @@ import (
 	"github.com/rclone/rclone/fs/fserrors"
 	"github.com/rclone/rclone/fs/fshttp"
 	"github.com/rclone/rclone/fs/hash"
+	"github.com/rclone/rclone/lib/atexit"
 	"github.com/rclone/rclone/lib/encoder"
 	"github.com/rclone/rclone/lib/pacer"
 	"github.com/rclone/rclone/lib/readers"
@@ -63,6 +70,43 @@ func init() {
 		Name:        "mega",
 		Description: "Mega",
 		NewFs:       NewFs,
+		CommandHelp: []fs.CommandHelp{{
+			Name:  "upload-resume",
+			Short: "Upload one local regular file using a private encrypted checkpoint (experimental).",
+			Long: `Use: rfork backend upload-resume remote:existing/directory /absolute/source -o name=file.bin -o checkpoint=/absolute/private/transfer-state
+
+Requires HTTPS and an existing destination directory. The initial upload refuses
+an existing destination name. Repeat the identical command to resume the original
+session; source content, account, parent handle and name must match. Every run
+hashes the complete source before upload and again while reading it. Saved ranges
+are authenticated against their native MACs. Preflight fingerprints verify each
+128 KiB source block before its bytes reach workers; they use 32 bytes per block
+(256 KiB for a 1 GiB source; up to 256 MiB at the 1 TiB cap), plus a 128 KiB buffer.
+Request buffers, native MACs and runtime overhead are additional.
+Restored bytes are reported separately;
+transfer accounting and bandwidth limits apply only to pending source bytes, not
+the preflight or skipped ranges. HTTP retries have separate diagnostic counters.
+
+The checkpoint parent directory must exist. Linux/macOS require private ownership
+and modes; Windows requires a fixed local NTFS volume and protected ACLs. Keep the
+whole checkpoint directory, including its stable lock and initialization marker.
+Only one process can own it. Cancellation retains the most recent saved progress.
+A crash can lose recent acknowledgements, which are replayed with identical keys.
+
+Commit intent is saved before finalization. If the outcome becomes uncertain,
+this command stops for inspection and never automatically repeats the commit.
+A successful command keeps a committed tombstone with the confirmed node identity;
+repeating it verifies that exact node instead of uploading again. Do not delete
+state or use a new checkpoint directory to bypass an uncertain result. Expired
+sessions require explicit inspection and restart. Existing normal uploads are
+unaffected. Interactive mode is unsupported; --dry-run makes no upload/state changes.
+Native and live integrated recovery validation is required before release.`,
+			Opts: map[string]string{
+				"name":                "Required destination leaf name, without directory separators.",
+				"checkpoint":          "Required absolute private directory for this transfer's encrypted state.",
+				"checkpoint-interval": "Nonnegative progress flush duration (default 1s); 0 flushes coalesced notifications immediately.",
+			},
+		}},
 		Options: []fs.Option{{
 			Name:      "user",
 			Help:      "User name.",
@@ -1687,6 +1731,562 @@ var (
 	_ fs.PublicLinker    = (*Fs)(nil)
 	_ fs.MergeDirser     = (*Fs)(nil)
 	_ fs.Abouter         = (*Fs)(nil)
+	_ fs.Commander       = (*Fs)(nil)
 	_ fs.Object          = (*Object)(nil)
 	_ fs.IDer            = (*Object)(nil)
 )
+
+// resumeSource keeps one verified descriptor through preflight and actual reads.
+const resumeSourceBlockSize = 128 << 10
+
+var errResumeSourceChanged = errors.New("resume source changed; upload was not committed")
+
+type resumeSource struct {
+	*os.File
+	ctx       context.Context
+	info      os.FileInfo
+	expected  [32]byte
+	digest    stdhash.Hash
+	readBytes int64
+	blocks    [][32]byte
+	buffer    []byte
+	remaining []byte
+	block     int
+}
+
+type resumeContextReader struct {
+	ctx context.Context
+	in  io.Reader
+}
+
+func (r resumeContextReader) Read(b []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.in.Read(b)
+}
+
+func openResumeSource(ctx context.Context, name string) (*resumeSource, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if !filepath.IsAbs(name) {
+		return nil, errors.New("resume source must be an absolute regular file path")
+	}
+	before, err := os.Lstat(name)
+	if err != nil || !before.Mode().IsRegular() {
+		return nil, errors.New("resume source must be a regular file, without a symlink")
+	}
+	file, err := os.Open(name)
+	if err != nil {
+		return nil, errors.New("could not open resume source")
+	}
+	failed := true
+	defer func() {
+		if failed {
+			_ = file.Close()
+		}
+	}()
+	info, err := file.Stat()
+	if err != nil || !info.Mode().IsRegular() || !os.SameFile(before, info) || info.Size() < 0 || info.Size() > 1<<40 {
+		return nil, errors.New("invalid or changed resume source")
+	}
+	digest := sha256.New()
+	var n int64
+	blocks := make([][32]byte, 0, (info.Size()+resumeSourceBlockSize-1)/resumeSourceBlockSize)
+	buffer := make([]byte, resumeSourceBlockSize)
+	for {
+		want := min(int64(len(buffer)), info.Size()-n+1)
+		read, readErr := io.ReadFull(resumeContextReader{ctx, file}, buffer[:want])
+		n += int64(read)
+		if n > info.Size() {
+			return nil, errResumeSourceChanged
+		}
+		if read > 0 {
+			_, _ = digest.Write(buffer[:read])
+			blocks = append(blocks, sha256.Sum256(buffer[:read]))
+		}
+		if readErr == io.EOF || readErr == io.ErrUnexpectedEOF {
+			break
+		}
+		if readErr != nil {
+			return nil, readErr
+		}
+	}
+	after, err := file.Stat()
+	if err != nil || n != info.Size() || !sameResumeSource(info, after) {
+		return nil, errors.New("resume source changed during preflight")
+	}
+	if _, err = file.Seek(0, io.SeekStart); err != nil {
+		return nil, errors.New("could not rewind resume source")
+	}
+	s := &resumeSource{File: file, ctx: ctx, info: info, digest: sha256.New(), blocks: blocks, buffer: buffer}
+	copy(s.expected[:], digest.Sum(nil))
+	failed = false
+	return s, nil
+}
+
+func sameResumeSource(a, b os.FileInfo) bool {
+	return b.Mode().IsRegular() && os.SameFile(a, b) && a.Size() == b.Size() && a.ModTime().Equal(b.ModTime())
+}
+
+func (s *resumeSource) Read(b []byte) (int, error) {
+	if err := s.ctx.Err(); err != nil {
+		return 0, err
+	}
+	if len(b) == 0 {
+		return 0, nil
+	}
+	if len(s.remaining) == 0 {
+		if s.block == len(s.blocks) {
+			return 0, io.EOF
+		}
+		size := min(int64(resumeSourceBlockSize), s.info.Size()-int64(s.block)*resumeSourceBlockSize)
+		data := s.buffer[:size]
+		if _, err := io.ReadFull(s.File, data); err != nil {
+			return 0, errResumeSourceChanged
+		}
+		if sha256.Sum256(data) != s.blocks[s.block] {
+			return 0, errResumeSourceChanged
+		}
+		s.block++
+		s.remaining = data
+	}
+	n := copy(b, s.remaining)
+	s.remaining = s.remaining[n:]
+	_, _ = s.digest.Write(b[:n])
+	s.readBytes += int64(n)
+	return n, nil
+}
+
+func (s *resumeSource) verify(binding mega.UploadCheckpointBinding) error {
+	if err := s.ctx.Err(); err != nil {
+		return err
+	}
+	var extra [1]byte
+	n, readErr := s.File.Read(extra[:])
+	info, err := s.File.Stat()
+	if err != nil || n != 0 || readErr != io.EOF || !sameResumeSource(s.info, info) || s.readBytes != binding.Size ||
+		!slices.Equal(s.digest.Sum(nil), binding.SHA256[:]) || s.expected != binding.SHA256 {
+		return errResumeSourceChanged
+	}
+	return nil
+}
+
+type resumeCommandOptions struct {
+	source, name, directory string
+	interval                time.Duration
+}
+
+func parseResumeCommand(arg []string, opt map[string]string) (resumeCommandOptions, error) {
+	out := resumeCommandOptions{interval: time.Second}
+	if len(arg) != 1 || !filepath.IsAbs(arg[0]) {
+		return out, errors.New("upload-resume requires one absolute local source path")
+	}
+	out.source = arg[0]
+	for key, value := range opt {
+		switch key {
+		case "name":
+			out.name = value
+		case "checkpoint":
+			out.directory = value
+		case "checkpoint-interval":
+			interval, err := time.ParseDuration(value)
+			if err != nil || interval < 0 {
+				return out, errors.New("checkpoint-interval must be a nonnegative duration")
+			}
+			out.interval = interval
+		default:
+			return out, fmt.Errorf("unknown upload-resume option %q", key)
+		}
+	}
+	if out.name == "" || out.name == "." || out.name == ".." || strings.ContainsAny(out.name, "/\\\x00") {
+		return out, errors.New("upload-resume requires a destination leaf name")
+	}
+	if !filepath.IsAbs(out.directory) || filepath.Clean(out.directory) != out.directory {
+		return out, errors.New("checkpoint must be an absolute clean private directory path")
+	}
+	return out, nil
+}
+
+type resumableUploadSession interface {
+	batchUploadSession
+	AcknowledgedChunks() []bool
+	VerifyAcknowledgedChunk(int, []byte) error
+	SealCheckpoint(mega.UploadCheckpointBinding, mega.UploadCheckpointPhase, string) ([]byte, error)
+}
+
+type resumeCheckpointStore interface{ Save([]byte) error }
+type resumeUploadOptions struct {
+	workers     int
+	requestSize int64
+	interval    time.Duration
+}
+
+type resumeDataUpload struct {
+	resumableUploadSession
+	known   []bool
+	account func(context.Context, int) error
+	notify  func()
+}
+
+func (u resumeDataUpload) FinishContext(context.Context) (*mega.Node, error) { return nil, nil }
+func (u resumeDataUpload) UploadChunkContext(ctx context.Context, id int, b []byte) error {
+	return u.UploadRangeContext(ctx, id, 1, b)
+}
+func (u resumeDataUpload) UploadRangeContext(ctx context.Context, first, count int, b []byte) error {
+	offset := 0
+	for id := first; id < first+count; {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		_, size, err := u.ChunkLocation(id)
+		if err != nil {
+			return err
+		}
+		if u.known[id] {
+			if err := u.VerifyAcknowledgedChunk(id, b[offset:offset+size]); err != nil {
+				return err
+			}
+			offset += size
+			id++
+			continue
+		}
+		start, end := id, offset
+		for id < first+count && !u.known[id] {
+			_, size, err = u.ChunkLocation(id)
+			if err != nil {
+				return err
+			}
+			end += size
+			id++
+		}
+		if err := u.account(ctx, end-offset); err != nil {
+			return err
+		}
+		if err := u.resumableUploadSession.UploadRangeContext(ctx, start, id-start, b[offset:end]); err != nil {
+			return err
+		}
+		u.notify()
+		offset = end
+	}
+	return nil
+}
+
+// resumeCheckpointWriter owns all uploading-phase snapshots. A bounded dirty
+// notification coalesces progress; stopping joins the writer and flushes the last
+// acknowledgement state before any intent snapshot can be saved.
+type resumeCheckpointWriter struct {
+	notify chan struct{}
+	stop   chan struct{}
+	done   chan struct{}
+	err    error
+}
+
+func startResumeCheckpointWriter(interval time.Duration, save func() error, cancel context.CancelFunc) *resumeCheckpointWriter {
+	w := &resumeCheckpointWriter{notify: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{})}
+	go func() {
+		defer close(w.done)
+		var timer *time.Timer
+		var tick <-chan time.Time
+		defer func() {
+			if timer != nil {
+				timer.Stop()
+			}
+		}()
+		flush := func() bool {
+			w.err = save()
+			if w.err != nil {
+				cancel()
+				return false
+			}
+			return true
+		}
+		for {
+			select {
+			case <-w.stop:
+				flush()
+				return
+			case <-w.notify:
+				if interval == 0 {
+					if !flush() {
+						return
+					}
+				} else if tick == nil {
+					timer = time.NewTimer(interval)
+					tick = timer.C
+				}
+			case <-tick:
+				tick = nil
+				if !flush() {
+					return
+				}
+			}
+		}
+	}()
+	return w
+}
+func (w *resumeCheckpointWriter) changed() {
+	select {
+	case w.notify <- struct{}{}:
+	default:
+	}
+}
+func (w *resumeCheckpointWriter) finish() error { close(w.stop); <-w.done; return w.err }
+
+func saveResumeCheckpoint(u resumableUploadSession, binding mega.UploadCheckpointBinding, store resumeCheckpointStore, phase mega.UploadCheckpointPhase, node string) error {
+	blob, err := u.SealCheckpoint(binding, phase, node)
+	if err != nil {
+		return err
+	}
+	return store.Save(blob)
+}
+
+// runResumeUpload sends only pending ranges and records intent before its single
+// commit callback. All source reads, workers and checkpoint writes are joined on
+// every path; no background uploading snapshot can overwrite commit intent.
+func runResumeUpload(ctx context.Context, source *resumeSource, u resumableUploadSession, binding mega.UploadCheckpointBinding, store resumeCheckpointStore, opt resumeUploadOptions, account func(context.Context, int) error, commit func(context.Context) (string, error)) (string, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	source.ctx = ctx
+	known := u.AcknowledgedChunks()
+	if len(known) != u.Chunks() {
+		return "", errors.New("invalid resume acknowledgement layout")
+	}
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+	if err := saveResumeCheckpoint(u, binding, store, mega.CheckpointUploading, ""); err != nil {
+		return "", err
+	}
+	writer := startResumeCheckpointWriter(opt.interval, func() error { return saveResumeCheckpoint(u, binding, store, mega.CheckpointUploading, "") }, cancel)
+	_, dataErr := uploadAndFinishSized(ctx, source, resumeDataUpload{resumableUploadSession: u, known: known, account: account, notify: writer.changed}, opt.workers, opt.requestSize)
+	if err := writer.finish(); err != nil {
+		return "", err
+	}
+	if dataErr != nil {
+		return "", dataErr
+	}
+	if err := source.verify(binding); err != nil {
+		return "", err
+	}
+	if err := saveResumeCheckpoint(u, binding, store, mega.CheckpointCommitIntent, ""); err != nil {
+		return "", err
+	}
+	if err := ctx.Err(); err != nil {
+		return "", resumeFailure{"commit intent saved; inspect remote before retrying", err}
+	}
+	node, err := commit(ctx)
+	if err != nil {
+		return "", fserrors.NoRetryError(resumeFailure{"MEGA finalization outcome may be uncertain; checkpoint retained for inspection", err})
+	}
+	if node == "" {
+		return "", fserrors.NoRetryError(resumeFailure{"MEGA finalization returned no node identity; inspect before retrying", mega.EBADRESP})
+	}
+	if err := saveResumeCheckpoint(u, binding, store, mega.CheckpointCommitted, node); err != nil {
+		return node, fserrors.NoRetryError(resumeFailure{fmt.Sprintf("MEGA commit confirmed but final checkpoint save failed; inspect node %s before retrying", node), err})
+	}
+	return node, nil
+}
+
+// Command runs an explicit local-source resumable upload, without changing Put.
+func (f *Fs) Command(ctx context.Context, name string, arg []string, opt map[string]string) (any, error) {
+	if name != "upload-resume" {
+		return nil, fs.ErrorCommandNotFound
+	}
+	options, err := parseResumeCommand(arg, opt)
+	if err != nil {
+		return nil, fserrors.NoRetryError(err)
+	}
+	ci := fs.GetConfig(ctx)
+	if ci.DryRun {
+		return map[string]string{"status": "dry-run"}, nil
+	}
+	if ci.Interactive {
+		return nil, fserrors.NoRetryError(errors.New("upload-resume does not support interactive mode"))
+	}
+	var cancel context.CancelFunc
+	if ci.MaxDuration > 0 {
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(ci.MaxDuration))
+	} else {
+		ctx, cancel = context.WithCancel(ctx)
+	}
+	done := make(chan struct{})
+	handle := atexit.Register(func() { cancel(); <-done })
+	defer func() { cancel(); close(done); atexit.Unregister(handle) }()
+	out, err := f.resumeLocalUpload(ctx, options)
+	if err != nil {
+		return out, fserrors.NoRetryError(err)
+	}
+	return out, nil
+}
+
+// resumeResult separates restored progress from this attempt's source payload.
+type resumeResult struct {
+	Status                    string `json:"status"`
+	Node                      string `json:"node,omitempty"`
+	RestoredAcknowledgedBytes int64  `json:"restoredAcknowledgedBytes"`
+	PendingSourceBytes        int64  `json:"pendingSourceBytes"`
+	SourceBytesRead           int64  `json:"sourceBytesRead"`
+}
+
+type resumeFailure struct {
+	stage string
+	cause error
+}
+
+func (e resumeFailure) Error() string {
+	category := "operation failed; private details withheld"
+	switch {
+	case errors.Is(e.cause, context.Canceled):
+		category = "canceled"
+	case errors.Is(e.cause, context.DeadlineExceeded):
+		category = "deadline exceeded"
+	case errors.Is(e.cause, mega.EBLOCKED):
+		category = "account blocked"
+	case errors.Is(e.cause, mega.ESID):
+		category = "authentication session unavailable"
+	case errors.Is(e.cause, mega.EEXPIRED), errors.Is(e.cause, mega.EFAILED):
+		category = "upload session expired or restart required; inspect before starting a new session"
+	case errors.Is(e.cause, mega.ErrUploadCheckpointSource):
+		category = "saved chunk content differs from the source"
+	case errors.Is(e.cause, errResumeSourceChanged):
+		category = "source content changed; file was not committed"
+	case errors.Is(e.cause, mega.ErrUploadCheckpoint):
+		category = "invalid or incompatible encrypted checkpoint"
+	case errors.Is(e.cause, checkpoint.ErrIO):
+		category = "checkpoint storage failed"
+	}
+	return e.stage + ": " + category
+}
+func (e resumeFailure) Unwrap() error { return e.cause }
+
+func (f *Fs) resumeLocalUpload(ctx context.Context, opt resumeCommandOptions) (out *resumeResult, err error) {
+	if !f.opt.UseHTTPS {
+		return nil, errors.New("upload-resume requires HTTPS")
+	}
+	if f.opt.UploadConcurrency < 1 || f.opt.UploadConcurrency > 32 {
+		return nil, errors.New("invalid upload concurrency")
+	}
+	if err := validateUploadRequestSize(int64(f.opt.UploadRequestSize)); err != nil {
+		return nil, err
+	}
+	store, err := checkpoint.Open(opt.directory)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { err = errors.Join(err, store.Close()) }()
+	state, stateErr := store.Read()
+	if stateErr != nil && !errors.Is(stateErr, checkpoint.ErrMissing) {
+		return nil, stateErr
+	}
+	source, err := openResumeSource(ctx, opt.source)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if closeErr := source.Close(); closeErr != nil {
+			err = errors.Join(err, errors.New("could not close resume source"))
+		}
+	}()
+	var user mega.UserResp
+	err = f.call(ctx, func() (bool, error) {
+		var err error
+		user, err = f.srv.GetUserContext(ctx)
+		return shouldRetry(ctx, err)
+	})
+	if err != nil {
+		return nil, resumeFailure{"could not verify resume account", err}
+	}
+	parent, err := f.findRoot(ctx, false)
+	if err != nil {
+		return nil, resumeFailure{"could not resolve resume destination directory", err}
+	}
+	if user.U == "" || parent == nil || parent.GetType() == mega.FILE {
+		return nil, errors.New("invalid resume account or destination parent")
+	}
+	encodedName := f.opt.Enc.FromStandardName(opt.name)
+	binding := mega.UploadCheckpointBinding{Account: user.U, Parent: parent.GetHash(), Name: encodedName, Size: source.info.Size(), SHA256: source.expected}
+	var u *mega.Upload
+	info := mega.UploadCheckpointInfo{}
+	if stateErr == nil {
+		u, info, err = f.srv.OpenUploadCheckpoint(state, binding)
+		if err != nil {
+			return nil, err
+		}
+		if info.Phase == mega.CheckpointCommitIntent {
+			return nil, errors.New("MEGA checkpoint records commit intent; remote outcome is uncertain and requires inspection; finalization will not be replayed")
+		}
+	}
+	children, err := f.srv.FS.GetChildren(parent)
+	if err != nil {
+		return nil, resumeFailure{"could not inspect resume destination", err}
+	}
+	out = &resumeResult{RestoredAcknowledgedBytes: info.AcknowledgedBytes, PendingSourceBytes: binding.Size - info.AcknowledgedBytes}
+	if info.Phase == mega.CheckpointCommitted {
+		for _, child := range children {
+			if child.GetHash() == info.Node && child.GetType() == mega.FILE && child.GetName() == encodedName && child.GetSize() == binding.Size {
+				out.Status = "already-committed"
+				out.Node = info.Node
+				out.PendingSourceBytes = 0
+				return out, nil
+			}
+		}
+		return nil, errors.New("confirmed MEGA node is missing or changed; checkpoint retained for inspection")
+	}
+	for _, child := range children {
+		if child.GetName() == encodedName {
+			return nil, errors.New("upload-resume refuses an existing destination name; checkpoint retained")
+		}
+	}
+	if u == nil {
+		err = f.call(ctx, func() (bool, error) {
+			var err error
+			u, err = f.srv.NewUploadContext(ctx, parent, encodedName, binding.Size, true)
+			return shouldRetry(ctx, err)
+		})
+		if err != nil {
+			return nil, resumeFailure{"could not create resumable upload session", err}
+		}
+	}
+	retries := f.opt.UploadRetries
+	if retries < 0 {
+		retries = fs.GetConfig(ctx).LowLevelRetries
+	}
+	if err := u.SetUploadRetryOptions(retries, f.opt.UploadRetryBodyErrors); err != nil {
+		return nil, err
+	}
+	u.SetUploadRequestHook(f.startDataRequest)
+	if f.opt.UploadDiagnostics {
+		u.EnableDiagnostics()
+	}
+	transfer := accounting.Stats(ctx).NewTransferRemoteSize(opt.name, out.PendingSourceBytes, nil, f)
+	account := transfer.Account(ctx, io.NopCloser(strings.NewReader("")))
+	defer func() { transfer.Done(ctx, err) }()
+	node, err := runResumeUpload(ctx, source, u, binding, store, resumeUploadOptions{workers: f.opt.UploadConcurrency, requestSize: int64(f.opt.UploadRequestSize), interval: opt.interval}, account.AccountReadContext,
+		func(ctx context.Context) (string, error) {
+			var node *mega.Node
+			err := f.call(ctx, func() (bool, error) { var err error; node, err = u.FinishContext(ctx); return false, err })
+			if err != nil {
+				return "", err
+			}
+			if node == nil {
+				return "", mega.EBADRESP
+			}
+			return node.GetHash(), nil
+		})
+	out.SourceBytesRead = source.readBytes
+	out.Node = node
+	if f.opt.UploadDiagnostics {
+		fs.LogPrintf(fs.LogLevelNotice, nil, "MEGA resume diagnostics: %s", fs.LogValue("megaResume", map[string]any{"restoredAcknowledgedBytes": out.RestoredAcknowledgedBytes, "pendingSourceBytes": out.PendingSourceBytes, "sourceBytesRead": out.SourceBytesRead, "chunks": u.Diagnostics()}))
+	}
+	if err != nil {
+		var failure resumeFailure
+		if errors.As(err, &failure) {
+			return out, err
+		}
+		return out, resumeFailure{"resumable upload stopped; checkpoint retained for inspection", err}
+	}
+	out.Status = "committed"
+	return out, nil
+}

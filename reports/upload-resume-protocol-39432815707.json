@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "3169b154956a2f333338a5d5e8a91fd61c73e1a1",
+  "remoteFolder": "rfork-protocol-8097f0bbab2147e28329abfe5e0215d6",
+  "status": "cleanup-only",
+  "cleanup": false,
+  "cleanupFailure": {
+    "exitCode": 1,
+    "categories": [
+      "blocked",
+      "authentication"
+    ]
+  },
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39432815707"
+}

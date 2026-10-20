@@ -792,6 +792,11 @@ func (m *Mega) waitEventsFire() {
 
 // Get user information
 func (m *Mega) GetUser() (UserResp, error) {
+	return m.GetUserContext(context.Background())
+}
+
+// GetUserContext retrieves the authenticated account identity with cancellation.
+func (m *Mega) GetUserContext(ctx context.Context) (UserResp, error) {
 	var msg [1]UserMsg
 	var res [1]UserResp
 
@@ -801,7 +806,7 @@ func (m *Mega) GetUser() (UserResp, error) {
 	if err != nil {
 		return res[0], err
 	}
-	result, err := m.api_request(req)
+	result, err := m.apiRequestContext(ctx, req, m.retries)
 	if err != nil {
 		return res[0], err
 	}

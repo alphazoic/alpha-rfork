@@ -39,10 +39,13 @@ requests and opt-in response-body replay. No performance-setting sweep was run.
   Do not describe the full suite as green. No Docker permissions or unrelated
   S3 code were changed.
 - The fresh-process resume protocol gate passed all three cases with independent
-  hashes and cleanup (`upload-resume-protocol-39409953855.json`). Production durable
-  resume is not implemented. `../RESUME_DESIGN.md` records the passed short-delay
-  protocol cases and the remaining crash-safe state/source/commit contract, native
-  storage/locking checks and expiry limits.
+  hashes and cleanup (`upload-resume-protocol-39409953855.json`). The encrypted codec and protected store now pass native checks; an experimental
+  local-file resume command is implemented with offline process fixtures.
+  Integrated native command checks and live recovery remain release gates.
+  `../RESUME_DESIGN.md` records its contract and current limits. The latest live
+  protocol rerun failed before cases, and stock rclone also reports the MEGA test
+  account blocked. Scoped cleanup remains unverified; see the resume design and
+  `upload-resume-protocol-39432815707.json`.
 
 The saved alpha references/artifacts are preserved, all M3 bundle checksums still
 match their saved manifest, and no M3 code/settings/bundle replacement is included.
