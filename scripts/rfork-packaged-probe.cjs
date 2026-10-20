@@ -94,11 +94,11 @@ module.exports = async function probe({ directory, live, resumeAfterRestart = fa
   delete require.cache[req.resolve('./src/upload-engine')];
   let engine = req('./src/upload-engine');
   creator.registerMegaAccount = originalCreator;
-  const events = [];
+  const events = [], diagnosticEvents = [];
   const send = (channel, data) => {
     // Keep only status counters in memory. Never persist raw logs or credentials.
     if (channel === 'up:link') events.push({ channel, name: data.name, link: data.link });
-    if (channel === 'up:log' && typeof data === 'string' && data.startsWith('[rfork diagnostics] ')) { try { events.push({ diagnostics: JSON.parse(data.slice('[rfork diagnostics] '.length)) }); } catch {} }
+    if (channel === 'up:log' && typeof data === 'string' && data.startsWith('[rfork diagnostics] ')) { try { diagnosticEvents.push(JSON.parse(data.slice('[rfork diagnostics] '.length))); } catch {} }
   };
   const upload = queue => engine.startUpload({ queue, manualEmail: email, manualPassword: password,
     folderName: folder, uploadToolOrder: ['rclone'], createToolOrder: [] }, send);
@@ -124,7 +124,7 @@ module.exports = async function probe({ directory, live, resumeAfterRestart = fa
         assert.equal(first.ok, false); assert.match(first.error, /lost application recording/);
         const committed = journal.read().find(item => item.id === retained.id);
         assert.equal(committed.state, 'committed'); assert.ok(committed.node);
-        const counters = events.map(event => event.diagnostics).find(value => value?.restoredAcknowledgedBytes > 0);
+        const counters = diagnosticEvents.find(value => value?.restoredAcknowledgedBytes > 0);
         assert.ok(counters && counters.restoredAcknowledgedBytes < retained.bytes, 'No authenticated partial progress was restored');
         check('actual M3 restart retains original checkpoint and restores authenticated progress', { restoredBytes: counters.restoredAcknowledgedBytes, pendingBytes: counters.pendingSourceBytes });
       } finally { journalModule.recordUploadCompletion = originalRecord; }
