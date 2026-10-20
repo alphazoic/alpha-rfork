@@ -71,3 +71,21 @@ connection admission across uploads/API calls and invalid option rejection befor
 login. Parent/dependency lint and whitespace checks are also required before this
 stage's commit. No worker-count or configurable-setting performance sweep was run.
 The development version is 0.2.0-dev; the saved alpha tag/bundles are preserved.
+
+## Broader checks and batching protocol prototype — 2026-10-20
+
+The Linux 0.2.0-dev CLI built from `12a5690`, exposed all four new flags in backend
+help, and passed local copy/flag-parsing smoke checks. Its SHA-256 is recorded in
+`upload-improvements-cli.json`. The original three build outputs were separately
+preserved under ignored `build/baseline-2500ccc/`; M3 bundles still match their
+saved manifest.
+
+Backend, operations, accounting and HTTP package tests passed with cloud config
+disabled. The dependency range prototype then passed the complete focused crypto/
+HTTP/race suite, including the existing independent native MAC/decryption checks.
+See `UPLOAD_PROTOCOL.md` for the prototype and manual live gate. A dependency test
+initially used a Go 1.25 WaitGroup helper; lint correctly rejected it against the
+dependency's Go 1.24 module contract, and it was replaced with Add/Done.
+
+Live batching/offset replay, full native suites, restart resume and release
+promotion remain pending. Backend request batching is intentionally not yet wired.

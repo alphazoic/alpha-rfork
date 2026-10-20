@@ -33,6 +33,13 @@ backend uses this for separate data pacing and foreground connection admission;
 the dependency's retry backoff remains independent. Diagnostics include hook wait
 time in `pacing`.
 
+`ChunkRangeLocation` and experimental `UploadRangeContext` group contiguous
+native chunks into one request without changing per-chunk CTR/MAC boundaries.
+Failed requests record none of their constituent MACs; retries reuse the full
+ciphertext. Native single-chunk uploads use the same preparation path. These APIs
+are covered by native crypto equivalence and failure fixtures; multi-chunk live
+acceptance is a separate manual protocol gate before backend worker integration.
+
 Empty files retain a zero aggregate MAC: their empty POST obtains the upload
 handle but contributes no data chunk to the authentication fold. This fixes
 upstream empty uploads rejected by independent clients with a MAC mismatch.

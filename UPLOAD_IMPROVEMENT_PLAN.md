@@ -6,6 +6,10 @@ Response-body replay remains opt-in pending live protocol validation. Batching,
 restart resume and release validation remain pending. M3 changes are
 outside this work.
 
+A dependency-only batching prototype and manual protocol probe now pass local
+crypto/race/lint checks. Live acceptance is the next gate before backend request
+grouping; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
+
 ## Objective and saved baseline
 
 Improve single-file MEGA upload completion time and recovery at modest concurrency,
@@ -32,7 +36,7 @@ fixed-configuration regression check; they are not a search for optimal settings
 The historical creation plan is `PLAN.md`; completed results are in
 `reports/VALIDATION.md`. This plan governs the next upload experiments.
 
-## Findings and hypotheses
+## Findings in the saved baseline and hypotheses
 
 - `deps/go-mega/mega.go: UploadChunkContext` encrypts and sends one native chunk
   per HTTP POST. Most chunks are 1 MiB. Grouping complete native chunks into a

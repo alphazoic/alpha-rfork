@@ -1557,67 +1557,7 @@ func (u *Upload) UploadChunk(id int, chunk []byte) error {
 // UploadChunkContext encrypts a native chunk once and retries its ciphertext.
 // The caller must provide an owned plaintext buffer and a unique chunk ID.
 func (u *Upload) UploadChunkContext(ctx context.Context, id int, chunk []byte) (err error) {
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-	u.mutex.Lock()
-	finishing := u.finishStarted
-	u.mutex.Unlock()
-	if finishing {
-		return errors.New("upload finalization already started")
-	}
-	chk_start, chk_size, err := u.ChunkLocation(id)
-	if err != nil {
-		return err
-	}
-	if len(chunk) != chk_size {
-		return errors.New("upload chunk is wrong size")
-	}
-	encryptionStarted := u.stats.start()
-	ctr_iv, err := bytes_to_a32(u.kiv)
-	if err != nil {
-		return err
-	}
-	ctr_iv[2] = uint32(uint64(chk_start) / 0x1000000000)
-	ctr_iv[3] = uint32(chk_start / 0x10)
-	bctr_iv, err := a32_to_bytes(ctr_iv)
-	if err != nil {
-		return err
-	}
-	ctr_aes := cipher.NewCTR(u.aes_block, bctr_iv)
-
-	enc := cipher.NewCBCEncrypter(u.aes_block, u.iv)
-
-	i := 0
-	block := make([]byte, 16)
-	paddedchunk := paddnull(chunk, 16)
-	for i = 0; i < len(paddedchunk); i += 16 {
-		copy(block[0:16], paddedchunk[i:i+16])
-		enc.CryptBlocks(block, block)
-	}
-
-	ctr_aes.XORKeyStream(chunk, chunk)
-	u.stats.record(uploadEncryption, encryptionStarted)
-	chunkResp, err := u.sendUploadRequest(ctx, chk_start, chunk)
-	if err != nil {
-		return err
-	}
-	if len(chunkResp) > 0 {
-		u.mutex.Lock()
-		u.completion_handle = chunkResp
-		u.mutex.Unlock()
-	}
-
-	// Update chunk MACs on success only
-	u.mutex.Lock()
-	if len(u.chunk_macs) > 0 {
-		u.chunk_macs[id] = make([]byte, 16)
-		copy(u.chunk_macs[id], block)
-	}
-	u.mutex.Unlock()
-	u.stats.acknowledge(1, len(chunk))
-
-	return nil
+	return u.UploadRangeContext(ctx, id, 1, chunk)
 }
 
 // Finish completes the upload and returns the created node

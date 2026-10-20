@@ -10,6 +10,7 @@ on:
           - all
           - windows
           - darwin
+          - protocol
 permissions:
   contents: read
 concurrency:
@@ -17,6 +18,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   live:
+    if: inputs.platform != 'protocol'
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -61,4 +63,33 @@ jobs:
           path: |
             build/live-mega-${{ matrix.target }}.json
             build/rfork-${{ matrix.target }}-amd64*
+          if-no-files-found: warn
+  protocol:
+    if: inputs.platform == 'protocol'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.9'
+          cache: false
+      - name: Build pristine independent verifier
+        run: bin/build-stock
+      - name: Probe batching and offset replay
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: python3 bin/probe-upload-protocol.py run
+      - name: Verify scoped cleanup
+        if: always()
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: python3 bin/probe-upload-protocol.py cleanup
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: rfork-upload-protocol
+          path: build/upload-protocol.json
           if-no-files-found: warn
