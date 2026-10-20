@@ -3,6 +3,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      checkpoint_only:
+        description: Run focused checkpoint/backend native checks without repeating the upstream suite
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -31,12 +36,12 @@ jobs:
           go-version: '1.26.9'
           cache: false
       - name: Install Linux NFS test helper
-        if: matrix.target == 'linux'
+        if: matrix.target == 'linux' && !inputs.checkpoint_only
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends nfs-common
       - name: Build Linux upstream integration-test executable
-        if: matrix.target == 'linux'
+        if: matrix.target == 'linux' && !inputs.checkpoint_only
         run: |
           mkdir -p build/test-bin
           bin/rfork-go build -mod=readonly -o build/test-bin/rclone .
@@ -50,6 +55,7 @@ jobs:
           python bin/test_probe_upload_protocol.py
           python bin/test_live_upload_improvements.py
       - name: Upstream unit tests
+        if: '!inputs.checkpoint_only'
         run: RCLONE_CONFIG=/notfound bin/rfork-go test -timeout 20m ./...
       - name: Lint changed packages
         if: matrix.target == 'linux'

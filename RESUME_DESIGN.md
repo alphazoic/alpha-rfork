@@ -1,7 +1,9 @@
 # Restart-resume investigation and implementation contract
 
-Status: fresh-process protocol gate passed; production durable resume remains
-unimplemented and is not advertised as supported. Full native and integrated live
+Status: the account-bound encrypted checkpoint codec, restore API and in-memory
+phase guards are implemented. File storage and the resumable local-file operation
+remain unimplemented; durable resume is not advertised as supported. The earlier
+fresh-process protocol gate passed. Full native and integrated live
 batching/pacing/retry checks passed in the user-supplied temporary repository
 `alphazoic/alpha-rfork`; the original account's blocked runs remain recorded separately.
 
@@ -33,10 +35,12 @@ state (15-second delay), and a multi-chunk terminal response deliberately lost
 after the server replies (one-second delay). Scoped remote cleanup runs even on
 failure. This is a correctness probe, not a performance or worker-count sweep.
 
-The probe's temporary private snapshot codec is test-only, Linux-only and never
-included in artifacts; it is not the production checkpoint/storage design below.
-Offline tests validate state rejection/deep copying and runner isolation. The live
-receipt confirms all three cases. The probe cannot establish general session expiry, native
+The current probe uses the encrypted production codec in private Linux runner
+temporary files; it saves commit intent before finalization and the confirmed node
+afterward. These files are never included in artifacts. The saved receipt above
+used the earlier test-only snapshot, so the encrypted-codec live run remains pending.
+Offline tests validate authenticated rejection, binding, restoration and phase
+guards. The probe cannot establish general session expiry, native
 Windows ACL/locking behavior, crash-safe checkpoint durability or uncertain-commit
 recovery. Those remain separate implementation/release requirements.
 
@@ -83,6 +87,24 @@ existing dependency graph contains `gofrs/flock`, which is a candidate for nativ
 locking, subject to subprocess tests on every platform. Encryption does not remove
 the need for private directories, owner checks, symlink rejection and Windows ACL
 validation. Production storage and its fault tests remain unimplemented.
+
+The dependency now exposes `Upload.SealCheckpoint`, `Mega.OpenUploadCheckpoint`
+and an independent acknowledgement bitmap. AES-256-GCM protects the complete
+session/key/native-MAC state, using fresh 96-bit random nonces and an HMAC-SHA-256
+key derived from the account master key under a versioned checkpoint domain and
+stable account handle. The complete verified binding is authenticated as AAD.
+The password-derived `Mega.uh` is deliberately excluded, including for saved-key
+logins. No plaintext password/master key or identifying metadata is stored outside
+the encrypted envelope. Invalid state yields a generic error without private data.
+
+The development format caps envelopes at 64 MiB and resume sources at 1 TiB.
+It validates the version, original key/MAC lengths, HTTPS endpoint, native layout,
+source/destination binding and phase before returning a restored upload. Source
+hashing, parent resolution, protected storage and locking remain caller duties.
+Snapshot calls freeze the binding and cannot revert commit intent/committed phases.
+Restored commit phases block data requests and finalization, and the confirmed node
+cannot be changed. A live checkpointed session requires commit intent before its
+single finalization call; callers must persist it before making that call.
 
 Versioned state needs original upload key/nonce material, session URL, native chunk
 layout/size, acknowledged native MACs, any completion handle, identity fields and

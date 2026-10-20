@@ -1431,6 +1431,9 @@ type Upload struct {
 	chunk_macs        [][]byte
 	completion_handle []byte
 	finishStarted     bool
+	checkpointPhase   UploadCheckpointPhase
+	checkpointBinding *UploadCheckpointBinding
+	checkpointNode    string
 	stats             *uploadStats // configured before workers start
 	uploadRetries     *int
 	retryBodyErrors   bool
@@ -1575,6 +1578,10 @@ func (u *Upload) FinishContext(ctx context.Context) (node *Node, err error) {
 	if u.finishStarted {
 		u.mutex.Unlock()
 		return nil, errors.New("upload finalization already started")
+	}
+	if u.checkpointBinding != nil && u.checkpointPhase != CheckpointCommitIntent {
+		u.mutex.Unlock()
+		return nil, errors.New("checkpointed upload requires persisted commit intent")
 	}
 	for _, mac := range u.chunk_macs {
 		if len(mac) != aes.BlockSize {

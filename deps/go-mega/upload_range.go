@@ -31,7 +31,7 @@ func (u *Upload) UploadRangeContext(ctx context.Context, first, count int, plain
 		return err
 	}
 	u.mutex.Lock()
-	finishing := u.finishStarted
+	finishing := u.finishStarted || u.checkpointPhase == CheckpointCommitIntent || u.checkpointPhase == CheckpointCommitted
 	u.mutex.Unlock()
 	if finishing {
 		return errors.New("upload finalization already started")

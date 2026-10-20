@@ -3,15 +3,12 @@ package mega
 import (
 	"bytes"
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"flag"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,80 +21,12 @@ import (
 	"time"
 )
 
-// This codec is confined to a manual Linux protocol probe. It is not a public
-// resume format or a durable checkpoint implementation.
-type restartProbeState struct {
-	Version int
-	Account string
-	Case    string
-	Parent  string
-	Name    string
-	URL     string
-	Size    int64
-	SHA256  [32]byte
-	Key     []uint32
-	MACs    [][]byte
-	Handle  []byte
-}
-
 func restartProbePlaintext() []byte {
 	plain := make([]byte, 9*1024*1024+31)
 	for i := range plain {
 		plain[i] = byte(i*29 + 17)
 	}
 	return plain
-}
-
-func snapshotRestartProbe(u *Upload, account, scenario string, plain []byte) restartProbeState {
-	s := restartProbeState{Version: 1, Account: account, Case: scenario, Parent: u.parenthash,
-		Name: u.name, URL: u.uploadUrl, Size: int64(len(plain)), SHA256: sha256.Sum256(plain),
-		Key: append([]uint32(nil), u.ukey...), Handle: bytes.Clone(u.completion_handle), MACs: make([][]byte, len(u.chunk_macs))}
-	for i, mac := range u.chunk_macs {
-		s.MACs[i] = bytes.Clone(mac)
-	}
-	return s
-}
-
-func restoreRestartProbe(s restartProbeState, m *Mega, account string, plain []byte) (*Upload, error) {
-	endpoint, err := url.Parse(s.URL)
-	if err != nil || endpoint.Scheme != "https" || endpoint.Host == "" || endpoint.User != nil || endpoint.Fragment != "" ||
-		s.Version != 1 || s.Account == "" || s.Account != account || s.Parent == "" || s.Name == "" ||
-		s.Size != int64(len(plain)) || s.SHA256 != sha256.Sum256(plain) || len(s.Key) != 6 {
-		return nil, errors.New("invalid private protocol state")
-	}
-	chunks := getChunkSizes(s.Size)
-	if len(chunks) != len(s.MACs) {
-		return nil, errors.New("invalid private protocol chunk layout")
-	}
-	for _, mac := range s.MACs {
-		if len(mac) != 0 && len(mac) != aes.BlockSize {
-			return nil, errors.New("invalid private protocol MAC")
-		}
-	}
-	key, err := a32_to_bytes(s.Key[:4])
-	if err != nil {
-		return nil, err
-	}
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	kiv, err := a32_to_bytes([]uint32{s.Key[4], s.Key[5], 0, 0})
-	if err != nil {
-		return nil, err
-	}
-	iv, err := a32_to_bytes([]uint32{s.Key[4], s.Key[5], s.Key[4], s.Key[5]})
-	if err != nil {
-		return nil, err
-	}
-	u := &Upload{m: m, parenthash: s.Parent, name: s.Name, uploadUrl: s.URL, aes_block: block,
-		iv: iv, kiv: kiv, mac_enc: cipher.NewCBCEncrypter(block, zero_iv), kbytes: key,
-		ukey: append([]uint32(nil), s.Key...), chunks: chunks, chunk_macs: make([][]byte, len(chunks)),
-		completion_handle: bytes.Clone(s.Handle)}
-	for i, mac := range s.MACs {
-		u.chunk_macs[i] = bytes.Clone(mac)
-	}
-	return u, nil
 }
 
 type restartProbeTransport struct {
@@ -214,6 +143,8 @@ func TestLiveUploadRestartProtocol(t *testing.T) {
 			"freshAuthentication": true, "separateProcesses": true, "independentSHA256": true})
 	}
 	report["sessionLifetimeLimitEstablished"] = false
+	report["encryptedCheckpointCodec"] = "rfork-mega-checkpoint-v1"
+	report["commitIntentSavedBeforeFinalization"] = true
 	report["payloadBytes"] = len(restartProbePlaintext())
 	report["batchTargetBytes"] = 4 * 1024 * 1024
 	report["stage"] = "complete"
@@ -273,14 +204,16 @@ func runRestartProbeWorker(ctx context.Context, t *testing.T, phase string) {
 		t.Fatal("fresh account binding failed; details withheld")
 	}
 	var u *Upload
+	parents, err := m.FS.PathLookup(m.FS.GetRoot(), []string{folder})
+	if err != nil || len(parents) != 1 || parents[0].GetType() != FOLDER {
+		t.Fatal("fresh isolated parent lookup failed")
+	}
+	binding := UploadCheckpointBinding{Account: user.U, Parent: parents[0].GetHash(), Name: scenario + ".bin",
+		Size: int64(len(plain)), SHA256: sha256.Sum256(plain)}
 	switch phase {
 	case "prepare":
 		stage = "session-creation"
-		parents, err := m.FS.PathLookup(m.FS.GetRoot(), []string{folder})
-		if err != nil || len(parents) != 1 {
-			t.Fatal("isolated parent lookup failed")
-		}
-		u, err = m.NewUploadContext(ctx, parents[0], scenario+".bin", int64(len(plain)), true)
+		u, err = m.NewUploadContext(ctx, parents[0], binding.Name, binding.Size, true)
 		if err != nil {
 			t.Fatal("restart session creation failed; details withheld")
 		}
@@ -291,15 +224,15 @@ func runRestartProbeWorker(ctx context.Context, t *testing.T, phase string) {
 			t.Fatal("unsafe private protocol state")
 		}
 		raw, err := os.ReadFile(statePath)
-		var state restartProbeState
-		if err != nil || json.Unmarshal(raw, &state) != nil || state.Case != scenario || state.Name != scenario+".bin" {
+		if err != nil {
 			t.Fatal("invalid private protocol state")
 		}
-		u, err = restoreRestartProbe(state, m, user.U, plain)
-		if err != nil {
+		var restored UploadCheckpointInfo
+		u, restored, err = m.OpenUploadCheckpoint(raw, binding)
+		if err != nil || restored.Phase != CheckpointUploading {
 			t.Fatal("private protocol restore rejected")
 		}
-		parent := m.FS.HashLookup(state.Parent)
+		parent := m.FS.HashLookup(binding.Parent)
 		if parent == nil || parent.GetType() != FOLDER || parent.GetName() != folder {
 			t.Fatal("fresh parent binding rejected")
 		}
@@ -352,27 +285,49 @@ func runRestartProbeWorker(ctx context.Context, t *testing.T, phase string) {
 	}
 	if phase == "prepare" {
 		stage = "private-state-write"
-		raw, err := json.Marshal(snapshotRestartProbe(u, user.U, scenario, plain))
+		raw, err := u.SealCheckpoint(binding, CheckpointUploading, "")
 		if err != nil {
 			t.Fatal("private state encoding failed")
 		}
-		file, err := os.OpenFile(statePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
-		if err != nil {
-			t.Fatal("private state creation failed")
-		}
-		_, writeErr := file.Write(raw)
-		closeErr := file.Close()
-		if writeErr != nil || closeErr != nil {
-			t.Fatal("private state write failed")
-		}
+		writeRestartCheckpoint(t, statePath, raw, true)
 		return
 	}
+	stage = "commit-intent"
+	intent, err := u.SealCheckpoint(binding, CheckpointCommitIntent, "")
+	if err != nil {
+		t.Fatal("commit intent encoding failed")
+	}
+	writeRestartCheckpoint(t, statePath, intent, false)
 	stage = "file-commit"
-	if _, err := u.FinishContext(ctx); err != nil {
+	node, err := u.FinishContext(ctx)
+	if err != nil {
 		t.Fatal("restart finalization failed; outcome may be uncertain")
 	}
+	committed, err := u.SealCheckpoint(binding, CheckpointCommitted, node.GetHash())
+	if err != nil {
+		t.Fatal("committed state encoding failed")
+	}
+	writeRestartCheckpoint(t, statePath, committed, false)
 	stage = "independent-download"
 	verifyRestartProbe(ctx, t, scenario+".bin", plain)
+}
+
+func writeRestartCheckpoint(t *testing.T, path string, raw []byte, create bool) {
+	t.Helper()
+	flags := os.O_WRONLY | os.O_TRUNC
+	if create {
+		flags = os.O_WRONLY | os.O_CREATE | os.O_EXCL
+	}
+	file, err := os.OpenFile(path, flags, 0600)
+	if err != nil {
+		t.Fatal("private checkpoint open failed")
+	}
+	_, writeErr := file.Write(raw)
+	syncErr := file.Sync()
+	closeErr := file.Close()
+	if writeErr != nil || syncErr != nil || closeErr != nil {
+		t.Fatal("private checkpoint write failed")
+	}
 }
 
 func verifyRestartProbe(ctx context.Context, t *testing.T, name string, plain []byte) {
