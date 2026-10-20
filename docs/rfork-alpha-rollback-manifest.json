@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "providerId": "rclone",
+  "displayName": "rfork",
+  "version": "v1.75.2-rfork.0.1.0-alpha.1",
+  "sourceRepository": "https://github.com/mega-fork/rfork",
+  "sourceReference": {
+    "tag": "v1.75.2-rfork.0.1.0-alpha.1",
+    "commit": "5b2efa9af79e259a6313241d0cc61acff8f87e47"
+  },
+  "validationRecordsCommit": "2500ccc2fe0e117a95df1860355c1483408291a7",
+  "toolchain": "go1.26.9",
+  "upstream": {
+    "version": "v1.75.2",
+    "sourceURL": "https://codeload.github.com/rclone/rclone/tar.gz/refs/tags/v1.75.2",
+    "archiveSHA256": "68afd7f68c84bd978966feae2116339aa7bf454b39c573910c462e87c3774d5a",
+    "missing": [],
+    "extra": [],
+    "changed": [],
+    "officialFileCount": 2621
+  },
+  "rollback": {
+    "m3Commit": "010faa27b96f2eeb6ca5c52234c1b629a4d95ce1",
+    "stockBinaries": [
+      {
+        "path": "bin/linux/rclone",
+        "sha256": "41bd63149d3bd281f9d8fb02fd8c0406234634a59cd0f591b86ad3f1e2f6abb7"
+      },
+      {
+        "path": "bin/win/rclone.exe",
+        "sha256": "5bd8f50054ed0aee8221212f7b3329d647a5a0d099474e9f4e17aa88e57ac778"
+      },
+      {
+        "path": "bin/mac/rclone",
+        "sha256": "635a37ec0b2de20ebaeac8bf6175bbab7a7a99c785f384f9a16791c6bdd54c57"
+      }
+    ],
+    "stockResourcesCommit": "0d44202040297cd96787304fc0d26f452e0837b0",
+    "resolverSHA256": "3dd622d5b7d9f6d845e8e5747d5cd7070ecb759e464293ca2625192991dfc52c"
+  },
+  "licenses": [
+    {
+      "file": "LICENSE-rclone.txt",
+      "sha256": "8cd2e9e750b90a04b7d82dbbca3930c696ae0309d7c10464f90a44f45754cd04"
+    },
+    {
+      "file": "LICENSE-go-mega.txt",
+      "sha256": "59ac8e15ce8d22c1e5e1375785e25fbced80c49972fbf8b9ef72e933ba09d057"
+    }
+  ],
+  "targets": [
+    {
+      "os": "linux",
+      "target": "linux/amd64",
+      "arch": "x64",
+      "file": "rfork",
+      "bytes": 85680290,
+      "sha256": "8c83896b7f8a2a0c23c3208eda6ec837998452fb384eb00f4cf551c4da48ef24",
+      "nativeRuntime": "passed",
+      "liveMegaIntegrity": "passed",
+      "validationReport": "validation/large.json",
+      "validationURL": "https://github.com/mega-fork/rfork/blob/2500ccc2fe0e117a95df1860355c1483408291a7/reports/large.json"
+    },
+    {
+      "os": "win",
+      "target": "windows/amd64",
+      "arch": "x64",
+      "file": "rfork.exe",
+      "bytes": 86119936,
+      "sha256": "979483bf107b5bf321d7760c267e67d1ae8c6c486dd67d098d914fc760c27f9f",
+      "nativeRuntime": "passed",
+      "liveMegaIntegrity": "passed",
+      "validationReport": "validation/native-live-windows.json",
+      "nativeBuildCommit": "0975846b800cd16fd53c77a22ef78342f9c7451d",
+      "artifactID": 12196401056,
+      "validationURL": "https://github.com/mega-fork/rfork/actions/runs/39270418973/job/118125858416"
+    },
+    {
+      "os": "mac",
+      "target": "darwin/amd64",
+      "arch": "x64",
+      "file": "rfork",
+      "bytes": 87751504,
+      "sha256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365",
+      "nativeRuntime": "passed",
+      "liveMegaIntegrity": "passed",
+      "validationReport": "validation/native-live-darwin.json",
+      "nativeBuildCommit": "27aade913b11611eae90b9c5f9e0b4c3e9d336fb",
+      "artifactID": 12194254662,
+      "validationURL": "https://github.com/mega-fork/rfork/actions/runs/39269252510/job/118116918184"
+    }
+  ]
+}

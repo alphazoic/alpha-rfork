@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "24622fb474fa517f6b720561a2ec3a1e3cd241de",
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39459533295",
+  "installers": [
+    {
+      "platform": "macos-intel",
+      "path": "validation-output/settings-39459533295/m3-rfork-settings-macos-intel/M3-1.2.4.dmg",
+      "bytes": 200926215,
+      "sha256": "8ed0042f4e8a1d30fb68ab1d96f38f3b563984cde45170c48895e1230f14bb69",
+      "verified": true
+    },
+    {
+      "platform": "windows",
+      "path": "validation-output/settings-39459533295/m3-rfork-settings-windows/M3 Setup 1.2.4.exe",
+      "bytes": 163969223,
+      "sha256": "644bf0dc5cbe949fe37dc9a59d13cfa39f29699e1f0d3f15adaf8290cab9accd",
+      "verified": true
+    },
+    {
+      "platform": "linux",
+      "path": "validation-output/settings-39459533295/m3-rfork-settings-linux/M3_1.2.4_amd64.deb",
+      "bytes": 128483512,
+      "sha256": "57558ef5a6e935b5c8b94e7a3fdd96d788ce1ed73c438d6a7592959554637a2a",
+      "verified": true
+    }
+  ],
+  "signed": false,
+  "releasePublished": false
+}

@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "validatedOn": "2026-10-20",
+  "timezone": "Asia/Phnom_Penh",
+  "runURL": "https://github.com/mega-fork/M3/actions/runs/39290699289",
+  "commit": "2cfa496852f7ab5e4611a35e53e18e47fc3df397",
+  "rforkVersion": "v1.75.2-rfork.0.1.0-alpha.1",
+  "platforms": [
+    {
+      "target": "linux",
+      "jobURL": "https://github.com/mega-fork/M3/actions/runs/39290699289/job/118190721096",
+      "bundleTestsPassed": 5,
+      "adapterTestsPassed": 44,
+      "adapterTestsSkipped": 0,
+      "adapterTestsTotal": 44,
+      "smoke": {
+        "schemaVersion": 1,
+        "platform": "linux",
+        "arch": "x64",
+        "commit": "2cfa496852f7ab5e4611a35e53e18e47fc3df397",
+        "live": false,
+        "passed": true,
+        "checks": [
+          {
+            "name": "packaged resolver, hash, architecture, notices and evidence",
+            "passed": true,
+            "sha256": "8c83896b7f8a2a0c23c3208eda6ec837998452fb384eb00f4cf551c4da48ef24"
+          },
+          {
+            "name": "native packaged helper execution",
+            "passed": true
+          },
+          {
+            "name": "native stdin password obscuring",
+            "passed": true
+          },
+          {
+            "name": "packaged renderer, preload and saved provider order",
+            "passed": true
+          }
+        ],
+        "sha256": "8c83896b7f8a2a0c23c3208eda6ec837998452fb384eb00f4cf551c4da48ef24"
+      },
+      "live": {
+        "schemaVersion": 1,
+        "platform": "linux",
+        "arch": "x64",
+        "commit": "2cfa496852f7ab5e4611a35e53e18e47fc3df397",
+        "live": true,
+        "passed": true,
+        "checks": [
+          {
+            "name": "packaged resolver, hash, architecture, notices and evidence",
+            "passed": true,
+            "sha256": "8c83896b7f8a2a0c23c3208eda6ec837998452fb384eb00f4cf551c4da48ef24"
+          },
+          {
+            "name": "native packaged helper execution",
+            "passed": true
+          },
+          {
+            "name": "native stdin password obscuring",
+            "passed": true
+          },
+          {
+            "name": "packaged renderer, preload and saved provider order",
+            "passed": true
+          },
+          {
+            "name": "M3 upload, empty file, share links, CSV and cleared journal",
+            "passed": true
+          },
+          {
+            "name": "independent stock download SHA-256",
+            "passed": true,
+            "file": "payload ünicode.bin",
+            "bytes": 67108864,
+            "sha256": "1b42db365629751ea8b9c81844cea2f204cd71ab84ba0dd15098af41b769a726"
+          },
+          {
+            "name": "independent stock download SHA-256",
+            "passed": true,
+            "file": "empty.bin",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "M3 browsing and usage",
+            "passed": true
+          },
+          {
+            "name": "M3 forced-rfork account refresh",
+            "passed": true
+          },
+          {
+            "name": "M3 browse-to-share-link consumer",
+            "passed": true
+          },
+          {
+            "name": "Stop waits for closure, retains source and journal; restart stays held",
+            "passed": true
+          }
+        ],
+        "cleanup": true,
+        "sha256": "8c83896b7f8a2a0c23c3208eda6ec837998452fb384eb00f4cf551c4da48ef24"
+      },
+      "installers": [
+        {
+          "file": "M3_1.2.4_amd64.deb",
+          "bytes": 128796446,
+          "sha256": "4f422c917a1b3c8eb38a38c89dd1ad0f2b1c323f4acf29b4c7c6e059835069e1"
+        }
+      ],
+      "oldTestingTrashFoldersRemoved": 2,
+      "localArtifacts": "validation-output/ci-39290699289/m3-rfork-linux-x64/"
+    },
+    {
+      "target": "windows",
+      "jobURL": "https://github.com/mega-fork/M3/actions/runs/39290699289/job/118190720574",
+      "bundleTestsPassed": 5,
+      "adapterTestsPassed": 43,
+      "adapterTestsSkipped": 1,
+      "adapterTestsTotal": 44,
+      "smoke": {
+        "schemaVersion": 1,
+        "platform": "win32",
+        "arch": "x64",
+        "commit": "2cfa496852f7ab5e4611a35e53e18e47fc3df397",
+        "live": false,
+        "passed": true,
+        "checks": [
+          {
+            "name": "packaged resolver, hash, architecture, notices and evidence",
+            "passed": true,
+            "sha256": "979483bf107b5bf321d7760c267e67d1ae8c6c486dd67d098d914fc760c27f9f"
+          },
+          {
+            "name": "native packaged helper execution",
+            "passed": true
+          },
+          {
+            "name": "native stdin password obscuring",
+            "passed": true
+          },
+          {
+            "name": "packaged renderer, preload and saved provider order",
+            "passed": true
+          }
+        ],
+        "sha256": "979483bf107b5bf321d7760c267e67d1ae8c6c486dd67d098d914fc760c27f9f"
+      },
+      "live": {
+        "schemaVersion": 1,
+        "platform": "win32",
+        "arch": "x64",
+        "commit": "2cfa496852f7ab5e4611a35e53e18e47fc3df397",
+        "live": true,
+        "passed": true,
+        "checks": [
+          {
+            "name": "packaged resolver, hash, architecture, notices and evidence",
+            "passed": true,
+            "sha256": "979483bf107b5bf321d7760c267e67d1ae8c6c486dd67d098d914fc760c27f9f"
+          },
+          {
+            "name": "native packaged helper execution",
+            "passed": true
+          },
+          {
+            "name": "native stdin password obscuring",
+            "passed": true
+          },
+          {
+            "name": "packaged renderer, preload and saved provider order",
+            "passed": true
+          },
+          {
+            "name": "M3 upload, empty file, share links, CSV and cleared journal",
+            "passed": true
+          },
+          {
+            "name": "independent stock download SHA-256",
+            "passed": true,
+            "file": "payload ünicode.bin",
+            "bytes": 67108864,
+            "sha256": "7d45ef0a4e8571a676005c600e2b0fbc4fa1533062b57cb20ce8ab123553adf7"
+          },
+          {
+            "name": "independent stock download SHA-256",
+            "passed": true,
+            "file": "empty.bin",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "M3 browsing and usage",
+            "passed": true
+          },
+          {
+            "name": "M3 forced-rfork account refresh",
+            "passed": true
+          },
+          {
+            "name": "M3 browse-to-share-link consumer",
+            "passed": true
+          },
+          {
+            "name": "Stop waits for closure, retains source and journal; restart stays held",
+            "passed": true
+          }
+        ],
+        "cleanup": true,
+        "sha256": "979483bf107b5bf321d7760c267e67d1ae8c6c486dd67d098d914fc760c27f9f"
+      },
+      "installers": [
+        {
+          "file": "M3 Setup 1.2.4.exe",
+          "bytes": 162613950,
+          "sha256": "d6fcc88ba2bf90163b27226aec53685fe751b0e0caf6287c1a64ded886ab6fe2"
+        }
+      ],
+      "localArtifacts": "validation-output/ci-39290699289/m3-rfork-windows-x64/"
+    },
+    {
+      "target": "macos-intel",
+      "jobURL": "https://github.com/mega-fork/M3/actions/runs/39290699289/job/118190720821",
+      "bundleTestsPassed": 5,
+      "adapterTestsPassed": 44,
+      "adapterTestsSkipped": 0,
+      "adapterTestsTotal": 44,
+      "smoke": {
+        "schemaVersion": 1,
+        "platform": "darwin",
+        "arch": "x64",
+        "commit": "2cfa496852f7ab5e4611a35e53e18e47fc3df397",
+        "live": false,
+        "passed": true,
+        "checks": [
+          {
+            "name": "packaged resolver, hash, architecture, notices and evidence",
+            "passed": true,
+            "sha256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365"
+          },
+          {
+            "name": "native packaged helper execution",
+            "passed": true
+          },
+          {
+            "name": "native stdin password obscuring",
+            "passed": true
+          },
+          {
+            "name": "packaged renderer, preload and saved provider order",
+            "passed": true
+          }
+        ],
+        "sha256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365"
+      },
+      "live": {
+        "schemaVersion": 1,
+        "platform": "darwin",
+        "arch": "x64",
+        "commit": "2cfa496852f7ab5e4611a35e53e18e47fc3df397",
+        "live": true,
+        "passed": true,
+        "checks": [
+          {
+            "name": "packaged resolver, hash, architecture, notices and evidence",
+            "passed": true,
+            "sha256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365"
+          },
+          {
+            "name": "native packaged helper execution",
+            "passed": true
+          },
+          {
+            "name": "native stdin password obscuring",
+            "passed": true
+          },
+          {
+            "name": "packaged renderer, preload and saved provider order",
+            "passed": true
+          },
+          {
+            "name": "M3 upload, empty file, share links, CSV and cleared journal",
+            "passed": true
+          },
+          {
+            "name": "independent stock download SHA-256",
+            "passed": true,
+            "file": "payload ünicode.bin",
+            "bytes": 67108864,
+            "sha256": "60b9dbbcd68a36cdf27a1c3277e636934a93d0d96d87150e8b61385714918c5d"
+          },
+          {
+            "name": "independent stock download SHA-256",
+            "passed": true,
+            "file": "empty.bin",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "M3 browsing and usage",
+            "passed": true
+          },
+          {
+            "name": "M3 forced-rfork account refresh",
+            "passed": true
+          },
+          {
+            "name": "M3 browse-to-share-link consumer",
+            "passed": true
+          },
+          {
+            "name": "Stop waits for closure, retains source and journal; restart stays held",
+            "passed": true
+          }
+        ],
+        "cleanup": true,
+        "sha256": "15e800baaea0be80f846732e84c82bdb385a9e8d185b90214f2e6bff57c7b365"
+      },
+      "installers": [
+        {
+          "file": "M3-1.2.4.dmg",
+          "bytes": 200844312,
+          "sha256": "9a41487cf7149890dc36741d8e7dea7ebb89c78d29b6ef7f1e86cf7e1f92b13b"
+        }
+      ],
+      "localArtifacts": "validation-output/ci-39290699289/m3-rfork-macos-intel-x64/"
+    }
+  ]
+}

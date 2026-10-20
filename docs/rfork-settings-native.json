@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "24622fb474fa517f6b720561a2ec3a1e3cd241de",
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39459533295",
+  "status": "passed",
+  "totalRecordedChecks": 69,
+  "independentSHA256Checks": 9,
+  "platforms": [
+    {
+      "platform": "linux",
+      "receipt": "docs/rfork-settings-runs/linux-39459533295.json",
+      "checks": 23,
+      "independentSHA256Checks": 3,
+      "cleanup": true,
+      "binarySHA256": "38f9b6878fedbce2c4697c37bbba3ee9313a0ccebaf22055f75b6af609cc0aae",
+      "installers": [
+        {
+          "file": "M3_1.2.4_amd64.deb",
+          "bytes": 128483512,
+          "sha256": "57558ef5a6e935b5c8b94e7a3fdd96d788ce1ed73c438d6a7592959554637a2a"
+        }
+      ]
+    },
+    {
+      "platform": "darwin",
+      "receipt": "docs/rfork-settings-runs/macos-intel-39459533295.json",
+      "checks": 23,
+      "independentSHA256Checks": 3,
+      "cleanup": true,
+      "binarySHA256": "8d82e47a00233c62ab43a3c6025d0a5ed3a5401dd218044927e3daab1330d544",
+      "installers": [
+        {
+          "file": "M3-1.2.4.dmg",
+          "bytes": 200926215,
+          "sha256": "8ed0042f4e8a1d30fb68ab1d96f38f3b563984cde45170c48895e1230f14bb69"
+        }
+      ]
+    },
+    {
+      "platform": "win32",
+      "receipt": "docs/rfork-settings-runs/windows-39459533295.json",
+      "checks": 23,
+      "independentSHA256Checks": 3,
+      "cleanup": true,
+      "binarySHA256": "a2efa4d1b627a8ee902c7aeddea27877f51559d159c6ac126e5a023b10031abf",
+      "installers": [
+        {
+          "file": "M3 Setup 1.2.4.exe",
+          "bytes": 163969223,
+          "sha256": "644bf0dc5cbe949fe37dc9a59d13cfa39f29699e1f0d3f15adaf8290cab9accd"
+        }
+      ]
+    }
+  ],
+  "releasePublished": false
+}

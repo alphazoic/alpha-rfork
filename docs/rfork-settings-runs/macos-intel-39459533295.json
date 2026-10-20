@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "platform": "darwin",
+  "arch": "x64",
+  "commit": "24622fb474fa517f6b720561a2ec3a1e3cd241de",
+  "live": true,
+  "passed": true,
+  "checks": [
+    {
+      "name": "packaged resolver, hash, architecture, notices and evidence",
+      "passed": true,
+      "sha256": "8d82e47a00233c62ab43a3c6025d0a5ed3a5401dd218044927e3daab1330d544"
+    },
+    {
+      "name": "native packaged helper execution",
+      "passed": true
+    },
+    {
+      "name": "native stdin password obscuring",
+      "passed": true
+    },
+    {
+      "name": "packaged renderer, preload and saved provider order",
+      "passed": true
+    },
+    {
+      "name": "rfork UI save, explicit zeros, custom bundle size, invalid IPC rejection, dependencies and reset",
+      "passed": true
+    },
+    {
+      "name": "rfork settings survive renderer reload",
+      "passed": true
+    },
+    {
+      "name": "M3 upload, empty file, share links, CSV and cleared journal",
+      "passed": true
+    },
+    {
+      "name": "independent stock download SHA-256",
+      "passed": true,
+      "file": "payload \u00fcnicode.bin",
+      "bytes": 67108864,
+      "sha256": "54c29c35398114ba40a5ab615be8a85a8a9a52a5bf286771f7ff7a1173375da9"
+    },
+    {
+      "name": "independent stock download SHA-256",
+      "passed": true,
+      "file": "empty.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "M3 browsing and usage",
+      "passed": true
+    },
+    {
+      "name": "M3 forced-rfork account refresh",
+      "passed": true
+    },
+    {
+      "name": "M3 browse-to-share-link consumer",
+      "passed": true
+    },
+    {
+      "name": "Stop waits for closure, retains source and journal; restart stays held",
+      "passed": true
+    },
+    {
+      "name": "M3 checkpoint upload stopped before publication and retained original source/state",
+      "passed": true
+    },
+    {
+      "name": "packaged resolver, hash, architecture, notices and evidence",
+      "passed": true,
+      "sha256": "8d82e47a00233c62ab43a3c6025d0a5ed3a5401dd218044927e3daab1330d544"
+    },
+    {
+      "name": "native packaged helper execution",
+      "passed": true
+    },
+    {
+      "name": "native stdin password obscuring",
+      "passed": true
+    },
+    {
+      "name": "packaged renderer, preload and saved provider order",
+      "passed": true
+    },
+    {
+      "name": "rfork UI save, explicit zeros, custom bundle size, invalid IPC rejection, dependencies and reset",
+      "passed": true
+    },
+    {
+      "name": "rfork settings survive renderer reload",
+      "passed": true
+    },
+    {
+      "name": "actual M3 restart retains original checkpoint and restores authenticated progress",
+      "passed": true,
+      "restoredBytes": 1310720,
+      "pendingBytes": 8126495
+    },
+    {
+      "name": "independent stock download SHA-256 after M3 restart/resume",
+      "passed": true,
+      "bytes": 9437215,
+      "sha256": "ef6cffe9d26765afc5a3065efdc9ba90fa1fddcb6f34fe45ea3174d5a0eefbfe"
+    },
+    {
+      "name": "committed tombstone survives lost application recording without duplicate upload or CSV row",
+      "passed": true
+    }
+  ],
+  "cleanup": true,
+  "sha256": "8d82e47a00233c62ab43a3c6025d0a5ed3a5401dd218044927e3daab1330d544",
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39459533295",
+  "jobID": 118755053518,
+  "installers": [
+    {
+      "file": "M3-1.2.4.dmg",
+      "bytes": 200926215,
+      "sha256": "8ed0042f4e8a1d30fb68ab1d96f38f3b563984cde45170c48895e1230f14bb69"
+    }
+  ]
+}

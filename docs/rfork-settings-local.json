@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "24622fb474fa517f6b720561a2ec3a1e3cd241de",
+  "repository": "alphazoic/alpha-rfork",
+  "branch": "codex/m3-rfork-settings",
+  "localFilesMatchValidationSnapshot": true,
+  "checkedFiles": 332,
+  "excluded": [
+    ".gitignore (isolated CI checkout exclusions)"
+  ],
+  "localChecks": {
+    "settingsAdapterRecovery": 57,
+    "bundleResolver": 5,
+    "uploadVpn": 419,
+    "electronUi": "passed",
+    "linuxPackagedSettingsSmoke": "passed before final styling and diagnostic report additions"
+  },
+  "nativeRunURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39459533295",
+  "nativeJobs": {
+    "linux": "success",
+    "windows": "success",
+    "macos-intel": "success"
+  },
+  "releasePublished": false
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "platform": "linux",
+  "arch": "x64",
+  "commit": null,
+  "live": false,
+  "passed": true,
+  "checks": [
+    {
+      "name": "packaged resolver, hash, architecture, notices and evidence",
+      "passed": true,
+      "sha256": "8c83896b7f8a2a0c23c3208eda6ec837998452fb384eb00f4cf551c4da48ef24"
+    },
+    {
+      "name": "native packaged helper execution",
+      "passed": true
+    },
+    {
+      "name": "native stdin password obscuring",
+      "passed": true
+    },
+    {
+      "name": "packaged renderer, preload and saved provider order",
+      "passed": true
+    }
+  ],
+  "sha256": "8c83896b7f8a2a0c23c3208eda6ec837998452fb384eb00f4cf551c4da48ef24",
+  "installer": {
+    "file": "M3_1.2.4_amd64.deb",
+    "bytes": 128619998,
+    "sha256": "bce379cda5241d7de2d7994cea2a92f82d5cb1ec7ea3929de41137a98856d176"
+  },
+  "extractedInstallerChecked": true,
+  "adapterTestsPassed": 43,
+  "bundleTestsPassed": 5,
+  "rollbackHashesAndResolversPassed": 3
+}
