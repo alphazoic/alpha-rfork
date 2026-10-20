@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add experimental `backend upload-resume` for an explicit local regular file,
+  using account-bound encrypted checkpoints, private native storage/locking,
+  preflight block fingerprints, skipped-chunk MAC verification and coalesced
+  writes. Persist commit intent before finalization and keep a committed node
+  tombstone; uncertain outcomes stop for inspection without automatic replay.
+- Add cancellable explicit payload accounting for resume; restored bytes and
+  preflight/skipped reads do not consume the current attempt's bandwidth budget.
+  Integrated live recovery remains a release gate.
 - Add opt-in bounded upload diagnostics with separate source, attempted payload,
   acknowledged data and final-commit status; omit private upload identifiers.
 - Classify chunk failures, retry transient MEGA/HTTP errors with bounded jittered

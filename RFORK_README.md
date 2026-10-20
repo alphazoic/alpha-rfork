@@ -87,7 +87,54 @@ Workers stop and join on chunk errors or cancellation. A finalization failure
 is returned as a non-retryable error with an uncertain remote outcome: inspect
 the destination before starting another upload. A server can commit a file
 even when its reply is lost. An existing destination is removed only after its
-replacement commits successfully. No process-restart upload resume is added.
+replacement commits successfully. Ordinary copy commands retain in-memory
+upload state; the explicit experimental command below supports checkpoints.
+
+## Experimental local-file restart resume
+
+Implemented on the development branch; integrated native validation is running
+and live MEGA command recovery remains unverified. The testing account currently
+reports blocked through stock rclone too. No release or M3 replacement is made.
+
+```sh
+rfork backend upload-resume mega:existing/uploads /absolute/movie.mkv \
+  -o name=movie.mkv -o checkpoint=/absolute/private/movie-state \
+  -o checkpoint-interval=1s --mega-upload-concurrency 8
+```
+
+The checkpoint parent must exist. The command requires HTTPS, a regular local
+source and an existing remote directory; it refuses an existing destination name.
+Repeat the same command to reuse its original session. Source SHA-256/size,
+account handle, exact parent handle and name must match. Settings such as worker
+count, request size, pacing and retry budget may change between attempts.
+
+State uses an authenticated encrypted envelope and private, exclusively locked
+storage. Linux/macOS use ownership/mode checks and native locks; Windows requires
+a fixed local NTFS volume and protected owner/SYSTEM ACLs. Keep the complete
+checkpoint directory, including lock/initialization files. Do not copy it to a
+shared location or delete it to bypass an uncertain result.
+
+Every attempt hashes the complete source, verifies preflight fingerprints before
+passing source bytes to workers, authenticates skipped ranges against saved MACs,
+and checks the final stream hash. Fingerprints use 32 bytes per 128 KiB of source
+(256 KiB for 1 GiB, up to 256 MiB at the 1 TiB cap), plus a 128 KiB buffer; request
+buffers, native MACs and runtime overhead are additional. Accounting and bandwidth
+limits apply to pending source payload. Restored acknowledgements, actual source
+reads and retry-inclusive HTTP reads are separate counters (`megaResume` JSON
+diagnostics when enabled). Source preflight/skipped reads do not consume the
+current attempt's network accounting budget.
+
+Cancellation joins workers and flushes progress. A crash may lose recent ACKs;
+their original ciphertext is replayed. Before finalization, commit intent is
+saved durably. Restored intent stops for inspection, including when it cannot
+prove whether a commit was attempted. A successful upload retains a tombstone
+with the exact confirmed node; repetition verifies that identity without a new
+upload. Expired sessions require explicit inspection/restart. Another process
+using a different checkpoint or another client can still create a same-name file;
+MEGA does not provide an atomic name reservation here.
+
+See [RESUME_DESIGN.md](RESUME_DESIGN.md) for validation evidence and remaining
+release gates, and `rfork backend help mega` for command options.
 
 ## Building independently
 

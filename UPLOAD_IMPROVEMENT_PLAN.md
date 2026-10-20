@@ -9,8 +9,13 @@ checks passed on Linux, Windows and macOS in the temporary repository (receipt:
 `reports/upload-improvements-native-39409187807.json`). Integrated live CLI checks
 also passed on all three platforms (15 independent hashes each and verified cleanup,
 run `39409214017`). The fresh-process resume protocol gate passed as well
-(`39409953855`); production checkpoints/recovery and release promotion remain
-pending. M3 changes are outside this work.
+(`39409953855`). Encrypted checkpoints and native protected storage are now
+implemented; the experimental explicit local-file command and process recovery
+fixtures are committed at `a032839`. Local races/lint/CLI smoke passed. Full native
+command checks are running in `39436148540`; integrated live command recovery and
+release promotion remain pending. The MEGA test account reports blocked through
+stock rclone, and failed-probe cleanup remains unverified. M3 changes are outside
+this work.
 
 The worker pool now supports opt-in bounded request jobs while native request
 behavior remains the default; see [reports/UPLOAD_PROTOCOL.md](reports/UPLOAD_PROTOCOL.md).
@@ -20,7 +25,7 @@ executed because of a billing/spending-limit restriction. The user supplied a
 temporary repository, `alphazoic/alpha-rfork`, and added the dedicated test-account
 secrets there. Hosted validation is being resumed on the same source history;
 `origin` remains the original repository. The passed two-process resume gate,
-remaining limits and unimplemented state-machine contract are in
+remaining limits and implemented state-machine contract are in
 [RESUME_DESIGN.md](RESUME_DESIGN.md).
 
 Local final validation is recorded in
@@ -28,7 +33,8 @@ Local final validation is recorded in
 all three targets build, Linux CLI smoke and targeted races/lint pass, and M3
 bundle hashes are unchanged. The attempted full upstream suite is not green due
 to Docker fixture access and an S3 cache timing failure that passed in isolation;
-see the validation report for exact limits. Resume implementation and release
+see the validation report for exact limits. Resume local checks are recorded in
+`reports/upload-resume-local-a032839.json`; integrated live validation and release
 promotion remain unfinished.
 
 ## Objective and saved baseline

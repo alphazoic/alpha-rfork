@@ -47,6 +47,21 @@ Empty files retain a zero aggregate MAC: their empty POST obtains the upload
 handle but contributes no data chunk to the authentication fold. This fixes
 upstream empty uploads rejected by independent clients with a MAC mismatch.
 
+`GetUserContext` provides cancellable lookup of the stable account handle.
+`Upload.SealCheckpoint`, `Mega.OpenUploadCheckpoint`, `AcknowledgedChunks` and
+`VerifyAcknowledgedChunk` support the explicit local-source resume caller. The
+versioned AES-256-GCM envelope contains original URL/key/native-MAC/handle state
+and an irreversible upload/commit-intent/committed phase. Its account-derived key
+uses the stable master key and handle, without storing passwords or master keys.
+The full source hash/size and exact parent/name are authenticated as binding.
+Restoration never creates a replacement URL. Saved ranges require actual-byte MAC
+verification; callers must also verify source blocks before sending pending data.
+Commit intent/committed restoration rejects writes and finalization. The caller
+owns private durable storage, exclusive locking, source verification and commit
+ordering; the backend command implements those duties. Native store checks and
+short-delay encrypted protocol probes passed; integrated live command recovery
+and general provider session lifetime remain separate gates.
+
 Regression tests in upload_context_test.go cover real concurrent native chunk
 encryption, independent decryption/MAC verification, commit responses, lost
 commit replies, cancellation, retry identity and transport isolation.
