@@ -58,6 +58,7 @@ jobs:
         run: |
           python bin/test_probe_upload_protocol.py
           python bin/test_live_upload_improvements.py
+          python bin/test_live_upload_resume.py
       - name: Upstream unit tests
         if: '!inputs.checkpoint_only'
         run: RCLONE_CONFIG=/notfound bin/rfork-go test -timeout 20m ./...

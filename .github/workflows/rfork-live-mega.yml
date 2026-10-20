@@ -13,6 +13,7 @@ on:
           - protocol
           - improvements
           - resume-protocol
+          - resume
       cleanup_folder:
         description: Exact rfork-protocol UUID folder for cleanup only (resume-protocol mode)
         type: string
@@ -28,7 +29,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   live:
-    if: inputs.platform != 'protocol' && inputs.platform != 'improvements' && inputs.platform != 'resume-protocol'
+    if: inputs.platform != 'protocol' && inputs.platform != 'improvements' && inputs.platform != 'resume-protocol' && inputs.platform != 'resume'
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -125,6 +126,59 @@ jobs:
           name: rfork-upload-improvements-${{ matrix.target }}
           path: |
             build/upload-improvements-live-${{ matrix.target }}.json
+            build/rfork-${{ matrix.target }}-amd64*
+          if-no-files-found: warn
+  resume:
+    if: inputs.platform == 'resume'
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+          - os: windows-latest
+            target: windows
+          - os: macos-15-intel
+            target: darwin
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.9'
+          cache: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Build native candidate and pristine stock verifier
+        run: |
+          bin/build-rfork '${{ matrix.target }}' amd64
+          bin/build-stock
+          if [[ '${{ matrix.target }}' == windows ]]; then
+            mv build/rclone-v1.75.2-stock build/rclone-v1.75.2-stock.exe
+          fi
+      - name: Verify native restart resume and source integrity
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: python bin/live-upload-resume.py run --target '${{ matrix.target }}'
+      - name: Retry scoped cleanup
+        if: always()
+        env:
+          RFORK_MEGA_EMAIL: ${{ secrets.RFORK_MEGA_EMAIL }}
+          RFORK_MEGA_PASSWORD: ${{ secrets.RFORK_MEGA_PASSWORD }}
+        run: python bin/live-upload-resume.py cleanup --target '${{ matrix.target }}'
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: rfork-upload-resume-${{ matrix.target }}
+          path: |
+            build/upload-resume-live-${{ matrix.target }}.json
             build/rfork-${{ matrix.target }}-amd64*
           if-no-files-found: warn
   protocol:
