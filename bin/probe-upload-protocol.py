@@ -18,6 +18,14 @@ def private_env():
             if not k.startswith(('RCLONE_', 'RFORK_MEGA_', 'X_MEGA_'))}
 
 
+def prepare_cleanup(folder):
+    if not re.fullmatch(r'rfork-protocol-[a-f0-9]{32}', folder):
+        raise RuntimeError('Refusing cleanup of an unrecognized folder')
+    RECEIPT.parent.mkdir(exist_ok=True)
+    RECEIPT.write_text(json.dumps({'schemaVersion': 1, 'sourceCommit': os.environ.get('GITHUB_SHA'),
+                                  'remoteFolder': folder, 'status': 'cleanup-only', 'cleanup': False}, indent=2) + '\n')
+
+
 def run(resume=False):
     RECEIPT.parent.mkdir(exist_ok=True)
     report = {'schemaVersion': 1, 'sourceCommit': os.environ.get('GITHUB_SHA'),
@@ -68,6 +76,19 @@ def cleanup():
                                  '--low-level-retries', '2', '--timeout', '60s'],
                                 env=env, capture_output=True, text=True, timeout=180)
         if result.returncode:
+            messages = result.stderr.lower()
+            report['cleanupFailure'] = {
+                'exitCode': result.returncode,
+                'categories': [name for name, pattern in (
+                    ('blocked', r'user blocked|account.*suspend|account.*blocked'),
+                    ('authentication', r'password|login|authentication|session|two.factor'),
+                    ('rate-limit', r'rate limit|too many|try again|temporarily'),
+                    ('quota', r'quota|bandwidth|storage.*exceed'),
+                    ('network', r'connection|no such host|tls|network|http.*[45][0-9]{2}'),
+                    ('timeout', r'timeout|timed out|deadline'),
+                ) if re.search(pattern, messages)],
+            }
+            RECEIPT.write_text(json.dumps(report, indent=2) + '\n')
             raise RuntimeError('Scoped cleanup command failed; output withheld')
         return result.stdout
 
@@ -84,12 +105,17 @@ def cleanup():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('mode', choices=['run', 'cleanup'])
+    parser.add_argument('mode', choices=['run', 'cleanup', 'prepare-cleanup'])
+    parser.add_argument('--folder', help='Exact isolated folder for a cleanup-only receipt')
     parser.add_argument('--resume', action='store_true', help='Run the explicit two-process restart probe')
     args = parser.parse_args()
     if args.resume:
         RECEIPT = ROOT / 'build/upload-resume-protocol.json'
-    if args.mode == 'run':
+    if args.mode == 'prepare-cleanup':
+        prepare_cleanup(args.folder or '')
+    elif args.folder:
+        parser.error('--folder requires prepare-cleanup')
+    elif args.mode == 'run':
         run(resume=args.resume)
     else:
         cleanup()

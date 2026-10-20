@@ -86,6 +86,21 @@ class ProtocolRunnerTest(unittest.TestCase):
                 contextlib.redirect_stdout(io.StringIO()):
             probe.run(resume=True)
 
+    def test_cleanup_failure_reports_categories_without_private_output(self):
+        private = 'https://private.invalid/capability secret-password'
+        def command(args, **kwargs):
+            if args[1]=='obscure': return subprocess.CompletedProcess(args,0,stdout='obscured\n')
+            return subprocess.CompletedProcess(args,1,stdout='',stderr='could not login: User blocked '+private)
+        with patch.dict(os.environ,{'RFORK_MEGA_EMAIL':'account@example.invalid','RFORK_MEGA_PASSWORD':'secret-password'}), \
+                patch.object(probe.subprocess,'run',side_effect=command):
+            with self.assertRaisesRegex(RuntimeError,'output withheld'): probe.cleanup()
+        report=json.loads(self.receipt.read_text())
+        self.assertIn('blocked',report['cleanupFailure']['categories'])
+        self.assertNotIn(private,self.receipt.read_text())
+
+    def test_prepare_cleanup_rejects_arbitrary_folder(self):
+        with self.assertRaisesRegex(RuntimeError,'unrecognized'): probe.prepare_cleanup('ordinary-user-folder')
+
 
 if __name__ == '__main__':
     unittest.main()

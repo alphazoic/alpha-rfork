@@ -1,0 +1,11 @@
+{
+  "checks": [],
+  "cleanup": false,
+  "probe": "restart",
+  "remoteFolder": "rfork-protocol-8097f0bbab2147e28329abfe5e0215d6",
+  "schemaVersion": 1,
+  "sourceCommit": "ebbbc151fca0aa6724aa982eb08e132178022856",
+  "status": "failed",
+  "testExitCode": 1,
+  "runURL": "https://github.com/alphazoic/alpha-rfork/actions/runs/39418890708"
+}
