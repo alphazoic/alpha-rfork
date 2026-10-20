@@ -27,9 +27,9 @@ function createUploadJournal(directory) {
     return data.entries;
   }
   function write(entries) {
-    const temporary = filename + '.tmp';
+    const temporary = filename + '.' + randomUUID() + '.tmp';
     try {
-      const fd = fs.openSync(temporary, 'w', 0o600);
+      const fd = fs.openSync(temporary, 'wx', 0o600);
       try { fs.writeFileSync(fd, JSON.stringify({ schemaVersion: 2, entries }, null, 2) + '\n'); fs.fsyncSync(fd); }
       finally { fs.closeSync(fd); }
       fs.renameSync(temporary, filename);

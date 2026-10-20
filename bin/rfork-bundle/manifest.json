@@ -3,11 +3,11 @@
   "providerId": "rclone",
   "displayName": "rfork",
   "version": "v1.75.2-rfork.0.2.0-dev",
-  "sourceRepository": "https://github.com/mega-fork/rfork",
+  "sourceRepository": "https://github.com/alphazoic/alpha-rfork",
   "sourceReference": {
     "commit": "8de3a300a816f98d0a516a47ed491d2e56f450f8"
   },
-  "validationRecordsCommit": "b3861a6",
+  "validationRecordsCommit": "b3861a699adf6d1b4c3f927f9dda3f3e97d51e3a",
   "toolchain": "go1.26.9",
   "upstream": {
     "version": "v1.75.2",
@@ -92,5 +92,6 @@
     "version": "v1.75.2-rfork.0.1.0-alpha.1",
     "sourceCommit": "5b2efa9af79e259a6313241d0cc61acff8f87e47"
   },
-  "developmentBuild": true
+  "developmentBuild": true,
+  "canonicalSourceRepository": "https://github.com/mega-fork/rfork"
 }

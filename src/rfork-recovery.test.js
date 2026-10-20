@@ -7,7 +7,7 @@ const os = require('node:os');
 const { createUploadJournal, recordUploadCompletion } = require('./upload-journal');
 const { reviewUploadRecovery } = require('./upload-recovery-review');
 function fixture(t) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'm3-rfork-recovery-'));
+  const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'm3-rfork-recovery-')));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const journal = createUploadJournal(dir);
   return { dir, journal, record: journal.begin({ account:'test@example.test',source:path.join(dir,'source'),destination:'folder/source',bytes:7,checkpoint:path.join(dir,'private-state') }) };
