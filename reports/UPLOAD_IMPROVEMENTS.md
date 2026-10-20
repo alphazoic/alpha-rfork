@@ -52,6 +52,35 @@ match their saved manifest, and no M3 code/settings/bundle replacement is includ
 No release tag/promotion has been made; artifacts remain development builds.
 Stage records below retain their results and limits at the time each was saved.
 
+## Experimental durable resume implementation — 2026-10-20
+
+The codec and native protected store are implemented and storage checks passed on
+Linux, Windows and macOS at `ebbbc15` (`upload-improvements-native-39418887213.json`).
+The explicit local-file resume command, source block verification, serialized
+checkpoint writer and irreversible commit handling are implemented at `a032839`;
+the pending-only hard/soft/cautious transfer-budget admission guard follows at
+`39ee917`. Receipts `upload-resume-local-a032839.json` and
+`upload-resume-local-39ee917.json` record local races, lint, native Linux CLI smoke
+and TLS service fixtures using real encrypted checkpoints and fresh child processes.
+The fixtures include abrupt process death, Unix signal cleanup, independent
+file-key/ciphertext SHA-256 verification, committed-node idempotence and an
+unusable finalization reply without replay.
+
+The full native/upstream run `39436148540` targets `a032839`. Final focused native
+backend/dependency/store/accounting races, lint, CLI builds and smoke are running
+in `39437206355` at `39ee917`. These are in progress, not final successful receipts.
+The stale dispatch `39437143179` targeted the preceding documentation commit
+and was canceled in favor of the final revision.
+
+Live command recovery remains unverified. A protocol rerun failed before any case;
+its scoped cleanup also failed. Cleanup-only receipt
+`upload-resume-protocol-39432815707.json` classifies stock-client login as
+blocked/authentication. The isolated folder
+`rfork-protocol-8097f0bbab2147e28329abfe5e0215d6` has not been verified absent.
+A usable MEGA test account is required to verify that exact folder, then run
+integrated live CLI resume and independent stock downloads. No release tag or M3
+binary/settings change is included.
+
 ## Hosted validation restart and resume probe preparation — 2026-10-20
 
 The user pushed the same branch/history to `alphazoic/alpha-rfork` and supplied

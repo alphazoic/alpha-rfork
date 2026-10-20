@@ -12,7 +12,10 @@ run `39409214017`). The fresh-process resume protocol gate passed as well
 (`39409953855`). Encrypted checkpoints and native protected storage are now
 implemented; the experimental explicit local-file command and process recovery
 fixtures are committed at `a032839`. Local races/lint/CLI smoke passed. Full native
-command checks are running in `39436148540`; integrated live command recovery and
+command checks are running in `39436148540` at that source. The subsequent
+pending-transfer-budget guard is committed at `39ee917`, with final focused
+native tests/builds running in `39437206355`; its local receipt is
+`reports/upload-resume-local-39ee917.json`. Integrated live command recovery and
 release promotion remain pending. The MEGA test account reports blocked through
 stock rclone, and failed-probe cleanup remains unverified. M3 changes are outside
 this work.

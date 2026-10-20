@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "39ee917ff56537dcb6becd482d26d5ba8f2a83ec",
+  "target": "linux/amd64",
+  "status": "passed",
+  "binarySHA256": "fcd5533f0112ed99b24f8c799a439cbc5148ec8f8a3109cd334bc77c45117567",
+  "binaryBytes": 85848226,
+  "checks": [
+    {
+      "name": "final backend upload/resume race suite, including pending-only hard/soft/cautious transfer-budget admission",
+      "result": "passed"
+    },
+    {
+      "name": "dependency full race and crypto fixtures",
+      "result": "passed"
+    },
+    {
+      "name": "local TLS fresh-process command, real codec and private store",
+      "result": "passed",
+      "cases": [
+        "acknowledged-prefix recovery",
+        "abrupt process death and lock recovery",
+        "Unix signal cancellation and writer join",
+        "confirmed tombstone without new upload",
+        "lost finalization reply without replay",
+        "independent file-key ciphertext SHA256"
+      ]
+    },
+    {
+      "name": "changed source rejected before workers despite restored metadata",
+      "result": "passed"
+    },
+    {
+      "name": "initial/background/intent/committed storage faults, coalescing and active-worker cancellation",
+      "result": "passed"
+    },
+    {
+      "name": "lint backend/dependency/accounting",
+      "result": "passed"
+    },
+    {
+      "name": "offline Python upload runners",
+      "result": "passed",
+      "tests": 9
+    },
+    {
+      "name": "native Linux CLI build, version, backend-command help and local copy",
+      "result": "passed"
+    },
+    {
+      "name": "existing three M3 binary checksums against saved manifest",
+      "result": "passed"
+    }
+  ],
+  "limits": [
+    "Local TLS provider fixture is not MEGA service validation",
+    "Integrated native command checks are running separately",
+    "Live MEGA account is reported blocked by stock client; prior isolated-folder cleanup is unverified",
+    "No release or M3 replacement"
+  ],
+  "unchangedPackageValidation": {
+    "sourceCommit": "a032839303919e78bee2adccb379c8d22536aa40",
+    "packages": [
+      "backend/mega/internal/checkpoint",
+      "fs/accounting",
+      "deps/go-mega"
+    ],
+    "checks": "full affected-package races passed; code unchanged since that source"
+  }
+}
